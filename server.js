@@ -15,13 +15,29 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('.'));
 
-// Crypto Pay API
-const CRYPTO_PAY_API = 'https://pay.crypt.bot/api';
-const CRYPTO_PAY_TOKEN = process.env.CRYPTO_PAY_TOKEN;
+// Конфигурация сетей
+const NETWORKS = {
+    testnet: {
+        apiUrl: 'https://testnet-pay.crypt.bot/api',
+        name: 'TON Testnet',
+        minDeposit: 0.01,
+        minWithdraw: 0.01
+    },
+    mainnet: {
+        apiUrl: 'https://pay.crypt.bot/api',
+        name: 'TON Mainnet',
+        minDeposit: 0.1,
+        minWithdraw: 0.1
+    }
+};
+
+// Текущая сеть (по умолчанию из .env)
+let currentNetwork = process.env.DEFAULT_NETWORK || 'testnet';
+let CRYPTO_PAY_TOKEN = process.env.CRYPTO_PAY_TOKEN;
 
 // LokiJS база данных
 let db;
-let users, transactions;
+let users, transactions, settings;
 
 function initDatabase() {
     return new Promise((resolve) => {
@@ -30,6 +46,7 @@ function initDatabase() {
             autoloadCallback: () => {
                 users = db.getCollection('users');
                 transactions = db.getCollection('transactions');
+                settings = db.getCollection('settings');
                 
                 if (!users) {
                     users = db.addCollection('users', { 
@@ -40,11 +57,27 @@ function initDatabase() {
                 
                 if (!transactions) {
                     transactions = db.addCollection('transactions', {
-                        indices: ['user_id', 'created_at']
+                        indices: ['user_id', 'created_at', 'network']
                     });
                 }
+
+                if (!settings) {
+                    settings = db.addCollection('settings');
+                    // Сохраняем настройки по умолчанию
+                    settings.insert({
+                        key: 'network',
+                        value: currentNetwork,
+                        updated_at: new Date()
+                    });
+                } else {
+                    // Загружаем сохраненную сеть
+                    const networkSetting = settings.findOne({ key: 'network' });
+                    if (networkSetting) {
+                        currentNetwork = networkSetting.value;
+                    }
+                }
                 
-                console.log('LokiJS database initialized');
+                console.log(`✅ Database initialized. Current network: ${currentNetwork}`);
                 resolve(true);
             },
             autosave: true,
@@ -56,7 +89,8 @@ function initDatabase() {
 // Функция для работы с Crypto Pay API
 async function cryptoPayRequest(method, data = {}) {
     try {
-        const response = await axios.post(`${CRYPTO_PAY_API}/${method}`, data, {
+        const networkConfig = NETWORKS[currentNetwork];
+        const response = await axios.post(`${networkConfig.apiUrl}/${method}`, data, {
             headers: {
                 'Crypto-Pay-API-Token': CRYPTO_PAY_TOKEN
             }
@@ -76,33 +110,69 @@ app.get('/api/user/:telegramId', async (req, res) => {
         let user = users.findOne({ telegram_id: telegramId });
         
         if (!user) {
-            // Создаем нового пользователя
             user = users.insert({
                 telegram_id: telegramId,
                 balance: 0,
                 created_at: new Date()
             });
-            
-            res.json({ balance: 0 });
-        } else {
-            res.json({ balance: user.balance });
         }
+
+        res.json({ 
+            balance: user.balance,
+            network: currentNetwork,
+            networkName: NETWORKS[currentNetwork].name,
+            minDeposit: NETWORKS[currentNetwork].minDeposit
+        });
     } catch (error) {
         console.error('Database error:', error);
         res.status(500).json({ error: 'Database error' });
     }
 });
 
-// API: Создать депозит через Crypto Pay
+// API: Создать депозит
 app.post('/api/create-deposit', async (req, res) => {
     const { telegramId, amount } = req.body;
+    const networkConfig = NETWORKS[currentNetwork];
     
-    if (!amount || amount < 1) {
-        return res.status(400).json({ error: 'Minimum deposit is 1 TON' });
+    if (!amount || amount < networkConfig.minDeposit) {
+        return res.status(400).json({ 
+            error: `Minimum deposit is ${networkConfig.minDeposit} TON (${networkConfig.name})`
+        });
     }
 
     try {
-        // Создаем инвойс в Crypto Pay
+        // В testnet режиме имитируем успешный депозит
+        if (currentNetwork === 'testnet') {
+            let user = users.findOne({ telegram_id: parseInt(telegramId) });
+            if (!user) {
+                user = users.insert({
+                    telegram_id: parseInt(telegramId),
+                    balance: 0,
+                    created_at: new Date()
+                });
+            }
+
+            users.update({ ...user, balance: user.balance + amount });
+
+            transactions.insert({
+                user_id: user.$loki,
+                amount: amount,
+                type: 'deposit',
+                status: 'completed',
+                network: 'testnet',
+                hash: `testnet_deposit_${Date.now()}`,
+                created_at: new Date()
+            });
+
+            return res.json({
+                success: true,
+                message: 'Test deposit successful (TESTNET MODE)',
+                amount: amount,
+                network: 'TESTNET'
+            });
+        }
+
+        // Реальный депозит для mainnet
         const invoice = await cryptoPayRequest('createInvoice', {
             asset: 'TON',
             amount: amount.toString(),
@@ -113,7 +183,6 @@ app.post('/api/create-deposit', async (req, res) => {
         });
 
         if (invoice.ok && invoice.result) {
-            // Находим пользователя
             let user = users.findOne({ telegram_id: parseInt(telegramId) });
             if (!user) {
                 user = users.insert({
@@ -123,37 +192,40 @@ app.post('/api/create-deposit', async (req, res) => {
                 });
             }
 
-            // Сохраняем транзакцию
             transactions.insert({
                 user_id: user.$loki,
                 amount: amount,
                 type: 'deposit',
                 status: 'pending',
                 crypto_pay_invoice_id: invoice.result.invoice_id,
+                network: 'mainnet',
                 created_at: new Date()
             });
 
             res.json({
                 success: true,
                 invoiceUrl: invoice.result.pay_url,
-                invoiceId: invoice.result.invoice_id
+                invoiceId: invoice.result.invoice_id,
+                network: 'MAINNET'
             });
         } else {
-            console.error('Failed to create invoice:', invoice);
             res.status(500).json({ error: 'Failed to create invoice' });
         }
     } catch (error) {
-        console.error('Crypto Pay error:', error);
-        res.status(500).json({ error: 'Crypto Pay error' });
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
 // API: Запрос на вывод
 app.post('/api/withdraw', async (req, res) => {
     const { telegramId, amount, address } = req.body;
+    const networkConfig = NETWORKS[currentNetwork];
 
-    if (!amount || amount < 1 || !address) {
-        return res.status(400).json({ error: 'Invalid amount or address' });
+    if (!amount || amount < networkConfig.minWithdraw || !address) {
+        return res.status(400).json({ 
+            error: `Minimum withdrawal is ${networkConfig.minWithdraw} TON (${networkConfig.name})`
+        });
     }
 
     if (!address.startsWith('UQ') || address.length < 48) {
@@ -161,14 +233,35 @@ app.post('/api/withdraw', async (req, res) => {
     }
 
     try {
-        // Находим пользователя
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
-        
         if (!user || user.balance < amount) {
             return res.status(400).json({ error: 'Insufficient balance' });
         }
 
-        // Создаем вывод через Crypto Pay
+        // В testnet режиме имитируем вывод
+        if (currentNetwork === 'testnet') {
+            users.update({ ...user, balance: user.balance - amount });
+
+            transactions.insert({
+                user_id: user.$loki,
+                amount: amount,
+                type: 'withdraw',
+                status: 'completed',
+                address: address,
+                hash: `testnet_withdraw_${Date.now()}`,
+                network: 'testnet',
+                created_at: new Date()
+            });
+
+            return res.json({
+                success: true,
+                message: 'Test withdrawal successful (TESTNET MODE)',
+                hash: `testnet_withdraw_${Date.now()}`,
+                network: 'TESTNET'
+            });
+        }
+
+        // Реальный вывод для mainnet
         const transfer = await cryptoPayRequest('transfer', {
             user_id: parseInt(telegramId),
             asset: 'TON',
@@ -177,13 +270,8 @@ app.post('/api/withdraw', async (req, res) => {
         });
 
         if (transfer.ok && transfer.result) {
-            // Обновляем баланс
-            users.update({
-                ...user,
-                balance: user.balance - amount
-            });
+            users.update({ ...user, balance: user.balance - amount });
 
-            // Сохраняем транзакцию
             transactions.insert({
                 user_id: user.$loki,
                 amount: amount,
@@ -191,22 +279,63 @@ app.post('/api/withdraw', async (req, res) => {
                 status: 'completed',
                 address: address,
                 hash: transfer.result.hash,
+                network: 'mainnet',
                 created_at: new Date()
             });
 
             res.json({
                 success: true,
                 message: 'Withdrawal successful',
-                hash: transfer.result.hash
+                hash: transfer.result.hash,
+                network: 'MAINNET'
             });
         } else {
-            console.error('Withdrawal failed:', transfer);
             res.status(500).json({ error: 'Withdrawal failed' });
         }
     } catch (error) {
-        console.error('Crypto Pay error:', error);
-        res.status(500).json({ error: 'Crypto Pay error' });
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Server error' });
     }
+});
+
+// API: Переключение сети (админ)
+app.post('/api/admin/switch-network', async (req, res) => {
+    const { network, password } = req.body;
+    
+    if (password !== process.env.ADMIN_PASSWORD) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (!NETWORKS[network]) {
+        return res.status(400).json({ error: 'Invalid network' });
+    }
+
+    // Сохраняем настройки сети
+    let networkSetting = settings.findOne({ key: 'network' });
+    if (networkSetting) {
+        settings.update({ ...networkSetting, value: network, updated_at: new Date() });
+    } else {
+        settings.insert({ key: 'network', value: network, updated_at: new Date() });
+    }
+
+    currentNetwork = network;
+
+    res.json({
+        success: true,
+        message: `Network switched to ${NETWORKS[network].name}`,
+        network: network,
+        networkName: NETWORKS[network].name
+    });
+});
+
+// API: Получить текущую сеть
+app.get('/api/network', (req, res) => {
+    res.json({
+        network: currentNetwork,
+        networkName: NETWORKS[currentNetwork].name,
+        minDeposit: NETWORKS[currentNetwork].minDeposit,
+        minWithdraw: NETWORKS[currentNetwork].minWithdraw
+    });
 });
 
 // API: Получить историю транзакций
@@ -226,104 +355,36 @@ app.get('/api/transactions/:telegramId', async (req, res) => {
             .limit(10)
             .data();
 
-        res.json({ transactions: userTransactions });
+        res.json({ 
+            transactions: userTransactions,
+            network: currentNetwork
+        });
     } catch (error) {
         console.error('Database error:', error);
         res.status(500).json({ error: 'Database error' });
     }
 });
 
-// API: Проверить статус инвойса
-app.get('/api/invoice-status/:invoiceId', async (req, res) => {
-    const invoiceId = req.params.invoiceId;
-
-    try {
-        const invoices = await cryptoPayRequest('getInvoices', {
-            invoice_ids: invoiceId
-        });
-
-        if (invoices.ok && invoices.result.items.length > 0) {
-            const invoice = invoices.result.items[0];
-            res.json({ status: invoice.status });
-        } else {
-            res.status(404).json({ error: 'Invoice not found' });
-        }
-    } catch (error) {
-        console.error('Crypto Pay error:', error);
-        res.status(500).json({ error: 'Crypto Pay error' });
-    }
+// Health check
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'OK', 
+        network: currentNetwork,
+        networkName: NETWORKS[currentNetwork].name,
+        timestamp: new Date().toISOString()
+    });
 });
 
-// Проверка оплаченных инвойсов (каждую минуту)
-cron.schedule('* * * * *', async () => {
-    try {
-        const pendingTransactions = transactions
-            .chain()
-            .find({ 
-                type: 'deposit', 
-                status: 'pending',
-                crypto_pay_invoice_id: { '$ne': null }
-            })
-            .data();
-
-        for (const transaction of pendingTransactions) {
-            try {
-                const invoices = await cryptoPayRequest('getInvoices', {
-                    invoice_ids: transaction.crypto_pay_invoice_id
-                });
-
-                if (invoices.ok && invoices.result.items.length > 0) {
-                    const invoice = invoices.result.items[0];
-                    
-                    if (invoice.status === 'paid') {
-                        // Находим пользователя
-                        const user = users.get(transaction.user_id);
-                        if (user) {
-                            // Обновляем баланс
-                            users.update({
-                                ...user,
-                                balance: user.balance + transaction.amount
-                            });
-
-                            // Обновляем статус транзакции
-                            transactions.update({
-                                ...transaction,
-                                status: 'completed',
-                                hash: invoice.hash
-                            });
-
-                            console.log(`Deposit completed for transaction ${transaction.$loki}`);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking invoice:', error);
-            }
-        }
-    } catch (error) {
-        console.error('Cron job error:', error);
-    }
-});
-
-// Graceful shutdown
-process.on('SIGINT', () => {
-    console.log('Shutting down gracefully...');
-    if (db) {
-        db.close();
-        console.log('Database connection closed');
-    }
-    process.exit(0);
-});
-
-// Инициализация и запуск сервера
+// Запуск сервера
 async function startServer() {
     try {
         await initDatabase();
         
         app.listen(PORT, () => {
             console.log(`🚀 Server running on port ${PORT}`);
-            console.log(`💳 Crypto Pay integration enabled`);
-            console.log(`🌐 Server is ready for Telegram Mini Apps`);
+            console.log(`🌐 Current network: ${NETWORKS[currentNetwork].name}`);
+            console.log(`💳 Crypto Pay: ${NETWORKS[currentNetwork].apiUrl}`);
+            console.log(`🔧 Admin password: ${process.env.ADMIN_PASSWORD ? 'SET' : 'NOT SET'}`);
         });
     } catch (error) {
         console.error('Failed to start server:', error);

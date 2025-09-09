@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Network Switch</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a2e; color: white; }
+        .admin-container { max-width: 500px; margin: 50px auto; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px; }
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 5px; }
+        .btn-testnet { background: #ff6b6b; color: white; }
+        .btn-mainnet { background: #4cd137; color: white; }
+        .btn-current { background: #3498db; color: white; }
+        .status { padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .status-testnet { background: #e74c3c; }
+        .status-mainnet { background: #27ae60; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <h2>🔧 Admin Panel - Network Switch</h2>
+        
+        <div id="currentNetwork" class="status"></div>
+        
+        <div>
+            <button class="btn btn-testnet" onclick="switchNetwork('testnet')">🔄 Switch to Testnet</button>
+            <button class="btn btn-mainnet" onclick="switchNetwork('mainnet')">🚀 Switch to Mainnet</button>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <input type="password" id="adminPassword" placeholder="Admin Password" style="padding: 10px; width: 100%;">
+        </div>
+
+        <div id="message" style="margin-top: 15px;"></div>
+    </div>
+
+    <script>
+        let currentNetwork = '';
+
+        // Загружаем текущую сеть
+        async function loadCurrentNetwork() {
+            try {
+                const response = await fetch('/api/network');
+                const data = await response.json();
+                currentNetwork = data.network;
+                
+                const networkDiv = document.getElementById('currentNetwork');
+                networkDiv.className = `status status-${currentNetwork}`;
+                networkDiv.innerHTML = `🌐 Current Network: <b>${data.networkName}</b><br>
+                                       💰 Min Deposit: ${data.minDeposit} TON<br>
+                                       📤 Min Withdraw: ${data.minWithdraw} TON`;
+            } catch (error) {
+                console.error('Error loading network:', error);
+            }
+        }
+
+        // Переключение сети
+        async function switchNetwork(network) {
+            const password = document.getElementById('adminPassword').value;
+            if (!password) {
+                showMessage('❌ Please enter admin password', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/switch-network', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ network, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(`✅ ${data.message}`, 'success');
+                    loadCurrentNetwork();
+                } else {
+                    showMessage(`❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Network error', 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.style.color = type === 'success' ? '#4cd137' : '#e74c3c';
+            messageDiv.innerHTML = text;
+        }
+
+        // Загружаем при старте
+        loadCurrentNetwork();
+        setInterval(loadCurrentNetwork, 5000); // Обновляем каждые 5 сек
+    </script>
+</body>
+</html>
