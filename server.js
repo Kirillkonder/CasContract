@@ -65,16 +65,27 @@ async function cryptoPayRequest(method, data = {}, demoMode = false) {
             
         const CRYPTO_PAY_TOKEN = demoMode ?
             process.env.CRYPTO_PAY_TESTNET_TOKEN :
-            process.env.CYPTO_PAY_MAINNET_TOKEN;
+            process.env.CRYPTO_PAY_MAINNET_TOKEN;
+
+        console.log(`Making ${demoMode ? 'TESTNET' : 'MAINNET'} request to:`, `${CRYPTO_PAY_API}/${method}`);
+        console.log('Token length:', CRYPTO_PAY_TOKEN ? CRYPTO_PAY_TOKEN.length : 'MISSING');
 
         const response = await axios.post(`${CRYPTO_PAY_API}/${method}`, data, {
             headers: {
-                'Crypto-Pay-API-Token': CRYPTO_PAY_TOKEN
-            }
+                'Crypto-Pay-API-Token': CRYPTO_PAY_TOKEN,
+                'Content-Type': 'application/json'
+            },
+            timeout: 10000
         });
+        
+        console.log('API Response:', response.data);
         return response.data;
     } catch (error) {
         console.error('Crypto Pay API error:', error.response?.data || error.message);
+        if (error.response) {
+            console.error('Status:', error.response.status);
+            console.error('Headers:', error.response.headers);
+        }
         throw error;
     }
 }
@@ -192,12 +203,15 @@ app.post('/api/create-deposit', async (req, res) => {
         }
 
         // Реальный режим - создаем инвойс в Crypto Pay
+        // Исправляем URL - убираем @ из имени бота
+        const botUsername = process.env.BOT_USERNAME.replace('@', '');
+        
         const invoice = await cryptoPayRequest('createInvoice', {
             asset: 'TON',
             amount: amount.toString(),
             description: `Deposit for user ${telegramId}`,
             paid_btn_name: 'viewItem',
-            paid_btn_url: `https://t.me/${process.env.BOT_USERNAME}`,
+            paid_btn_url: `https://t.me/${botUsername}`,
             payload: `deposit_${telegramId}_${Date.now()}`
         }, false);
 
@@ -221,11 +235,11 @@ app.post('/api/create-deposit', async (req, res) => {
             });
         } else {
             console.error('Failed to create invoice:', invoice);
-            res.status(500).json({ error: 'Failed to create invoice' });
+            res.status(500).json({ error: invoice.error?.name || 'Failed to create invoice' });
         }
     } catch (error) {
         console.error('Crypto Pay error:', error);
-        res.status(500).json({ error: 'Crypto Pay error' });
+        res.status(500).json({ error: 'Crypto Pay error: ' + (error.response?.data?.error?.name || error.message) });
     }
 });
 
@@ -314,11 +328,11 @@ app.post('/api/withdraw', async (req, res) => {
             });
         } else {
             console.error('Withdrawal failed:', transfer);
-            res.status(500).json({ error: 'Withdrawal failed' });
+            res.status(500).json({ error: transfer.error?.name || 'Withdrawal failed' });
         }
     } catch (error) {
         console.error('Crypto Pay error:', error);
-        res.status(500).json({ error: 'Crypto Pay error' });
+        res.status(500).json({ error: 'Crypto Pay error: ' + (error.response?.data?.error?.name || error.message) });
     }
 });
 
@@ -424,6 +438,16 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Debug endpoint для проверки токенов
+app.get('/api/debug/tokens', (req, res) => {
+    res.json({
+        mainnet_token: process.env.CRYPTO_PAY_MAINNET_TOKEN ? 'SET' : 'MISSING',
+        testnet_token: process.env.CRYPTO_PAY_TESTNET_TOKEN ? 'SET' : 'MISSING',
+        demo_mode: process.env.DEMO_MODE === 'true',
+        bot_username: process.env.BOT_USERNAME
+    });
+});
+
 // Graceful shutdown
 process.on('SIGINT', () => {
     console.log('Shutting down gracefully...');
@@ -444,6 +468,9 @@ async function startServer() {
             console.log(`💳 Crypto Pay integration enabled`);
             console.log(`🌐 Server is ready for Telegram Mini Apps`);
             console.log(`📊 Database: ${dbPath}`);
+            console.log(`🤖 Bot: ${process.env.BOT_USERNAME}`);
+            console.log(`🔧 Mainnet token: ${process.env.CRYPTO_PAY_MAINNET_TOKEN ? 'SET' : 'MISSING'}`);
+            console.log(`🔧 Testnet token: ${process.env.CRYPTO_PAY_TESTNET_TOKEN ? 'SET' : 'MISSING'}`);
         });
     } catch (error) {
         console.error('Failed to start server:', error);
