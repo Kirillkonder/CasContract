@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: ton-casino
+    env: node
+    buildCommand: npm install && npm rebuild --build-from-source
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: 457597:AA6vplOWcYiyCSHol1JMhKFmaqG1T93bPmY
+        sync: false
+      - key: @CasinoGiftContractBot
+        sync: false

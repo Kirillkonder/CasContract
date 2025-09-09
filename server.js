@@ -19,42 +19,59 @@ app.use(express.static('.'));
 const CRYPTO_PAY_API = 'https://pay.crypt.bot/api';
 const CRYPTO_PAY_TOKEN = process.env.CRYPTO_PAY_TOKEN;
 
-// База данных
-const db = new sqlite3.Database('ton-casino.db');
+// База данных - используем лучшую практику для соединений
+let db;
 
-// Создаем таблицы
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        telegram_id INTEGER UNIQUE,
-        balance REAL DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
+function initDatabase() {
+    return new Promise((resolve, reject) => {
+        db = new sqlite3.Database('ton-casino.db', (err) => {
+            if (err) {
+                console.error('Error opening database:', err);
+                reject(err);
+                return;
+            }
+            
+            console.log('Connected to SQLite database');
+            
+            // Создаем таблицы
+            db.serialize(() => {
+                db.run(`CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    telegram_id INTEGER UNIQUE,
+                    balance REAL DEFAULT 0,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS transactions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        amount REAL,
-        type TEXT,
-        status TEXT,
-        hash TEXT,
-        crypto_pay_invoice_id TEXT,
-        address TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(user_id) REFERENCES users(id)
-    )`);
+                db.run(`CREATE TABLE IF NOT EXISTS transactions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    amount REAL,
+                    type TEXT,
+                    status TEXT,
+                    hash TEXT,
+                    crypto_pay_invoice_id TEXT,
+                    address TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                )`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS crypto_payments (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        invoice_id TEXT UNIQUE,
-        user_id INTEGER,
-        amount REAL,
-        status TEXT,
-        hash TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(user_id) REFERENCES users(id)
-    )`);
-});
+                db.run(`CREATE TABLE IF NOT EXISTS crypto_payments (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    invoice_id TEXT UNIQUE,
+                    user_id INTEGER,
+                    amount REAL,
+                    status TEXT,
+                    hash TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                )`);
+                
+                console.log('Database tables initialized');
+                resolve();
+            });
+        });
+    });
+}
 
 // Функция для работы с Crypto Pay API
 async function cryptoPayRequest(method, data = {}) {
@@ -80,6 +97,7 @@ app.get('/api/user/:telegramId', async (req, res) => {
         [telegramId],
         (err, user) => {
             if (err) {
+                console.error('Database error:', err);
                 return res.status(500).json({ error: 'Database error' });
             }
             
@@ -90,6 +108,7 @@ app.get('/api/user/:telegramId', async (req, res) => {
                     [telegramId],
                     function(err) {
                         if (err) {
+                            console.error('Failed to create user:', err);
                             return res.status(500).json({ error: 'Failed to create user' });
                         }
                         res.json({ 
@@ -121,8 +140,8 @@ app.post('/api/create-deposit', async (req, res) => {
             amount: amount.toString(),
             description: `Deposit for user ${telegramId}`,
             paid_btn_name: 'viewItem',
-            paid_btn_url: `https://t.me/${process.env.BOT_USERNAME}`, // Замените на username вашего бота
-            payload: `deposit_${telegramId}`
+            paid_btn_url: `https://t.me/${process.env.BOT_USERNAME}`,
+            payload: `deposit_${telegramId}_${Date.now()}`
         });
 
         if (invoice.ok && invoice.result) {
@@ -133,6 +152,7 @@ app.post('/api/create-deposit', async (req, res) => {
                 [telegramId, amount, invoice.result.invoice_id],
                 function(err) {
                     if (err) {
+                        console.error('Database error:', err);
                         return res.status(500).json({ error: 'Database error' });
                     }
 
@@ -144,9 +164,11 @@ app.post('/api/create-deposit', async (req, res) => {
                 }
             );
         } else {
+            console.error('Failed to create invoice:', invoice);
             res.status(500).json({ error: 'Failed to create invoice' });
         }
     } catch (error) {
+        console.error('Crypto Pay error:', error);
         res.status(500).json({ error: 'Crypto Pay error' });
     }
 });
@@ -159,12 +181,21 @@ app.post('/api/withdraw', async (req, res) => {
         return res.status(400).json({ error: 'Invalid amount or address' });
     }
 
+    if (!address.startsWith('UQ') || address.length < 48) {
+        return res.status(400).json({ error: 'Invalid TON address format' });
+    }
+
     // Проверяем баланс
     db.get(
         `SELECT balance FROM users WHERE telegram_id = ?`,
         [telegramId],
         async (err, user) => {
-            if (err || !user || user.balance < amount) {
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            
+            if (!user || user.balance < amount) {
                 return res.status(400).json({ error: 'Insufficient balance' });
             }
 
@@ -184,6 +215,7 @@ app.post('/api/withdraw', async (req, res) => {
                         [amount, telegramId],
                         function(err) {
                             if (err) {
+                                console.error('Database error:', err);
                                 return res.status(500).json({ error: 'Database error' });
                             }
 
@@ -194,6 +226,7 @@ app.post('/api/withdraw', async (req, res) => {
                                 [telegramId, amount, address, transfer.result.hash],
                                 function(err) {
                                     if (err) {
+                                        console.error('Database error:', err);
                                         return res.status(500).json({ error: 'Database error' });
                                     }
 
@@ -207,9 +240,11 @@ app.post('/api/withdraw', async (req, res) => {
                         }
                     );
                 } else {
+                    console.error('Withdrawal failed:', transfer);
                     res.status(500).json({ error: 'Withdrawal failed' });
                 }
             } catch (error) {
+                console.error('Crypto Pay error:', error);
                 res.status(500).json({ error: 'Crypto Pay error' });
             }
         }
@@ -227,6 +262,7 @@ app.get('/api/transactions/:telegramId', async (req, res) => {
         [telegramId],
         (err, transactions) => {
             if (err) {
+                console.error('Database error:', err);
                 return res.status(500).json({ error: 'Database error' });
             }
             res.json({ transactions: transactions || [] });
@@ -250,6 +286,7 @@ app.get('/api/invoice-status/:invoiceId', async (req, res) => {
             res.status(404).json({ error: 'Invoice not found' });
         }
     } catch (error) {
+        console.error('Crypto Pay error:', error);
         res.status(500).json({ error: 'Crypto Pay error' });
     }
 });
@@ -262,7 +299,10 @@ cron.schedule('* * * * *', async () => {
             `SELECT * FROM transactions 
              WHERE type = 'deposit' AND status = 'pending' AND crypto_pay_invoice_id IS NOT NULL`,
             async (err, transactions) => {
-                if (err) return;
+                if (err) {
+                    console.error('Cron job database error:', err);
+                    return;
+                }
 
                 for (const transaction of transactions) {
                     try {
@@ -277,15 +317,26 @@ cron.schedule('* * * * *', async () => {
                                 // Обновляем баланс и статус транзакции
                                 db.run(
                                     `UPDATE users SET balance = balance + ? WHERE id = ?`,
-                                    [transaction.amount, transaction.user_id]
+                                    [transaction.amount, transaction.user_id],
+                                    function(err) {
+                                        if (err) {
+                                            console.error('Error updating balance:', err);
+                                            return;
+                                        }
+                                    }
                                 );
 
                                 db.run(
                                     `UPDATE transactions SET status = 'completed', hash = ? WHERE id = ?`,
-                                    [invoice.hash, transaction.id]
+                                    [invoice.hash, transaction.id],
+                                    function(err) {
+                                        if (err) {
+                                            console.error('Error updating transaction:', err);
+                                            return;
+                                        }
+                                        console.log(`Deposit completed for transaction ${transaction.id}`);
+                                    }
                                 );
-
-                                console.log(`Deposit completed for transaction ${transaction.id}`);
                             }
                         }
                     } catch (error) {
@@ -299,8 +350,36 @@ cron.schedule('* * * * *', async () => {
     }
 });
 
-// Запуск сервера
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`💳 Crypto Pay integration enabled`);
+// Graceful shutdown
+process.on('SIGINT', () => {
+    console.log('Shutting down gracefully...');
+    if (db) {
+        db.close((err) => {
+            if (err) {
+                console.error('Error closing database:', err);
+            } else {
+                console.log('Database connection closed');
+            }
+            process.exit(0);
+        });
+    } else {
+        process.exit(0);
+    }
 });
+
+// Инициализация и запуск сервера
+async function startServer() {
+    try {
+        await initDatabase();
+        
+        app.listen(PORT, () => {
+            console.log(`🚀 Server running on port ${PORT}`);
+            console.log(`💳 Crypto Pay integration enabled`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+}
+
+startServer();
