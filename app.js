@@ -1,7 +1,9 @@
+
 class TonCasinoApp {
     constructor() {
         this.tg = window.Telegram.WebApp;
         this.userData = null;
+        this.demoMode = false;
         this.init();
     }
 
@@ -12,12 +14,14 @@ class TonCasinoApp {
         await this.loadUserData();
         this.setupEventListeners();
         this.loadTransactionHistory();
+        this.updateDemoModeUI();
     }
 
     async loadUserData() {
         try {
             const response = await fetch(`/api/user/${this.tg.initDataUnsafe.user.id}`);
             this.userData = await response.json();
+            this.demoMode = this.userData.demo_mode;
             this.updateUI();
         } catch (error) {
             console.error('Error loading user data:', error);
@@ -45,10 +49,11 @@ class TonCasinoApp {
                 
                 const amountClass = transaction.type === 'deposit' ? 'transaction-positive' : 'transaction-negative';
                 const sign = transaction.type === 'deposit' ? '+' : '-';
+                const demoBadge = transaction.demo ? ' (TESTNET)' : '';
                 
                 transactionElement.innerHTML = `
                     <div class="transaction-info">
-                        <div>${transaction.type.toUpperCase()}</div>
+                        <div>${transaction.type.toUpperCase()}${demoBadge}</div>
                         <div class="transaction-date">${new Date(transaction.created_at).toLocaleDateString()}</div>
                     </div>
                     <div class="transaction-amount ${amountClass}">
@@ -60,7 +65,7 @@ class TonCasinoApp {
             });
 
             if (transactions.length === 0) {
-                transactionsContainer.innerHTML = '<div class="no-transactions">No transactions yet</div>';
+                transactionsContainer.innerHTML = '<div class="no-transactions">Нет операций</div>';
             }
         }
     }
@@ -68,10 +73,67 @@ class TonCasinoApp {
     updateUI() {
         if (this.userData) {
             const balanceElement = document.getElementById('balance');
+            const demoBadgeElement = document.getElementById('demo-badge');
+            const networkInfoElement = document.getElementById('network-info');
+            const depositModeInfo = document.getElementById('deposit-mode-info');
+            const withdrawModeInfo = document.getElementById('withdraw-mode-info');
+            
             if (balanceElement) {
                 balanceElement.textContent = this.userData.balance.toFixed(2);
             }
+            
+            if (demoBadgeElement) {
+                demoBadgeElement.style.display = this.demoMode ? 'block' : 'none';
+            }
+            
+            if (networkInfoElement) {
+                networkInfoElement.textContent = this.demoMode ? 
+                    '🔧 TESTNET MODE - Используются тестовые TON' : 
+                    '🌐 MAINNET MODE - Используются реальные TON';
+            }
+            
+            if (depositModeInfo) {
+                depositModeInfo.textContent = this.demoMode ? 
+                    'Демо-пополнение (тестовые TON)' : 
+                    'Оплата через Crypto Pay';
+            }
+            
+            if (withdrawModeInfo) {
+                withdrawModeInfo.textContent = this.demoMode ? 
+                    'Демо-вывод (тестовые TON)' : 
+                    'Вывод через Crypto Pay';
+            }
         }
+    }
+
+    updateDemoModeUI() {
+        const demoToggle = document.getElementById('demo-toggle');
+        const demoStatus = document.getElementById('demo-status');
+        
+        if (demoToggle && demoStatus) {
+            // Для Render отключаем переключение, так как это делается через переменные окружения
+            demoToggle.disabled = true;
+            demoToggle.checked = this.demoMode;
+            demoStatus.textContent = this.demoMode ? 'TESTNET' : 'MAINNET';
+            
+            // Показываем подсказку
+            if (this.demoMode) {
+                demoStatus.title = "Режим можно изменить только на сервере";
+            }
+        }
+    }
+
+    async toggleDemoMode() {
+        // Для Render переключение отключено, так как делается через переменные окружения
+        this.tg.showPopup({
+            title: "ℹ️ Информация",
+            message: "Переключение режима доступно только через настройки сервера. Обратитесь к администратору.",
+            buttons: [{ type: "ok" }]
+        });
+        
+        // Возвращаем переключатель в исходное положение
+        const demoToggle = document.getElementById('demo-toggle');
+        demoToggle.checked = this.demoMode;
     }
 
     async processDeposit() {
@@ -95,20 +157,32 @@ class TonCasinoApp {
             const result = await response.json();
             
             if (result.success) {
-                // Открываем ссылку для оплаты
-                window.open(result.invoiceUrl, '_blank');
-                
-                this.tg.showPopup({
-                    title: "Оплата TON",
-                    message: `Откройте Crypto Bot для оплаты ${amount} TON`,
-                    buttons: [{ type: "ok" }]
-                });
+                if (result.demo) {
+                    // Демо-режим - сразу зачисляем
+                    this.tg.showPopup({
+                        title: "✅ Демо-пополнение",
+                        message: `Демо-депозит ${amount} TON успешно зачислен!`,
+                        buttons: [{ type: "ok" }]
+                    });
+                    
+                    await this.loadUserData();
+                    await this.loadTransactionHistory();
+                } else {
+                    // Реальный режим - открываем ссылку для оплаты
+                    window.open(result.invoiceUrl, '_blank');
+                    
+                    this.tg.showPopup({
+                        title: "Оплата TON",
+                        message: `Откройте Crypto Bot для оплаты ${amount} TON`,
+                        buttons: [{ type: "ok" }]
+                    });
+                    
+                    // Запускаем проверку статуса
+                    this.checkDepositStatus(result.invoiceId);
+                }
                 
                 // Закрываем модальное окно
                 closeDepositModal();
-                
-                // Запускаем проверку статуса
-                this.checkDepositStatus(result.invoiceId);
             }
         } catch (error) {
             console.error('Deposit error:', error);
@@ -148,7 +222,7 @@ class TonCasinoApp {
         }
 
         if (!address.startsWith('UQ') || address.length < 48) {
-            alert('Введите корректный TON адрес');
+            alert('Введите корректный TON адрес (начинается с UQ...)');
             return;
         }
 
@@ -166,9 +240,14 @@ class TonCasinoApp {
             const result = await response.json();
             
             if (result.success) {
+                const title = result.demo ? "✅ Демо-вывод" : "✅ Вывод выполнен";
+                const message = result.demo ? 
+                    `Демо-вывод ${amount} TON успешно обработан` :
+                    `Вывод ${amount} TON успешно обработан`;
+                
                 this.tg.showPopup({
-                    title: "✅ Вывод выполнен",
-                    message: `Вывод ${amount} TON успешно обработан`,
+                    title: title,
+                    message: message,
                     buttons: [{ type: "ok" }]
                 });
                 
@@ -189,6 +268,7 @@ class TonCasinoApp {
     setupEventListeners() {
         window.processDeposit = () => this.processDeposit();
         window.processWithdraw = () => this.processWithdraw();
+        window.toggleDemoMode = () => this.toggleDemoMode();
     }
 }
 
