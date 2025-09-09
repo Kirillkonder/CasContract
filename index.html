@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gift Casino - Профиль</title>
+    <title>TON Casino - Профиль</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -36,12 +36,12 @@
         <div class="transaction-history">
             <div class="section-title">История операций</div>
             <div id="transactions">
-                <!-- Транзакции будут добавляться через JS -->
+                <div class="no-transactions">Нет операций</div>
             </div>
         </div>
         
         <div class="footer">
-            Gift Casino © 2024 • v1.0
+            TON Casino © 2024 • v2.0
         </div>
     </div>
 
@@ -54,12 +54,43 @@
                 type="number" 
                 id="deposit-amount" 
                 placeholder="Введите сумму в TON"
-                min="0.1"
-                step="0.1"
+                min="1"
+                step="1"
             >
             <button class="btn btn-primary" onclick="processDeposit()">
-                ✅ Подтвердить
+                ✅ Пополнить
             </button>
+            <div class="deposit-info">
+                <p>Минимальный депозит: 1 TON</p>
+                <p>Оплата через Crypto Pay</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно вывода -->
+    <div id="withdraw-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeWithdrawModal()">&times;</span>
+            <h3>Вывод средств</h3>
+            <input 
+                type="number" 
+                id="withdraw-amount" 
+                placeholder="Сумма для вывода"
+                min="1"
+                step="1"
+            >
+            <input 
+                type="text" 
+                id="withdraw-address" 
+                placeholder="TON адрес кошелька (начинается с UQ...)"
+            >
+            <button class="btn btn-primary" onclick="processWithdraw()">
+                ✅ Вывести
+            </button>
+            <div class="withdraw-info">
+                <p>Минимальный вывод: 1 TON</p>
+                <p>Вывод через Crypto Pay</p>
+            </div>
         </div>
     </div>
 

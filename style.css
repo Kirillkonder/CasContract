@@ -232,3 +232,46 @@ body {
 .modal-content input:focus {
     background: rgba(255, 255, 255, 0.15);
 }
+
+.wallet-status {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 12px;
+    margin: 15px 0;
+    text-align: center;
+    font-size: 14px;
+}
+
+
+.deposit-info, .withdraw-info {
+    margin-top: 15px;
+    font-size: 12px;
+    opacity: 0.7;
+    text-align: center;
+}
+
+.no-transactions {
+    text-align: center;
+    opacity: 0.7;
+    padding: 20px;
+}
+
+.transaction-info {
+    flex: 1;
+}
+
+.transaction-date {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 3px;
+}
+
+.transaction-positive {
+    color: #4cd137;
+    font-weight: bold;
+}
+
+.transaction-negative {
+    color: #e84118;
+    font-weight: bold;
+}

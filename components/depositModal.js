@@ -1,4 +1,4 @@
-// Управление модальным окном депозита
+// Управление модальными окнами
 function openDepositModal() {
     document.getElementById('deposit-modal').style.display = 'block';
     document.getElementById('deposit-amount').value = '';
@@ -10,14 +10,25 @@ function closeDepositModal() {
 }
 
 function openWithdrawModal() {
-    // Заглушка для вывода средств
-    alert('Функция вывода средств будет доступна в ближайшее время!');
+    document.getElementById('withdraw-modal').style.display = 'block';
+    document.getElementById('withdraw-amount').value = '';
+    document.getElementById('withdraw-address').value = '';
+    document.getElementById('withdraw-amount').focus();
 }
 
-// Закрытие модального окна при клике вне его
+function closeWithdrawModal() {
+    document.getElementById('withdraw-modal').style.display = 'none';
+}
+
+// Закрытие модальных окон при клике вне их
 window.onclick = function(event) {
-    const modal = document.getElementById('deposit-modal');
-    if (event.target === modal) {
+    const depositModal = document.getElementById('deposit-modal');
+    const withdrawModal = document.getElementById('withdraw-modal');
+    
+    if (event.target === depositModal) {
         closeDepositModal();
+    }
+    if (event.target === withdrawModal) {
+        closeWithdrawModal();
     }
 }
