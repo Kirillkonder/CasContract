@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gift Casino - Профиль</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header будет вставляться через JS -->
+        <div id="header"></div>
+        
+        <!-- Основной контент -->
+        <div class="profile-card">
+            <div class="balance-section">
+                <div class="balance-label">Ваш баланс</div>
+                <div class="balance-amount" id="balance">0</div>
+                <div class="balance-currency">TON coins</div>
+            </div>
+        </div>
+        
+        <div class="deposit-section">
+            <div class="section-title">Управление балансом</div>
+            
+            <button class="btn btn-primary" onclick="openDepositModal()">
+                💰 Пополнить баланс
+            </button>
+            
+            <button class="btn btn-secondary" onclick="openWithdrawModal()">
+                📤 Вывести средства
+            </button>
+        </div>
+        
+        <div class="transaction-history">
+            <div class="section-title">История операций</div>
+            <div id="transactions">
+                <!-- Транзакции будут добавляться через JS -->
+            </div>
+        </div>
+        
+        <div class="footer">
+            Gift Casino © 2024 • v1.0
+        </div>
+    </div>
+
+    <!-- Модальное окно депозита -->
+    <div id="deposit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDepositModal()">&times;</span>
+            <h3>Пополнение баланса</h3>
+            <input 
+                type="number" 
+                id="deposit-amount" 
+                placeholder="Введите сумму в TON"
+                min="0.1"
+                step="0.1"
+            >
+            <button class="btn btn-primary" onclick="processDeposit()">
+                ✅ Подтвердить
+            </button>
+        </div>
+    </div>
+
+    <script src="components/header.js"></script>
+    <script src="components/depositModal.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
