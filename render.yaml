@@ -2,12 +2,17 @@ services:
   - type: web
     name: ton-casino
     env: node
-    buildCommand: npm install && npm rebuild --build-from-source
+    plan: free
+    region: frankfurt  # Ближе к вам для скорости
+    buildCommand: |
+      npm install
+      npm rebuild sqlite3 --build-from-source
     startCommand: npm start
     envVars:
       - key: PORT
         value: 3000
-      - key: 457597:AA6vplOWcYiyCSHol1JMhKFmaqG1T93bPmY
-        sync: false
-      - key: @CasinoGiftContractBot
-        sync: false
+      - key: CRYPTO_PAY_TOKEN
+        value: 457597:AA6vplOWcYiyCSHol1JMhKFmaqG1T93bPmY
+      - key: BOT_USERNAME
+        value: @CasinoGiftContractBot
+    autoDeploy: true
