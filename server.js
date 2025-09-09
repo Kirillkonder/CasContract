@@ -15,9 +15,17 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('.'));
 
-// Crypto Pay API
-const CRYPTO_PAY_API = 'https://pay.crypt.bot/api';
-const CRYPTO_PAY_TOKEN = process.env.CRYPTO_PAY_TOKEN;
+// Режим работы: testnet или mainnet
+const IS_TESTNET = process.env.TESTNET_MODE === 'true';
+
+// Crypto Pay API endpoints
+const CRYPTO_PAY_API = IS_TESTNET 
+    ? 'https://testnet-pay.crypt.bot/api'
+    : 'https://pay.crypt.bot/api';
+
+const CRYPTO_PAY_TOKEN = IS_TESTNET
+    ? process.env.CRYPTO_PAY_TESTNET_TOKEN
+    : process.env.CRYPTO_PAY_MAINNET_TOKEN;
 
 // LokiJS база данных
 let db;
@@ -25,7 +33,9 @@ let users, transactions;
 
 function initDatabase() {
     return new Promise((resolve) => {
-        db = new Loki('ton-casino.db', {
+        const dbName = IS_TESTNET ? 'ton-casino-testnet.db' : 'ton-casino.db';
+        
+        db = new Loki(dbName, {
             autoload: true,
             autoloadCallback: () => {
                 users = db.getCollection('users');
@@ -44,7 +54,7 @@ function initDatabase() {
                     });
                 }
                 
-                console.log('LokiJS database initialized');
+                console.log(`LokiJS database initialized in ${IS_TESTNET ? 'TESTNET' : 'MAINNET'} mode`);
                 resolve(true);
             },
             autosave: true,
@@ -83,9 +93,15 @@ app.get('/api/user/:telegramId', async (req, res) => {
                 created_at: new Date()
             });
             
-            res.json({ balance: 0 });
+            res.json({ 
+                balance: 0,
+                network: IS_TESTNET ? 'TESTNET' : 'MAINNET'
+            });
         } else {
-            res.json({ balance: user.balance });
+            res.json({ 
+                balance: user.balance,
+                network: IS_TESTNET ? 'TESTNET' : 'MAINNET'
+            });
         }
     } catch (error) {
         console.error('Database error:', error);
@@ -97,8 +113,12 @@ app.get('/api/user/:telegramId', async (req, res) => {
 app.post('/api/create-deposit', async (req, res) => {
     const { telegramId, amount } = req.body;
     
-    if (!amount || amount < 1) {
-        return res.status(400).json({ error: 'Minimum deposit is 1 TON' });
+    const minAmount = IS_TESTNET ? 0.01 : 0.1;
+    
+    if (!amount || amount < minAmount) {
+        return res.status(400).json({ 
+            error: `Minimum deposit is ${minAmount} TON ${IS_TESTNET ? '(TESTNET)' : ''}`
+        });
     }
 
     try {
@@ -106,7 +126,7 @@ app.post('/api/create-deposit', async (req, res) => {
         const invoice = await cryptoPayRequest('createInvoice', {
             asset: 'TON',
             amount: amount.toString(),
-            description: `Deposit for user ${telegramId}`,
+            description: `Deposit for user ${telegramId} ${IS_TESTNET ? '(TESTNET)' : ''}`,
             paid_btn_name: 'viewItem',
             paid_btn_url: `https://t.me/${process.env.BOT_USERNAME}`,
             payload: `deposit_${telegramId}_${Date.now()}`
@@ -130,13 +150,15 @@ app.post('/api/create-deposit', async (req, res) => {
                 type: 'deposit',
                 status: 'pending',
                 crypto_pay_invoice_id: invoice.result.invoice_id,
+                network: IS_TESTNET ? 'testnet' : 'mainnet',
                 created_at: new Date()
             });
 
             res.json({
                 success: true,
                 invoiceUrl: invoice.result.pay_url,
-                invoiceId: invoice.result.invoice_id
+                invoiceId: invoice.result.invoice_id,
+                network: IS_TESTNET ? 'TESTNET' : 'MAINNET'
             });
         } else {
             console.error('Failed to create invoice:', invoice);
@@ -152,8 +174,12 @@ app.post('/api/create-deposit', async (req, res) => {
 app.post('/api/withdraw', async (req, res) => {
     const { telegramId, amount, address } = req.body;
 
-    if (!amount || amount < 1 || !address) {
-        return res.status(400).json({ error: 'Invalid amount or address' });
+    const minAmount = IS_TESTNET ? 0.01 : 0.1;
+    
+    if (!amount || amount < minAmount || !address) {
+        return res.status(400).json({ 
+            error: `Invalid amount (min ${minAmount} TON) or address ${IS_TESTNET ? '(TESTNET)' : ''}`
+        });
     }
 
     if (!address.startsWith('UQ') || address.length < 48) {
@@ -168,7 +194,34 @@ app.post('/api/withdraw', async (req, res) => {
             return res.status(400).json({ error: 'Insufficient balance' });
         }
 
-        // Создаем вывод через Crypto Pay
+        // В testnet режиме имитируем вывод
+        if (IS_TESTNET) {
+            // Имитация успешного вывода в testnet
+            users.update({
+                ...user,
+                balance: user.balance - amount
+            });
+
+            transactions.insert({
+                user_id: user.$loki,
+                amount: amount,
+                type: 'withdraw',
+                status: 'completed',
+                address: address,
+                hash: `testnet_tx_${Date.now()}`,
+                network: 'testnet',
+                created_at: new Date()
+            });
+
+            return res.json({
+                success: true,
+                message: 'Test withdrawal successful (TESTNET MODE)',
+                hash: `testnet_tx_${Date.now()}`,
+                network: 'TESTNET'
+            });
+        }
+
+        // Реальный вывод в mainnet
         const transfer = await cryptoPayRequest('transfer', {
             user_id: parseInt(telegramId),
             asset: 'TON',
@@ -191,13 +244,15 @@ app.post('/api/withdraw', async (req, res) => {
                 status: 'completed',
                 address: address,
                 hash: transfer.result.hash,
+                network: 'mainnet',
                 created_at: new Date()
             });
 
             res.json({
                 success: true,
                 message: 'Withdrawal successful',
-                hash: transfer.result.hash
+                hash: transfer.result.hash,
+                network: 'MAINNET'
             });
         } else {
             console.error('Withdrawal failed:', transfer);
@@ -226,10 +281,30 @@ app.get('/api/transactions/:telegramId', async (req, res) => {
             .limit(10)
             .data();
 
-        res.json({ transactions: userTransactions });
+        res.json({ 
+            transactions: userTransactions,
+            network: IS_TESTNET ? 'TESTNET' : 'MAINNET'
+        });
     } catch (error) {
         console.error('Database error:', error);
         res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// API: Переключение режима (только для админа)
+app.post('/api/admin/toggle-mode', async (req, res) => {
+    const { password } = req.body;
+    
+    if (password === process.env.ADMIN_PASSWORD) {
+        // Здесь можно добавить логику переключения режимов
+        // Пока просто возвращаем текущий статус
+        res.json({
+            success: true,
+            currentMode: IS_TESTNET ? 'TESTNET' : 'MAINNET',
+            message: 'Server restart required to change mode'
+        });
+    } else {
+        res.status(401).json({ error: 'Unauthorized' });
     }
 });
 
@@ -244,7 +319,10 @@ app.get('/api/invoice-status/:invoiceId', async (req, res) => {
 
         if (invoices.ok && invoices.result.items.length > 0) {
             const invoice = invoices.result.items[0];
-            res.json({ status: invoice.status });
+            res.json({ 
+                status: invoice.status,
+                network: IS_TESTNET ? 'TESTNET' : 'MAINNET'
+            });
         } else {
             res.status(404).json({ error: 'Invoice not found' });
         }
@@ -252,6 +330,16 @@ app.get('/api/invoice-status/:invoiceId', async (req, res) => {
         console.error('Crypto Pay error:', error);
         res.status(500).json({ error: 'Crypto Pay error' });
     }
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        network: IS_TESTNET ? 'TESTNET' : 'MAINNET',
+        version: '2.0'
+    });
 });
 
 // Проверка оплаченных инвойсов (каждую минуту)
@@ -322,8 +410,9 @@ async function startServer() {
         
         app.listen(PORT, () => {
             console.log(`🚀 Server running on port ${PORT}`);
-            console.log(`💳 Crypto Pay integration enabled`);
+            console.log(`💳 Crypto Pay integration: ${IS_TESTNET ? 'TESTNET' : 'MAINNET'}`);
             console.log(`🌐 Server is ready for Telegram Mini Apps`);
+            console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
         });
     } catch (error) {
         console.error('Failed to start server:', error);
