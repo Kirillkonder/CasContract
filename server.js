@@ -1,11 +1,11 @@
 require('dotenv').config();
 const express = require('express');
-const Database = require('better-sqlite3');
 const path = require('path');
 const axios = require('axios');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cron = require('node-cron');
+const Loki = require('lokijs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,57 +19,38 @@ app.use(express.static('.'));
 const CRYPTO_PAY_API = 'https://pay.crypt.bot/api';
 const CRYPTO_PAY_TOKEN = process.env.CRYPTO_PAY_TOKEN;
 
-// База данных
+// LokiJS база данных
 let db;
+let users, transactions;
 
 function initDatabase() {
-    const dbPath = process.env.NODE_ENV === 'production' 
-        ? '/app/data/ton-casino.db' 
-        : path.join(__dirname, 'ton-casino.db');
-    
-    try {
-        db = new Database(dbPath);
-        
-        // Создаем таблицы
-        db.exec(`
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                telegram_id INTEGER UNIQUE,
-                balance REAL DEFAULT 0,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-
-            CREATE TABLE IF NOT EXISTS transactions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                amount REAL,
-                type TEXT,
-                status TEXT,
-                hash TEXT,
-                crypto_pay_invoice_id TEXT,
-                address TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY(user_id) REFERENCES users(id)
-            );
-
-            CREATE TABLE IF NOT EXISTS crypto_payments (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                invoice_id TEXT UNIQUE,
-                user_id INTEGER,
-                amount REAL,
-                status TEXT,
-                hash TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY(user_id) REFERENCES users(id)
-            );
-        `);
-        
-        console.log('Database initialized successfully at:', dbPath);
-        return true;
-    } catch (error) {
-        console.error('Database initialization error:', error);
-        return false;
-    }
+    return new Promise((resolve) => {
+        db = new Loki('ton-casino.db', {
+            autoload: true,
+            autoloadCallback: () => {
+                users = db.getCollection('users');
+                transactions = db.getCollection('transactions');
+                
+                if (!users) {
+                    users = db.addCollection('users', { 
+                        unique: ['telegram_id'],
+                        indices: ['telegram_id']
+                    });
+                }
+                
+                if (!transactions) {
+                    transactions = db.addCollection('transactions', {
+                        indices: ['user_id', 'created_at']
+                    });
+                }
+                
+                console.log('LokiJS database initialized');
+                resolve(true);
+            },
+            autosave: true,
+            autosaveInterval: 4000
+        });
+    });
 }
 
 // Функция для работы с Crypto Pay API
@@ -89,25 +70,22 @@ async function cryptoPayRequest(method, data = {}) {
 
 // API: Получить данные пользователя
 app.get('/api/user/:telegramId', async (req, res) => {
-    const telegramId = req.params.telegramId;
+    const telegramId = parseInt(req.params.telegramId);
 
     try {
-        // Проверяем существование пользователя
-        const userStmt = db.prepare('SELECT * FROM users WHERE telegram_id = ?');
-        let user = userStmt.get(telegramId);
+        let user = users.findOne({ telegram_id: telegramId });
         
         if (!user) {
             // Создаем нового пользователя
-            const insertStmt = db.prepare('INSERT INTO users (telegram_id, balance) VALUES (?, 0)');
-            const result = insertStmt.run(telegramId);
+            user = users.insert({
+                telegram_id: telegramId,
+                balance: 0,
+                created_at: new Date()
+            });
             
-            res.json({ 
-                balance: 0
-            });
+            res.json({ balance: 0 });
         } else {
-            res.json({ 
-                balance: user.balance
-            });
+            res.json({ balance: user.balance });
         }
     } catch (error) {
         console.error('Database error:', error);
@@ -135,13 +113,25 @@ app.post('/api/create-deposit', async (req, res) => {
         });
 
         if (invoice.ok && invoice.result) {
-            // Сохраняем транзакцию в БД
-            const insertStmt = db.prepare(`
-                INSERT INTO transactions (user_id, amount, type, status, crypto_pay_invoice_id) 
-                VALUES ((SELECT id FROM users WHERE telegram_id = ?), ?, 'deposit', 'pending', ?)
-            `);
-            
-            insertStmt.run(telegramId, amount, invoice.result.invoice_id);
+            // Находим пользователя
+            let user = users.findOne({ telegram_id: parseInt(telegramId) });
+            if (!user) {
+                user = users.insert({
+                    telegram_id: parseInt(telegramId),
+                    balance: 0,
+                    created_at: new Date()
+                });
+            }
+
+            // Сохраняем транзакцию
+            transactions.insert({
+                user_id: user.$loki,
+                amount: amount,
+                type: 'deposit',
+                status: 'pending',
+                crypto_pay_invoice_id: invoice.result.invoice_id,
+                created_at: new Date()
+            });
 
             res.json({
                 success: true,
@@ -171,9 +161,8 @@ app.post('/api/withdraw', async (req, res) => {
     }
 
     try {
-        // Проверяем баланс
-        const userStmt = db.prepare('SELECT id, balance FROM users WHERE telegram_id = ?');
-        const user = userStmt.get(telegramId);
+        // Находим пользователя
+        const user = users.findOne({ telegram_id: parseInt(telegramId) });
         
         if (!user || user.balance < amount) {
             return res.status(400).json({ error: 'Insufficient balance' });
@@ -189,16 +178,21 @@ app.post('/api/withdraw', async (req, res) => {
 
         if (transfer.ok && transfer.result) {
             // Обновляем баланс
-            const updateStmt = db.prepare('UPDATE users SET balance = balance - ? WHERE telegram_id = ?');
-            updateStmt.run(amount, telegramId);
+            users.update({
+                ...user,
+                balance: user.balance - amount
+            });
 
-            // Создаем транзакцию на вывод
-            const insertStmt = db.prepare(`
-                INSERT INTO transactions (user_id, amount, type, status, address, hash) 
-                VALUES (?, ?, 'withdraw', 'completed', ?, ?)
-            `);
-            
-            insertStmt.run(user.id, amount, address, transfer.result.hash);
+            // Сохраняем транзакцию
+            transactions.insert({
+                user_id: user.$loki,
+                amount: amount,
+                type: 'withdraw',
+                status: 'completed',
+                address: address,
+                hash: transfer.result.hash,
+                created_at: new Date()
+            });
 
             res.json({
                 success: true,
@@ -217,18 +211,22 @@ app.post('/api/withdraw', async (req, res) => {
 
 // API: Получить историю транзакций
 app.get('/api/transactions/:telegramId', async (req, res) => {
-    const telegramId = req.params.telegramId;
+    const telegramId = parseInt(req.params.telegramId);
 
     try {
-        const stmt = db.prepare(`
-            SELECT t.* FROM transactions t
-            JOIN users u ON t.user_id = u.id
-            WHERE u.telegram_id = ?
-            ORDER BY t.created_at DESC LIMIT 10
-        `);
-        
-        const transactions = stmt.all(telegramId);
-        res.json({ transactions: transactions || [] });
+        const user = users.findOne({ telegram_id: telegramId });
+        if (!user) {
+            return res.json({ transactions: [] });
+        }
+
+        const userTransactions = transactions
+            .chain()
+            .find({ user_id: user.$loki })
+            .simplesort('created_at', true)
+            .limit(10)
+            .data();
+
+        res.json({ transactions: userTransactions });
     } catch (error) {
         console.error('Database error:', error);
         res.status(500).json({ error: 'Database error' });
@@ -259,16 +257,16 @@ app.get('/api/invoice-status/:invoiceId', async (req, res) => {
 // Проверка оплаченных инвойсов (каждую минуту)
 cron.schedule('* * * * *', async () => {
     try {
-        const stmt = db.prepare(`
-            SELECT t.*, u.telegram_id 
-            FROM transactions t
-            JOIN users u ON t.user_id = u.id
-            WHERE t.type = 'deposit' AND t.status = 'pending' AND t.crypto_pay_invoice_id IS NOT NULL
-        `);
-        
-        const transactions = stmt.all();
+        const pendingTransactions = transactions
+            .chain()
+            .find({ 
+                type: 'deposit', 
+                status: 'pending',
+                crypto_pay_invoice_id: { '$ne': null }
+            })
+            .data();
 
-        for (const transaction of transactions) {
+        for (const transaction of pendingTransactions) {
             try {
                 const invoices = await cryptoPayRequest('getInvoices', {
                     invoice_ids: transaction.crypto_pay_invoice_id
@@ -278,19 +276,24 @@ cron.schedule('* * * * *', async () => {
                     const invoice = invoices.result.items[0];
                     
                     if (invoice.status === 'paid') {
-                        // Обновляем баланс
-                        const updateBalanceStmt = db.prepare(`
-                            UPDATE users SET balance = balance + ? WHERE id = ?
-                        `);
-                        updateBalanceStmt.run(transaction.amount, transaction.user_id);
+                        // Находим пользователя
+                        const user = users.get(transaction.user_id);
+                        if (user) {
+                            // Обновляем баланс
+                            users.update({
+                                ...user,
+                                balance: user.balance + transaction.amount
+                            });
 
-                        // Обновляем статус транзакции
-                        const updateTransactionStmt = db.prepare(`
-                            UPDATE transactions SET status = 'completed', hash = ? WHERE id = ?
-                        `);
-                        updateTransactionStmt.run(invoice.hash, transaction.id);
+                            // Обновляем статус транзакции
+                            transactions.update({
+                                ...transaction,
+                                status: 'completed',
+                                hash: invoice.hash
+                            });
 
-                        console.log(`Deposit completed for transaction ${transaction.id}`);
+                            console.log(`Deposit completed for transaction ${transaction.$loki}`);
+                        }
                     }
                 }
             } catch (error) {
@@ -315,9 +318,7 @@ process.on('SIGINT', () => {
 // Инициализация и запуск сервера
 async function startServer() {
     try {
-        if (!initDatabase()) {
-            throw new Error('Failed to initialize database');
-        }
+        await initDatabase();
         
         app.listen(PORT, () => {
             console.log(`🚀 Server running on port ${PORT}`);
