@@ -16,16 +16,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('.'));
 
-// Crypto Pay API - для Render используем флаг из переменных окружения
-const CRYPTO_PAY_API = process.env.DEMO_MODE === 'true' ? 
-    'https://testnet-pay.crypt.bot/api' : 
-    'https://pay.crypt.bot/api';
-    
-const CRYPTO_PAY_TOKEN = process.env.DEMO_MODE === 'true' ?
-    process.env.CRYPTO_PAY_TESTNET_TOKEN :
-    process.env.CRYPTO_PAY_MAINNET_TOKEN;
-
-// Для Render сохраняем базу данных в памяти (tmp файлы очищаются при перезапуске)
+// Для Render сохраняем базу данных в памяти
 const dbPath = process.env.NODE_ENV === 'production' ? 
     path.join('/tmp', 'ton-casino.db') : 
     'ton-casino.db';
@@ -51,12 +42,11 @@ function initDatabase() {
                 
                 if (!transactions) {
                     transactions = db.addCollection('transactions', {
-                        indices: ['user_id', 'created_at']
+                        indices: ['user_id', 'created_at', 'demo_mode']
                     });
                 }
                 
                 console.log('LokiJS database initialized');
-                console.log('Demo mode:', process.env.DEMO_MODE === 'true' ? 'ENABLED' : 'DISABLED');
                 console.log('Database path:', dbPath);
                 resolve(true);
             },
@@ -67,8 +57,16 @@ function initDatabase() {
 }
 
 // Функция для работы с Crypto Pay API
-async function cryptoPayRequest(method, data = {}) {
+async function cryptoPayRequest(method, data = {}, demoMode = false) {
     try {
+        const CRYPTO_PAY_API = demoMode ? 
+            'https://testnet-pay.crypt.bot/api' : 
+            'https://pay.crypt.bot/api';
+            
+        const CRYPTO_PAY_TOKEN = demoMode ?
+            process.env.CRYPTO_PAY_TESTNET_TOKEN :
+            process.env.CYPTO_PAY_MAINNET_TOKEN;
+
         const response = await axios.post(`${CRYPTO_PAY_API}/${method}`, data, {
             headers: {
                 'Crypto-Pay-API-Token': CRYPTO_PAY_TOKEN
@@ -92,24 +90,25 @@ app.get('/api/user/:telegramId', async (req, res) => {
             // Создаем нового пользователя
             user = users.insert({
                 telegram_id: telegramId,
-                balance: process.env.DEMO_MODE === 'true' ? 1000 : 0,
-                demo_balance: process.env.DEMO_MODE === 'true' ? 1000 : 0,
                 main_balance: 0,
-                created_at: new Date()
+                demo_balance: 1000, // Начальный демо-баланс
+                created_at: new Date(),
+                demo_mode: false // По умолчанию реальный режим
             });
             
             res.json({ 
-                balance: process.env.DEMO_MODE === 'true' ? 1000 : 0,
-                demo_mode: process.env.DEMO_MODE === 'true',
-                demo_balance: process.env.DEMO_MODE === 'true' ? 1000 : 0,
-                main_balance: 0
+                balance: 0,
+                demo_balance: 1000,
+                main_balance: 0,
+                demo_mode: false
             });
         } else {
+            const currentBalance = user.demo_mode ? user.demo_balance : user.main_balance;
             res.json({ 
-                balance: process.env.DEMO_MODE === 'true' ? user.demo_balance : user.main_balance,
-                demo_mode: process.env.DEMO_MODE === 'true',
+                balance: currentBalance,
                 demo_balance: user.demo_balance,
-                main_balance: user.main_balance
+                main_balance: user.main_balance,
+                demo_mode: user.demo_mode
             });
         }
     } catch (error) {
@@ -119,8 +118,8 @@ app.get('/api/user/:telegramId', async (req, res) => {
 });
 
 // API: Переключить режим демо/реальный
-app.post('/api/toggle-demo-mode', async (req, res) => {
-    const { telegramId, demoMode } = req.body;
+app.post('/api/toggle-mode', async (req, res) => {
+    const { telegramId } = req.body;
 
     try {
         let user = users.findOne({ telegram_id: parseInt(telegramId) });
@@ -129,35 +128,45 @@ app.post('/api/toggle-demo-mode', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Для Render переключение режима делаем через переменные окружения
-        // Пользовательский интерфейс будет показывать актуальный режим
+        // Переключаем режим
+        const newDemoMode = !user.demo_mode;
+        
+        users.update({
+            ...user,
+            demo_mode: newDemoMode
+        });
+
+        const currentBalance = newDemoMode ? user.demo_balance : user.main_balance;
+
         res.json({ 
             success: true, 
-            demo_mode: process.env.DEMO_MODE === 'true',
-            balance: process.env.DEMO_MODE === 'true' ? user.demo_balance : user.main_balance
+            demo_mode: newDemoMode,
+            balance: currentBalance,
+            demo_balance: user.demo_balance,
+            main_balance: user.main_balance
         });
     } catch (error) {
-        console.error('Toggle demo mode error:', error);
-        res.status(500).json({ error: 'Toggle demo mode error' });
+        console.error('Toggle mode error:', error);
+        res.status(500).json({ error: 'Toggle mode error' });
     }
 });
 
-// API: Создать депозит через Crypto Pay
+// API: Создать депозит
 app.post('/api/create-deposit', async (req, res) => {
-    const { telegramId, amount } = req.body;
+    const { telegramId, amount, demoMode } = req.body;
     
     if (!amount || amount < 1) {
         return res.status(400).json({ error: 'Minimum deposit is 1 TON' });
     }
 
     try {
-        // В демо-режиме имитируем успешный депозит
-        if (process.env.DEMO_MODE === 'true') {
-            const user = users.findOne({ telegram_id: parseInt(telegramId) });
-            if (!user) {
-                return res.status(404).json({ error: 'User not found' });
-            }
+        const user = users.findOne({ telegram_id: parseInt(telegramId) });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
+        // В демо-режиме имитируем успешный депозит
+        if (demoMode) {
             // Обновляем демо-баланс
             users.update({
                 ...user,
@@ -170,14 +179,15 @@ app.post('/api/create-deposit', async (req, res) => {
                 amount: amount,
                 type: 'deposit',
                 status: 'completed',
-                demo: true,
+                demo_mode: true,
                 created_at: new Date()
             });
 
             return res.json({
                 success: true,
                 demo: true,
-                message: 'Demo deposit successful'
+                message: 'Demo deposit successful',
+                new_balance: user.demo_balance + amount
             });
         }
 
@@ -189,28 +199,16 @@ app.post('/api/create-deposit', async (req, res) => {
             paid_btn_name: 'viewItem',
             paid_btn_url: `https://t.me/${process.env.BOT_USERNAME}`,
             payload: `deposit_${telegramId}_${Date.now()}`
-        });
+        }, false);
 
         if (invoice.ok && invoice.result) {
-            // Находим пользователя
-            let user = users.findOne({ telegram_id: parseInt(telegramId) });
-            if (!user) {
-                user = users.insert({
-                    telegram_id: parseInt(telegramId),
-                    balance: 0,
-                    demo_balance: 0,
-                    main_balance: 0,
-                    created_at: new Date()
-                });
-            }
-
             // Сохраняем транзакцию
             transactions.insert({
                 user_id: user.$loki,
                 amount: amount,
                 type: 'deposit',
                 status: 'pending',
-                demo: false,
+                demo_mode: false,
                 crypto_pay_invoice_id: invoice.result.invoice_id,
                 created_at: new Date()
             });
@@ -233,7 +231,7 @@ app.post('/api/create-deposit', async (req, res) => {
 
 // API: Запрос на вывод
 app.post('/api/withdraw', async (req, res) => {
-    const { telegramId, amount, address } = req.body;
+    const { telegramId, amount, address, demoMode } = req.body;
 
     if (!amount || amount < 1 || !address) {
         return res.status(400).json({ error: 'Invalid amount or address' });
@@ -244,21 +242,19 @@ app.post('/api/withdraw', async (req, res) => {
     }
 
     try {
-        // Находим пользователя
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
-        
         if (!user) {
             return res.status(400).json({ error: 'User not found' });
         }
 
         // Проверяем баланс в зависимости от режима
-        const currentBalance = process.env.DEMO_MODE === 'true' ? user.demo_balance : user.main_balance;
+        const currentBalance = demoMode ? user.demo_balance : user.main_balance;
         if (currentBalance < amount) {
             return res.status(400).json({ error: 'Insufficient balance' });
         }
 
         // В демо-режиме имитируем вывод
-        if (process.env.DEMO_MODE === 'true') {
+        if (demoMode) {
             users.update({
                 ...user,
                 demo_balance: user.demo_balance - amount
@@ -269,7 +265,7 @@ app.post('/api/withdraw', async (req, res) => {
                 amount: amount,
                 type: 'withdraw',
                 status: 'completed',
-                demo: true,
+                demo_mode: true,
                 address: address,
                 created_at: new Date()
             });
@@ -277,7 +273,8 @@ app.post('/api/withdraw', async (req, res) => {
             return res.json({
                 success: true,
                 demo: true,
-                message: 'Demo withdrawal successful'
+                message: 'Demo withdrawal successful',
+                new_balance: user.demo_balance - amount
             });
         }
 
@@ -287,7 +284,7 @@ app.post('/api/withdraw', async (req, res) => {
             asset: 'TON',
             amount: amount.toString(),
             spend_id: `withdraw_${telegramId}_${Date.now()}`
-        });
+        }, false);
 
         if (transfer.ok && transfer.result) {
             // Обновляем баланс
@@ -302,7 +299,7 @@ app.post('/api/withdraw', async (req, res) => {
                 amount: amount,
                 type: 'withdraw',
                 status: 'completed',
-                demo: false,
+                demo_mode: false,
                 address: address,
                 hash: transfer.result.hash,
                 created_at: new Date()
@@ -312,7 +309,8 @@ app.post('/api/withdraw', async (req, res) => {
                 success: true,
                 demo: false,
                 message: 'Withdrawal successful',
-                hash: transfer.result.hash
+                hash: transfer.result.hash,
+                new_balance: user.main_balance - amount
             });
         } else {
             console.error('Withdrawal failed:', transfer);
@@ -355,7 +353,7 @@ app.get('/api/invoice-status/:invoiceId', async (req, res) => {
     try {
         const invoices = await cryptoPayRequest('getInvoices', {
             invoice_ids: invoiceId
-        });
+        }, false);
 
         if (invoices.ok && invoices.result.items.length > 0) {
             const invoice = invoices.result.items[0];
@@ -377,7 +375,7 @@ cron.schedule('* * * * *', async () => {
             .find({ 
                 type: 'deposit', 
                 status: 'pending',
-                demo: false,
+                demo_mode: false,
                 crypto_pay_invoice_id: { '$ne': null }
             })
             .data();
@@ -386,7 +384,7 @@ cron.schedule('* * * * *', async () => {
             try {
                 const invoices = await cryptoPayRequest('getInvoices', {
                     invoice_ids: transaction.crypto_pay_invoice_id
-                });
+                }, false);
 
                 if (invoices.ok && invoices.result.items.length > 0) {
                     const invoice = invoices.result.items[0];
@@ -445,8 +443,6 @@ async function startServer() {
             console.log(`🚀 Server running on port ${PORT}`);
             console.log(`💳 Crypto Pay integration enabled`);
             console.log(`🌐 Server is ready for Telegram Mini Apps`);
-            console.log(`🔧 Demo mode: ${process.env.DEMO_MODE === 'true' ? 'ENABLED' : 'DISABLED'}`);
-            console.log(`🌐 API: ${CRYPTO_PAY_API}`);
             console.log(`📊 Database: ${dbPath}`);
         });
     } catch (error) {

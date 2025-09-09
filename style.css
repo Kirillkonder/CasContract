@@ -275,3 +275,68 @@ body {
     color: #e84118;
     font-weight: bold;
 }
+
+
+
+.mode-switcher {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+.mode-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.mode-badge.mainnet {
+    background: linear-gradient(45deg, #4cd137, #2ecc71);
+    color: white;
+}
+
+.mode-badge.testnet {
+    background: linear-gradient(45deg, #e74c3c, #e67e22);
+    color: white;
+}
+
+.mode-info {
+    font-size: 14px;
+    opacity: 0.8;
+    margin: 10px 0;
+}
+
+.btn-mainnet {
+    background: linear-gradient(45deg, #3498db, #2980b9) !important;
+}
+
+.btn-testnet {
+    background: linear-gradient(45deg, #e74c3c, #c0392b) !important;
+}
+
+.btn-mode {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 5px 0;
+}
+
+/* Адаптация для модальных окон */
+.modal-content .mode-info {
+    font-size: 12px;
+    text-align: center;
+    margin: 10px 0;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}

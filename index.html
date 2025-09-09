@@ -11,6 +11,16 @@
     <div class="container">
         <!-- Header будет вставляться через JS -->
         <div id="header"></div>
+
+        <div class="mode-switcher">
+    <div class="mode-badge" id="mode-badge">MAINNET</div>
+    <div class="mode-info" id="mode-info">
+        🌐 Реальный режим - настоящие TON
+    </div>
+    <button class="btn btn-mode" id="mode-button" onclick="toggleMode()">
+        🔄 Перейти к тестовым TON
+    </button>
+</div>
         
         <!-- Основной контент -->
         <div class="profile-card">

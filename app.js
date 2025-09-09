@@ -14,7 +14,7 @@ class TonCasinoApp {
         await this.loadUserData();
         this.setupEventListeners();
         this.loadTransactionHistory();
-        this.updateDemoModeUI();
+        this.updateModeUI();
     }
 
     async loadUserData() {
@@ -49,11 +49,11 @@ class TonCasinoApp {
                 
                 const amountClass = transaction.type === 'deposit' ? 'transaction-positive' : 'transaction-negative';
                 const sign = transaction.type === 'deposit' ? '+' : '-';
-                const demoBadge = transaction.demo ? ' (TESTNET)' : '';
+                const modeBadge = transaction.demo_mode ? ' (TEST)' : ' (REAL)';
                 
                 transactionElement.innerHTML = `
                     <div class="transaction-info">
-                        <div>${transaction.type.toUpperCase()}${demoBadge}</div>
+                        <div>${transaction.type.toUpperCase()}${modeBadge}</div>
                         <div class="transaction-date">${new Date(transaction.created_at).toLocaleDateString()}</div>
                     </div>
                     <div class="transaction-amount ${amountClass}">
@@ -73,8 +73,9 @@ class TonCasinoApp {
     updateUI() {
         if (this.userData) {
             const balanceElement = document.getElementById('balance');
-            const demoBadgeElement = document.getElementById('demo-badge');
-            const networkInfoElement = document.getElementById('network-info');
+            const modeBadgeElement = document.getElementById('mode-badge');
+            const modeInfoElement = document.getElementById('mode-info');
+            const modeButton = document.getElementById('mode-button');
             const depositModeInfo = document.getElementById('deposit-mode-info');
             const withdrawModeInfo = document.getElementById('withdraw-mode-info');
             
@@ -82,58 +83,79 @@ class TonCasinoApp {
                 balanceElement.textContent = this.userData.balance.toFixed(2);
             }
             
-            if (demoBadgeElement) {
-                demoBadgeElement.style.display = this.demoMode ? 'block' : 'none';
+            if (modeBadgeElement) {
+                modeBadgeElement.textContent = this.demoMode ? 'TESTNET' : 'MAINNET';
+                modeBadgeElement.className = this.demoMode ? 'mode-badge testnet' : 'mode-badge mainnet';
             }
             
-            if (networkInfoElement) {
-                networkInfoElement.textContent = this.demoMode ? 
-                    '🔧 TESTNET MODE - Используются тестовые TON' : 
-                    '🌐 MAINNET MODE - Используются реальные TON';
+            if (modeInfoElement) {
+                modeInfoElement.textContent = this.demoMode ? 
+                    '🔧 Тестовый режим - виртуальные TON' : 
+                    '🌐 Реальный режим - настоящие TON';
+            }
+            
+            if (modeButton) {
+                modeButton.textContent = this.demoMode ? 
+                    '🔄 Перейти к реальным TON' : 
+                    '🔄 Перейти к тестовым TON';
+                modeButton.className = this.demoMode ? 'btn btn-testnet' : 'btn btn-mainnet';
             }
             
             if (depositModeInfo) {
                 depositModeInfo.textContent = this.demoMode ? 
-                    'Демо-пополнение (тестовые TON)' : 
-                    'Оплата через Crypto Pay';
+                    'Демо-пополнение (виртуальные TON)' : 
+                    'Реальное пополнение через Crypto Pay';
             }
             
             if (withdrawModeInfo) {
                 withdrawModeInfo.textContent = this.demoMode ? 
-                    'Демо-вывод (тестовые TON)' : 
-                    'Вывод через Crypto Pay';
+                    'Демо-вывод (виртуальные TON)' : 
+                    'Реальный вывод через Crypto Pay';
             }
         }
     }
 
-    updateDemoModeUI() {
-        const demoToggle = document.getElementById('demo-toggle');
-        const demoStatus = document.getElementById('demo-status');
-        
-        if (demoToggle && demoStatus) {
-            // Для Render отключаем переключение, так как это делается через переменные окружения
-            demoToggle.disabled = true;
-            demoToggle.checked = this.demoMode;
-            demoStatus.textContent = this.demoMode ? 'TESTNET' : 'MAINNET';
+    updateModeUI() {
+        const modeSwitch = document.getElementById('mode-switch');
+        if (modeSwitch) {
+            modeSwitch.checked = this.demoMode;
+        }
+    }
+
+    async toggleMode() {
+        try {
+            const response = await fetch('/api/toggle-mode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    telegramId: this.tg.initDataUnsafe.user.id
+                })
+            });
+
+            const result = await response.json();
             
-            // Показываем подсказку
-            if (this.demoMode) {
-                demoStatus.title = "Режим можно изменить только на сервере";
+            if (result.success) {
+                this.demoMode = result.demo_mode;
+                this.userData.balance = result.balance;
+                this.userData.demo_balance = result.demo_balance;
+                this.userData.main_balance = result.main_balance;
+                
+                this.updateUI();
+                this.updateModeUI();
+                
+                this.tg.showPopup({
+                    title: this.demoMode ? "🔧 Тестовый режим" : "🌐 Реальный режим",
+                    message: this.demoMode ? 
+                        "Переключено на тестовые TON. Баланс: " + result.demo_balance + " TON" : 
+                        "Переключено на реальные TON. Баланс: " + result.main_balance + " TON",
+                    buttons: [{ type: "ok" }]
+                });
+                
+                await this.loadTransactionHistory();
             }
+        } catch (error) {
+            console.error('Toggle mode error:', error);
         }
-    }
-
-    async toggleDemoMode() {
-        // Для Render переключение отключено, так как делается через переменные окружения
-        this.tg.showPopup({
-            title: "ℹ️ Информация",
-            message: "Переключение режима доступно только через настройки сервера. Обратитесь к администратору.",
-            buttons: [{ type: "ok" }]
-        });
-        
-        // Возвращаем переключатель в исходное положение
-        const demoToggle = document.getElementById('demo-toggle');
-        demoToggle.checked = this.demoMode;
     }
 
     async processDeposit() {
@@ -150,7 +172,8 @@ class TonCasinoApp {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     telegramId: this.tg.initDataUnsafe.user.id,
-                    amount: amount
+                    amount: amount,
+                    demoMode: this.demoMode
                 })
             });
 
@@ -161,11 +184,15 @@ class TonCasinoApp {
                     // Демо-режим - сразу зачисляем
                     this.tg.showPopup({
                         title: "✅ Демо-пополнение",
-                        message: `Демо-депозит ${amount} TON успешно зачислен!`,
+                        message: `Демо-депозит ${amount} TON успешно зачислен! Новый баланс: ${result.new_balance} TON`,
                         buttons: [{ type: "ok" }]
                     });
                     
-                    await this.loadUserData();
+                    this.userData.balance = result.new_balance;
+                    if (this.demoMode) {
+                        this.userData.demo_balance = result.new_balance;
+                    }
+                    this.updateUI();
                     await this.loadTransactionHistory();
                 } else {
                     // Реальный режим - открываем ссылку для оплаты
@@ -233,7 +260,8 @@ class TonCasinoApp {
                 body: JSON.stringify({
                     telegramId: this.tg.initDataUnsafe.user.id,
                     amount: amount,
-                    address: address
+                    address: address,
+                    demoMode: this.demoMode
                 })
             });
 
@@ -242,8 +270,8 @@ class TonCasinoApp {
             if (result.success) {
                 const title = result.demo ? "✅ Демо-вывод" : "✅ Вывод выполнен";
                 const message = result.demo ? 
-                    `Демо-вывод ${amount} TON успешно обработан` :
-                    `Вывод ${amount} TON успешно обработан`;
+                    `Демо-вывод ${amount} TON успешно обработан. Новый баланс: ${result.new_balance} TON` :
+                    `Вывод ${amount} TON успешно обработан. Новый баланс: ${result.new_balance} TON`;
                 
                 this.tg.showPopup({
                     title: title,
@@ -251,8 +279,13 @@ class TonCasinoApp {
                     buttons: [{ type: "ok" }]
                 });
                 
-                // Обновляем баланс и историю
-                await this.loadUserData();
+                this.userData.balance = result.new_balance;
+                if (this.demoMode) {
+                    this.userData.demo_balance = result.new_balance;
+                } else {
+                    this.userData.main_balance = result.new_balance;
+                }
+                this.updateUI();
                 await this.loadTransactionHistory();
                 
                 closeWithdrawModal();
@@ -268,7 +301,7 @@ class TonCasinoApp {
     setupEventListeners() {
         window.processDeposit = () => this.processDeposit();
         window.processWithdraw = () => this.processWithdraw();
-        window.toggleDemoMode = () => this.toggleDemoMode();
+        window.toggleMode = () => this.toggleMode();
     }
 }
 
