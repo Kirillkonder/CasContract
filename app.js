@@ -4,6 +4,7 @@ class TonCasinoApp {
         this.tg = window.Telegram.WebApp;
         this.userData = null;
         this.demoMode = false;
+        this.isAdmin = false;
         this.init();
     }
 
@@ -12,9 +13,39 @@ class TonCasinoApp {
         this.tg.ready();
         
         await this.loadUserData();
+        this.checkAdminStatus();
         this.setupEventListeners();
         this.loadTransactionHistory();
         this.updateModeUI();
+    }
+
+    async checkAdminStatus() {
+        try {
+            const response = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    telegramId: this.tg.initDataUnsafe.user.id,
+                    password: '1234'
+                })
+            });
+
+            const result = await response.json();
+            this.isAdmin = result.isAdmin;
+            
+            if (this.isAdmin) {
+                this.showAdminButton();
+            }
+        } catch (error) {
+            console.error('Admin check error:', error);
+        }
+    }
+
+    showAdminButton() {
+        const adminBtn = document.getElementById('admin-button');
+        if (adminBtn) {
+            adminBtn.style.display = 'block';
+        }
     }
 
     async loadUserData() {
@@ -47,8 +78,8 @@ class TonCasinoApp {
                 const transactionElement = document.createElement('div');
                 transactionElement.className = 'transaction-item';
                 
-                const amountClass = transaction.type === 'deposit' ? 'transaction-positive' : 'transaction-negative';
-                const sign = transaction.type === 'deposit' ? '+' : '-';
+                const amountClass = transaction.amount > 0 ? 'transaction-positive' : 'transaction-negative';
+                const sign = transaction.amount > 0 ? '+' : '';
                 const modeBadge = transaction.demo_mode ? ' (TEST)' : ' (REAL)';
                 
                 transactionElement.innerHTML = `
@@ -158,6 +189,115 @@ class TonCasinoApp {
         }
     }
 
+    async openAdminPanel() {
+        document.getElementById('admin-modal').style.display = 'block';
+        await this.loadAdminData();
+    }
+
+    async closeAdminPanel() {
+        document.getElementById('admin-modal').style.display = 'none';
+    }
+
+    async loadAdminData() {
+        try {
+            const response = await fetch(`/api/admin/dashboard/${this.tg.initDataUnsafe.user.id}`);
+            const data = await response.json();
+            
+            document.getElementById('admin-bank-balance').textContent = data.bank_balance;
+            document.getElementById('admin-total-users').textContent = data.total_users;
+            document.getElementById('admin-total-transactions').textContent = data.total_transactions;
+        } catch (error) {
+            console.error('Admin data error:', error);
+            alert('Ошибка загрузки админ-панели');
+        }
+    }
+
+    async withdrawProfit() {
+        const amount = parseFloat(prompt('Сколько TON вывести?'));
+        
+        if (!amount || amount < 1) {
+            alert('Введите корректную сумму');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/admin/withdraw-profit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    telegramId: this.tg.initDataUnsafe.user.id,
+                    amount: amount
+                })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(`Успешно выведено ${amount} TON! Hash: ${result.hash}`);
+                await this.loadAdminData();
+            } else {
+                alert('Ошибка при выводе: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Withdraw profit error:', error);
+            alert('Ошибка при выводе');
+        }
+    }
+
+    async playRoulette() {
+        const betAmount = parseFloat(prompt('Сколько ставим? (мин. 1 TON)'));
+        
+        if (!betAmount || betAmount < 1) {
+            alert('Минимальная ставка: 1 TON');
+            return;
+        }
+
+        const betType = prompt('На что ставим? (red/black/number)');
+        let number = null;
+
+        if (betType === 'number') {
+            number = parseInt(prompt('На какое число? (0-36)'));
+            if (number < 0 || number > 36) {
+                alert('Число должно быть от 0 до 36');
+                return;
+            }
+        } else if (betType !== 'red' && betType !== 'black') {
+            alert('Выберите red, black или number');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/play/roulette', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    telegramId: this.tg.initDataUnsafe.user.id,
+                    betAmount: betAmount,
+                    betType: betType,
+                    number: number,
+                    demoMode: this.demoMode
+                })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                const message = result.win ? 
+                    `🎉 Вы выиграли ${result.amount} TON! Выпало: ${result.result}` :
+                    `💸 Вы проиграли ${-result.amount} TON! Выпало: ${result.result}`;
+                
+                alert(message);
+                await this.loadUserData();
+                await this.loadTransactionHistory();
+            } else {
+                alert('Ошибка в игре: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Roulette error:', error);
+            alert('Ошибка в игре');
+        }
+    }
+
     async processDeposit() {
         const amount = parseFloat(document.getElementById('deposit-amount').value);
         
@@ -181,10 +321,9 @@ class TonCasinoApp {
             
             if (result.success) {
                 if (result.demo) {
-                    // Демо-режим - сразу зачисляем
                     this.tg.showPopup({
                         title: "✅ Демо-пополнение",
-                        message: `Демо-депозит ${amount} TON успешно зачислен! Новый баланс: ${result.new_balance} TON`,
+                        message: `Демо-депозит ${amount} TON успешно зачислен!`,
                         buttons: [{ type: "ok" }]
                     });
                     
@@ -195,7 +334,6 @@ class TonCasinoApp {
                     this.updateUI();
                     await this.loadTransactionHistory();
                 } else {
-                    // Реальный режим - открываем ссылку для оплаты
                     window.open(result.invoiceUrl, '_blank');
                     
                     this.tg.showPopup({
@@ -204,11 +342,9 @@ class TonCasinoApp {
                         buttons: [{ type: "ok" }]
                     });
                     
-                    // Запускаем проверку статуса
                     this.checkDepositStatus(result.invoiceId);
                 }
                 
-                // Закрываем модальное окно
                 closeDepositModal();
             }
         } catch (error) {
@@ -218,7 +354,6 @@ class TonCasinoApp {
     }
 
     async checkDepositStatus(invoiceId) {
-        // Проверяем статус каждые 5 секунд
         const checkInterval = setInterval(async () => {
             try {
                 const response = await fetch(`/api/invoice-status/${invoiceId}`);
@@ -270,8 +405,8 @@ class TonCasinoApp {
             if (result.success) {
                 const title = result.demo ? "✅ Демо-вывод" : "✅ Вывод выполнен";
                 const message = result.demo ? 
-                    `Демо-вывод ${amount} TON успешно обработан. Новый баланс: ${result.new_balance} TON` :
-                    `Вывод ${amount} TON успешно обработан. Новый баланс: ${result.new_balance} TON`;
+                    `Демо-вывод ${amount} TON успешно обработан` :
+                    `Вывод ${amount} TON успешно обработан`;
                 
                 this.tg.showPopup({
                     title: title,
@@ -290,7 +425,7 @@ class TonCasinoApp {
                 
                 closeWithdrawModal();
             } else {
-                alert('Ошибка при выводе средств');
+                alert('Ошибка при выводе средств: ' + result.error);
             }
         } catch (error) {
             console.error('Withdraw error:', error);
@@ -302,6 +437,10 @@ class TonCasinoApp {
         window.processDeposit = () => this.processDeposit();
         window.processWithdraw = () => this.processWithdraw();
         window.toggleMode = () => this.toggleMode();
+        window.openAdminPanel = () => this.openAdminPanel();
+        window.closeAdminPanel = () => this.closeAdminPanel();
+        window.withdrawProfit = () => this.withdrawProfit();
+        window.playRoulette = () => this.playRoulette();
     }
 }
 
