@@ -571,7 +571,7 @@ app.post('/api/mines/start', async (req, res) => {
     try {
         const { telegramId, betAmount, minesCount, demoMode } = req.body;
         
-        if (betAmount < 0.1 || betAmount > 10) {
+        if (betAmount < 0.1 || betAmount > 100) {
             return res.status(400).json({ error: 'Ставка должна быть от 0.1 до 10 TON' });
         }
 
