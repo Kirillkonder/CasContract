@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
@@ -175,7 +174,7 @@ app.post('/api/admin/withdraw-profit', async (req, res) => {
         const bank = getCasinoBank();
         
         if (bank.total_balance < amount) {
-            return res.status(400).json({ error: 'Insufficient casino balance' });
+            return res.status(400).json({ error: 'Недостаточно средств в банке казино' });
         }
 
         // Выводим через Crypto Pay
@@ -306,13 +305,13 @@ app.post('/api/create-deposit', async (req, res) => {
     const { telegramId, amount, demoMode } = req.body;
     
     if (!amount || amount < 1) {
-        return res.status(400).json({ error: 'Minimum deposit is 1 TON' });
+        return res.status(400).json({ error: 'Минимальный депозит: 1 TON' });
     }
 
     try {
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ error: 'Пользователь не найден' });
         }
 
         if (demoMode) {
@@ -350,7 +349,8 @@ app.post('/api/create-deposit', async (req, res) => {
         }, false);
 
         if (invoice.ok && invoice.result) {
-            transactions.insert({
+            // Транзакция добавляется только при успешном создании инвойса, но со статусом pending
+            const transaction = transactions.insert({
                 user_id: user.$loki,
                 amount: amount,
                 type: 'deposit',
@@ -364,14 +364,15 @@ app.post('/api/create-deposit', async (req, res) => {
                 success: true,
                 demo: false,
                 invoiceUrl: invoice.result.pay_url,
-                invoiceId: invoice.result.invoice_id
+                invoiceId: invoice.result.invoice_id,
+                transactionId: transaction.$loki
             });
         } else {
-            res.status(500).json({ error: 'Failed to create invoice' });
+            res.status(500).json({ error: 'Ошибка при создании инвойса' });
         }
     } catch (error) {
         console.error('Crypto Pay error:', error);
-        res.status(500).json({ error: 'Crypto Pay error' });
+        res.status(500).json({ error: 'Ошибка Crypto Pay' });
     }
 });
 
@@ -388,7 +389,7 @@ app.get('/api/invoice-status/:invoiceId', async (req, res) => {
             const invoice = response.result.items[0];
             
             if (invoice.status === 'paid') {
-                // Обновляем баланс пользователя
+                // Обновляем баланс пользователя только при успешной оплате
                 const transaction = transactions.findOne({ crypto_pay_invoice_id: parseInt(invoiceId) });
                 if (transaction && transaction.status === 'pending') {
                     const user = users.get(transaction.user_id);
@@ -406,11 +407,11 @@ app.get('/api/invoice-status/:invoiceId', async (req, res) => {
 
             res.json({ status: invoice.status });
         } else {
-            res.status(404).json({ error: 'Invoice not found' });
+            res.status(404).json({ error: 'Инвойс не найден' });
         }
     } catch (error) {
         console.error('Invoice status error:', error);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
@@ -419,22 +420,22 @@ app.post('/api/withdraw', async (req, res) => {
     const { telegramId, amount, address, demoMode } = req.body;
 
     if (!amount || amount < 1 || !address) {
-        return res.status(400).json({ error: 'Invalid amount or address' });
+        return res.status(400).json({ error: 'Неверная сумма или адрес' });
     }
 
     if (!address.startsWith('UQ') || address.length < 48) {
-        return res.status(400).json({ error: 'Invalid TON address format' });
+        return res.status(400).json({ error: 'Неверный формат TON адреса' });
     }
 
     try {
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
         if (!user) {
-            return res.status(400).json({ error: 'User not found' });
+            return res.status(400).json({ error: 'Пользователь не найден' });
         }
 
         const currentBalance = demoMode ? user.demo_balance : user.main_balance;
         if (currentBalance < amount) {
-            return res.status(400).json({ error: 'Insufficient balance' });
+            return res.status(400).json({ error: 'Недостаточно средств на балансе' });
         }
 
         if (demoMode) {
@@ -464,7 +465,7 @@ app.post('/api/withdraw', async (req, res) => {
         // В реальном режиме проверяем банк казино
         const bank = getCasinoBank();
         if (bank.total_balance < amount) {
-            return res.status(400).json({ error: 'Casino insufficient funds' });
+            return res.status(400).json({ error: 'Недостаточно средств в банке казино' });
         }
 
         const transfer = await cryptoPayRequest('transfer', {
@@ -501,11 +502,11 @@ app.post('/api/withdraw', async (req, res) => {
                 new_balance: user.main_balance - amount
             });
         } else {
-            res.status(500).json({ error: 'Withdrawal failed' });
+            res.status(500).json({ error: 'Ошибка при выводе средств' });
         }
     } catch (error) {
         console.error('Crypto Pay error:', error);
-        res.status(500).json({ error: 'Crypto Pay error' });
+        res.status(500).json({ error: 'Ошибка Crypto Pay' });
     }
 });
 

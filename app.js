@@ -1,4 +1,3 @@
-
 class TonCasinoApp {
     constructor() {
         this.tg = window.Telegram.WebApp;
@@ -75,27 +74,30 @@ class TonCasinoApp {
             transactionsContainer.innerHTML = '';
             
             transactions.forEach(transaction => {
-                const transactionElement = document.createElement('div');
-                transactionElement.className = 'transaction-item';
-                
-                const amountClass = transaction.amount > 0 ? 'transaction-positive' : 'transaction-negative';
-                const sign = transaction.amount > 0 ? '+' : '';
-                const modeBadge = transaction.demo_mode ? ' (TEST)' : ' (REAL)';
-                
-                transactionElement.innerHTML = `
-                    <div class="transaction-info">
-                        <div>${transaction.type.toUpperCase()}${modeBadge}</div>
-                        <div class="transaction-date">${new Date(transaction.created_at).toLocaleDateString()}</div>
-                    </div>
-                    <div class="transaction-amount ${amountClass}">
-                        ${sign}${transaction.amount} TON
-                    </div>
-                `;
-                
-                transactionsContainer.appendChild(transactionElement);
+                // Показываем только завершенные транзакции
+                if (transaction.status === 'completed') {
+                    const transactionElement = document.createElement('div');
+                    transactionElement.className = 'transaction-item';
+                    
+                    const amountClass = transaction.amount > 0 ? 'transaction-positive' : 'transaction-negative';
+                    const sign = transaction.amount > 0 ? '+' : '';
+                    const modeBadge = transaction.demo_mode ? ' (TEST)' : ' (REAL)';
+                    
+                    transactionElement.innerHTML = `
+                        <div class="transaction-info">
+                            <div>${transaction.type.toUpperCase()}${modeBadge}</div>
+                            <div class="transaction-date">${new Date(transaction.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div class="transaction-amount ${amountClass}">
+                            ${sign}${transaction.amount} TON
+                        </div>
+                    `;
+                    
+                    transactionsContainer.appendChild(transactionElement);
+                }
             });
 
-            if (transactions.length === 0) {
+            if (transactionsContainer.children.length === 0) {
                 transactionsContainer.innerHTML = '<div class="no-transactions">Нет операций</div>';
             }
         }
@@ -292,6 +294,8 @@ class TonCasinoApp {
                 }
                 
                 closeDepositModal();
+            } else {
+                alert('Ошибка при создании депозита: ' + result.error);
             }
         } catch (error) {
             console.error('Deposit error:', error);
@@ -307,12 +311,20 @@ class TonCasinoApp {
                 
                 if (result.status === 'paid') {
                     clearInterval(checkInterval);
-                    alert('Депозит успешно зачислен!');
+                    this.tg.showPopup({
+                        title: "✅ Успешно",
+                        message: 'Депозит успешно зачислен!',
+                        buttons: [{ type: "ok" }]
+                    });
                     await this.loadUserData();
                     await this.loadTransactionHistory();
                 } else if (result.status === 'expired' || result.status === 'cancelled') {
                     clearInterval(checkInterval);
-                    alert('Платеж отменен или просрочен');
+                    this.tg.showPopup({
+                        title: "❌ Ошибка",
+                        message: 'Платеж отменен или просрочен',
+                        buttons: [{ type: "ok" }]
+                    });
                 }
             } catch (error) {
                 console.error('Status check error:', error);
