@@ -144,43 +144,38 @@
 
     <!-- Модальное окно админ-панели -->
     <div id="admin-modal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeAdminPanel()">&times;</span>
-        <h3>👑 Админ-панель</h3>
-        
-        <div class="admin-stats">
-            <div class="admin-stat-item">
-                <span class="admin-stat-label">🏦 Банк казино:</span>
-                <span class="admin-stat-value" id="admin-bank-balance">0</span> TON
+        <div class="modal-content">
+            <span class="close" onclick="closeAdminPanel()">&times;</span>
+            <h3>👑 Админ-панель</h3>
+            
+            <div class="admin-stats">
+                <div class="admin-stat-item">
+                    <span class="admin-stat-label">🏦 Банк казино:</span>
+                    <span class="admin-stat-value" id="admin-bank-balance">0</span> TON
+                </div>
+                <div class="admin-stat-item">
+                    <span class="admin-stat-label">👥 Пользователей:</span>
+                    <span class="admin-stat-value" id="admin-total-users">0</span>
+                </div>
+                <div class="admin-stat-item">
+                    <span class="admin-stat-label">📊 Транзакций:</span>
+                    <span class="admin-stat-value" id="admin-total-transactions">0</span>
+                </div>
             </div>
-            <div class="admin-stat-item">
-                <span class="admin-stat-label">👥 Пользователей:</span>
-                <span class="admin-stat-value" id="admin-total-users">0</span>
+
+            <button class="btn btn-primary" onclick="withdrawProfit()">
+                💰 Вывести прибыль
+            </button>
+
+            <button class="btn btn-secondary" onclick="closeAdminPanel()">
+                ✕ Закрыть
+            </button>
+
+            <div class="admin-warning">
+                ⚠️ Только для владельца казино
             </div>
-            <div class="admin-stat-item">
-                <span class="admin-stat-label">📊 Транзакций:</span>
-                <span class="admin-stat-value" id="admin-total-transactions">0</span>
-            </div>
-        </div>
-
-        <!-- Новая кнопка для просмотра мин -->
-        <button class="btn btn-primary" onclick="viewMines()">
-            🔍 Посмотреть мины
-        </button>
-
-        <button class="btn btn-primary" onclick="withdrawProfit()">
-            💰 Вывести прибыль
-        </button>
-
-        <button class="btn btn-secondary" onclick="closeAdminPanel()">
-            ✕ Закрыть
-        </button>
-
-        <div class="admin-warning">
-            ⚠️ Только для владельца казино
         </div>
     </div>
-</div>
 
     <!-- Модальные окна игр -->
     <div id="game-mines-modal" class="modal">

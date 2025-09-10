@@ -657,13 +657,13 @@ app.post('/api/mines/reveal', async (req, res) => {
             return res.status(400).json({ error: 'Ячейка уже открыта' });
         }
 
-        // Проверяем, есть ли мина в ячейке (используем РЕАЛЬНОЕ количество мин)
+        // Проверяем, есть ли мина в ячейке
         if (gameRecord.mines.includes(cellIndex)) {
             gameRecord.gameOver = true;
             gameRecord.win = false;
             gameRecord.endedAt = new Date();
 
-            // В реальном режиме - средства уходят казино
+            // В реальном режиме - средства уходят казику
             if (!gameRecord.demoMode) {
                 updateCasinoBank(gameRecord.betAmount);
             }
@@ -683,10 +683,10 @@ app.post('/api/mines/reveal', async (req, res) => {
         // Открываем ячейку
         gameRecord.revealedCells.push(cellIndex);
 
-        // Используем ОТОБРАЖАЕМОЕ количество мин для множителя
+        // Обновляем множитель
         gameRecord.currentMultiplier = calculateMultiplier(
             gameRecord.revealedCells.length, 
-            gameRecord.displayedMines // используем то, что показываем игроку
+            gameRecord.minesCount
         );
 
         minesGames.update(gameRecord);
@@ -798,41 +798,6 @@ app.get('/api/mines/history/:telegramId', async (req, res) => {
     } catch (error) {
         console.error('Mines history error:', error);
         res.status(500).json({ error: 'Ошибка получения истории' });
-    }
-});
-
-app.get('/api/admin/mines/:gameId', async (req, res) => {
-    try {
-        const { gameId } = req.params;
-        const { telegramId } = req.query;
-
-        // Проверяем админские права
-        if (parseInt(telegramId) !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
-            return res.status(403).json({ error: 'Access denied' });
-        }
-
-        const gameRecord = minesGames.get(parseInt(gameId));
-        if (!gameRecord) {
-            return res.status(404).json({ error: 'Игра не найдена' });
-        }
-
-        // Возвращаем позиции мин
-        res.json({
-            success: true,
-            gameId: gameId,
-            mines: gameRecord.mines,
-            displayedMines: gameRecord.displayedMines,
-            realMines: gameRecord.realMines,
-            revealedCells: gameRecord.revealedCells,
-            betAmount: gameRecord.betAmount,
-            playerTelegramId: gameRecord.telegramId,
-            gameOver: gameRecord.gameOver,
-            win: gameRecord.win
-        });
-
-    } catch (error) {
-        console.error('Admin mines view error:', error);
-        res.status(500).json({ error: 'Server error' });
     }
 });
 
