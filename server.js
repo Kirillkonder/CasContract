@@ -50,9 +50,9 @@ function initDatabase() {
 
                 if (!casinoBank) {
                     casinoBank = db.addCollection('casino_bank');
-                    // Инициализируем банк казино
+                    // Инициализируем банк казино (только реальные TON)
                     casinoBank.insert({
-                        total_balance: 10000,
+                        total_balance: 0,
                         owner_telegram_id: process.env.OWNER_TELEGRAM_ID || 842428912,
                         created_at: new Date(),
                         updated_at: new Date()
@@ -151,13 +151,11 @@ app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
         const bank = getCasinoBank();
         const totalUsers = users.count();
         const totalTransactions = transactions.count();
-        const recentTransactions = transactions.chain().simplesort('created_at', true).limit(10).data();
 
         res.json({
             bank_balance: bank.total_balance,
             total_users: totalUsers,
-            total_transactions: totalTransactions,
-            recent_transactions: recentTransactions
+            total_transactions: totalTransactions
         });
     } catch (error) {
         console.error('Admin dashboard error:', error);
@@ -278,108 +276,28 @@ app.post('/api/toggle-mode', async (req, res) => {
     }
 });
 
-// API: Играть в казино (упрощенная рулетка)
-app.post('/api/play/roulette', async (req, res) => {
-    const { telegramId, betAmount, betType, demoMode } = req.body;
-    
-    if (!betAmount || betAmount < 1) {
-        return res.status(400).json({ error: 'Minimum bet is 1 TON' });
-    }
+// API: Получить историю транзакций
+app.get('/api/transactions/:telegramId', async (req, res) => {
+    const telegramId = parseInt(req.params.telegramId);
 
     try {
-        const user = users.findOne({ telegram_id: parseInt(telegramId) });
+        const user = users.findOne({ telegram_id: telegramId });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const currentBalance = demoMode ? user.demo_balance : user.main_balance;
-        if (currentBalance < betAmount) {
-            return res.status(400).json({ error: 'Insufficient balance' });
-        }
-
-        // Генерируем случайное число (0-36)
-        const result = Math.floor(Math.random() * 37);
-        let win = false;
-        let winAmount = 0;
-
-        // Простая логика рулетки
-        if (betType === 'red' && result !== 0 && result % 2 === 1) {
-            win = true;
-            winAmount = betAmount * 2; // 2x за красное
-        } else if (betType === 'black' && result !== 0 && result % 2 === 0) {
-            win = true;
-            winAmount = betAmount * 2; // 2x за черное
-        } else if (betType === 'number' && result === parseInt(req.body.number)) {
-            win = true;
-            winAmount = betAmount * 36; // 36x за число
-        }
-
-        if (demoMode) {
-            // Демо-режим
-            if (win) {
-                users.update({
-                    ...user,
-                    demo_balance: user.demo_balance + winAmount
-                });
-            } else {
-                users.update({
-                    ...user,
-                    demo_balance: user.demo_balance - betAmount
-                });
-            }
-        } else {
-            // Реальный режим
-            const bank = getCasinoBank();
-            
-            if (win) {
-                // Игрок выиграл - выплачиваем из банка казино
-                if (bank.total_balance < winAmount) {
-                    return res.status(400).json({ error: 'Casino insufficient funds' });
-                }
-                
-                users.update({
-                    ...user,
-                    main_balance: user.main_balance + winAmount
-                });
-                
-                updateCasinoBank(-winAmount);
-            } else {
-                // Игрок проиграл - деньги идут в банк казино
-                users.update({
-                    ...user,
-                    main_balance: user.main_balance - betAmount
-                });
-                
-                updateCasinoBank(betAmount);
-            }
-        }
-
-        // Сохраняем транзакцию
-        transactions.insert({
-            user_id: user.$loki,
-            amount: win ? winAmount : -betAmount,
-            type: win ? 'win' : 'bet',
-            game: 'roulette',
-            result: result,
-            bet_type: betType,
-            status: 'completed',
-            demo_mode: demoMode,
-            created_at: new Date()
-        });
+        const userTransactions = transactions.chain()
+            .find({ user_id: user.$loki })
+            .simplesort('created_at', true)
+            .data();
 
         res.json({
             success: true,
-            win: win,
-            result: result,
-            amount: win ? winAmount : -betAmount,
-            new_balance: demoMode ? 
-                (win ? user.demo_balance + winAmount : user.demo_balance - betAmount) :
-                (win ? user.main_balance + winAmount : user.main_balance - betAmount)
+            transactions: userTransactions
         });
-
     } catch (error) {
-        console.error('Roulette error:', error);
-        res.status(500).json({ error: 'Game error' });
+        console.error('Transactions error:', error);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -457,6 +375,45 @@ app.post('/api/create-deposit', async (req, res) => {
     }
 });
 
+// API: Статус инвойса
+app.get('/api/invoice-status/:invoiceId', async (req, res) => {
+    const invoiceId = req.params.invoiceId;
+
+    try {
+        const response = await cryptoPayRequest('getInvoices', {
+            invoice_ids: invoiceId
+        }, false);
+
+        if (response.ok && response.result && response.result.items.length > 0) {
+            const invoice = response.result.items[0];
+            
+            if (invoice.status === 'paid') {
+                // Обновляем баланс пользователя
+                const transaction = transactions.findOne({ crypto_pay_invoice_id: parseInt(invoiceId) });
+                if (transaction && transaction.status === 'pending') {
+                    const user = users.get(transaction.user_id);
+                    users.update({
+                        ...user,
+                        main_balance: user.main_balance + transaction.amount
+                    });
+                    
+                    transactions.update({
+                        ...transaction,
+                        status: 'completed'
+                    });
+                }
+            }
+
+            res.json({ status: invoice.status });
+        } else {
+            res.status(404).json({ error: 'Invoice not found' });
+        }
+    } catch (error) {
+        console.error('Invoice status error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 // API: Запрос на вывод
 app.post('/api/withdraw', async (req, res) => {
     const { telegramId, amount, address, demoMode } = req.body;
@@ -488,7 +445,7 @@ app.post('/api/withdraw', async (req, res) => {
 
             transactions.insert({
                 user_id: user.$loki,
-                amount: amount,
+                amount: -amount,
                 type: 'withdraw',
                 status: 'completed',
                 demo_mode: true,
@@ -527,7 +484,7 @@ app.post('/api/withdraw', async (req, res) => {
 
             transactions.insert({
                 user_id: user.$loki,
-                amount: amount,
+                amount: -amount,
                 type: 'withdraw',
                 status: 'completed',
                 demo_mode: false,
@@ -551,8 +508,6 @@ app.post('/api/withdraw', async (req, res) => {
         res.status(500).json({ error: 'Crypto Pay error' });
     }
 });
-
-// Остальные API остаются без изменений...
 
 // Health check для Render
 app.get('/health', (req, res) => {

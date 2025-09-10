@@ -244,60 +244,6 @@ class TonCasinoApp {
         }
     }
 
-    async playRoulette() {
-        const betAmount = parseFloat(prompt('Сколько ставим? (мин. 1 TON)'));
-        
-        if (!betAmount || betAmount < 1) {
-            alert('Минимальная ставка: 1 TON');
-            return;
-        }
-
-        const betType = prompt('На что ставим? (red/black/number)');
-        let number = null;
-
-        if (betType === 'number') {
-            number = parseInt(prompt('На какое число? (0-36)'));
-            if (number < 0 || number > 36) {
-                alert('Число должно быть от 0 до 36');
-                return;
-            }
-        } else if (betType !== 'red' && betType !== 'black') {
-            alert('Выберите red, black или number');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/play/roulette', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    telegramId: this.tg.initDataUnsafe.user.id,
-                    betAmount: betAmount,
-                    betType: betType,
-                    number: number,
-                    demoMode: this.demoMode
-                })
-            });
-
-            const result = await response.json();
-            
-            if (result.success) {
-                const message = result.win ? 
-                    `🎉 Вы выиграли ${result.amount} TON! Выпало: ${result.result}` :
-                    `💸 Вы проиграли ${-result.amount} TON! Выпало: ${result.result}`;
-                
-                alert(message);
-                await this.loadUserData();
-                await this.loadTransactionHistory();
-            } else {
-                alert('Ошибка в игре: ' + result.error);
-            }
-        } catch (error) {
-            console.error('Roulette error:', error);
-            alert('Ошибка в игре');
-        }
-    }
-
     async processDeposit() {
         const amount = parseFloat(document.getElementById('deposit-amount').value);
         
@@ -440,7 +386,6 @@ class TonCasinoApp {
         window.openAdminPanel = () => this.openAdminPanel();
         window.closeAdminPanel = () => this.closeAdminPanel();
         window.withdrawProfit = () => this.withdrawProfit();
-        window.playRoulette = () => this.playRoulette();
     }
 }
 

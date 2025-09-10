@@ -1,3 +1,4 @@
+
 * {
     margin: 0;
     padding: 0;
@@ -6,136 +7,190 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
-    padding: 20px;
+    color: #333;
 }
 
 .container {
     max-width: 400px;
     margin: 0 auto;
-}
-
-/* Header Styles */
-.header {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
     padding: 20px;
+    min-height: 100vh;
+}
+
+.header {
+    text-align: center;
     margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.user-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+.header h1 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin-bottom: 5px;
 }
 
-.avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(45deg, #9c27b0, #673ab7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
+.header p {
+    color: #7f8c8d;
+    font-size: 14px;
 }
 
-.user-info {
-    flex: 1;
+.mode-switcher {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-.username {
-    font-size: 16px;
+.mode-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.mode-badge.mainnet {
+    background: linear-gradient(135deg, #00b894, #00a382);
+    color: white;
+}
+
+.mode-badge.testnet {
+    background: linear-gradient(135deg, #fdcb6e, #f39c12);
+    color: white;
+}
+
+.mode-info {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-bottom: 10px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
     font-weight: 600;
-    margin-bottom: 3px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin: 5px;
+    width: calc(100% - 10px);
 }
 
-.user-id {
-    font-size: 11px;
-    opacity: 0.7;
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
 }
 
-/* Profile Card */
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #fd79a8, #e84393);
+    color: white;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(253, 121, 168, 0.4);
+}
+
+.btn-mode {
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+    color: white;
+}
+
+.btn-admin {
+    background: linear-gradient(135deg, #fdcb6e, #e17055);
+    color: white;
+    margin-bottom: 15px;
+}
+
 .profile-card {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     padding: 25px;
-    margin-bottom: 20px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.demo-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #fdcb6e, #f39c12);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.balance-section {
+    margin: 20px 0;
 }
 
 .balance-label {
     font-size: 14px;
-    opacity: 0.8;
+    color: #7f8c8d;
     margin-bottom: 5px;
 }
 
 .balance-amount {
-    font-size: 36px;
+    font-size: 48px;
     font-weight: bold;
-    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin: 10px 0;
+    color: #2c3e50;
+    margin-bottom: 5px;
 }
 
 .balance-currency {
     font-size: 14px;
-    opacity: 0.8;
+    color: #7f8c8d;
 }
 
-/* Deposit Section */
-.deposit-section {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 15px;
+.games-section,
+.deposit-section,
+.transaction-history {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
     padding: 20px;
-    margin: 20px 0;
-    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .section-title {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
     margin-bottom: 15px;
+    text-align: center;
 }
 
-/* Buttons */
-.btn {
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin: 5px 0;
+.game-info {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
-.btn-primary {
-    background: linear-gradient(45deg, #9c27b0, #673ab7);
-    color: white;
-}
-
-.btn-primary:active {
-    transform: scale(0.98);
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-}
-
-/* Transaction History */
 .transaction-history {
-    margin-top: 25px;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .transaction-item {
@@ -143,30 +198,52 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    margin-bottom: 8px;
-    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-info {
+    flex: 1;
+}
+
+.transaction-type {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.transaction-date {
+    font-size: 12px;
+    color: #7f8c8d;
 }
 
 .transaction-amount {
-    font-weight: 600;
+    font-weight: bold;
+    font-size: 16px;
 }
 
 .transaction-positive {
-    color: #4cd137;
+    color: #00b894;
 }
 
 .transaction-negative {
-    color: #e84118;
+    color: #d63031;
 }
 
-/* Footer */
+.no-transactions {
+    text-align: center;
+    color: #7f8c8d;
+    padding: 20px;
+}
+
 .footer {
     text-align: center;
-    margin-top: 30px;
-    opacity: 0.6;
+    color: rgba(255, 255, 255, 0.8);
     font-size: 12px;
+    margin-top: 30px;
+    padding: 10px;
 }
 
 /* Modal Styles */
@@ -183,179 +260,133 @@ body {
 }
 
 .modal-content {
-    background: linear-gradient(135deg, #2c3e50, #1a1a2e);
-    margin: 15% auto;
+    background: white;
+    margin: 10% auto;
     padding: 25px;
     border-radius: 20px;
     width: 90%;
     max-width: 350px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 .close {
-    color: #aaa;
-    float: right;
+    position: absolute;
+    right: 20px;
+    top: 15px;
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
-    position: absolute;
-    top: 15px;
-    right: 20px;
+    color: #7f8c8d;
 }
 
-.close:hover {
-    color: white;
-}
-
-.modal-content h3 {
+.modal h3 {
+    text-align: center;
     margin-bottom: 20px;
-    text-align: center;
+    color: #2c3e50;
 }
 
-.modal-content input {
+input[type="number"],
+input[type="text"] {
     width: 100%;
     padding: 15px;
-    border: none;
+    border: 2px solid #eee;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
     font-size: 16px;
-    outline: none;
     margin-bottom: 15px;
+    transition: border-color 0.3s ease;
 }
 
-.modal-content input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+input[type="number"]:focus,
+input[type="text"]:focus {
+    outline: none;
+    border-color: #667eea;
 }
 
-.modal-content input:focus {
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.wallet-status {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    padding: 12px;
-    margin: 15px 0;
+.deposit-info,
+.withdraw-info {
     text-align: center;
-    font-size: 14px;
-}
-
-
-.deposit-info, .withdraw-info {
+    font-size: 12px;
+    color: #7f8c8d;
     margin-top: 15px;
-    font-size: 12px;
-    opacity: 0.7;
-    text-align: center;
+    line-height: 1.4;
 }
 
-.no-transactions {
-    text-align: center;
-    opacity: 0.7;
-    padding: 20px;
-}
-
-.transaction-info {
-    flex: 1;
-}
-
-.transaction-date {
-    font-size: 12px;
-    opacity: 0.7;
-    margin-top: 3px;
-}
-
-.transaction-positive {
-    color: #4cd137;
-    font-weight: bold;
-}
-
-.transaction-negative {
-    color: #e84118;
-    font-weight: bold;
-}
-
-
-
-.mode-switcher {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 15px;
-    margin: 15px 0;
-    text-align: center;
-}
-
-.mode-badge {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.mode-badge.mainnet {
-    background: linear-gradient(45deg, #4cd137, #2ecc71);
-    color: white;
-}
-
-.mode-badge.testnet {
-    background: linear-gradient(45deg, #e74c3c, #e67e22);
-    color: white;
-}
-
-.mode-info {
-    font-size: 14px;
-    opacity: 0.8;
-    margin: 10px 0;
-}
-
-.btn-mainnet {
-    background: linear-gradient(45deg, #3498db, #2980b9) !important;
-}
-
-.btn-testnet {
-    background: linear-gradient(45deg, #e74c3c, #c0392b) !important;
-}
-
-.btn-mode {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin: 5px 0;
-}
-
-/* Адаптация для модальных окон */
-.modal-content .mode-info {
-    font-size: 12px;
-    text-align: center;
-    margin: 10px 0;
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-}
-
-
-
-.btn-admin {
-    background: linear-gradient(45deg, #f39c12, #e67e22) !important;
-    margin: 10px 0;
-}
-
+/* Admin Panel Styles */
 .admin-stats {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    padding: 15px;
-    margin: 15px 0;
+    margin: 20px 0;
 }
 
-.admin-stats div {
-    margin: 8px 0;
-    font-size: 14px;
+.admin-stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.admin-stat-item:last-child {
+    border-bottom: none;
+}
+
+.admin-stat-label {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.admin-stat-value {
+    font-weight: bold;
+    color: #00b894;
+}
+
+.admin-warning {
+    text-align: center;
+    font-size: 12px;
+    color: #e74c3c;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .balance-amount {
+        font-size: 36px;
+    }
+    
+    .modal-content {
+        margin: 20% auto;
+        width: 95%;
+    }
+}
+
+/* Animation for buttons */
+.btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.5);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.7);
 }
