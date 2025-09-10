@@ -67,6 +67,26 @@
             </div>
         </div>
         
+        <!-- Нижнее меню с играми -->
+        <div class="games-menu">
+            <div class="game-menu-item" onclick="openGame('mines')">
+                <div class="game-icon">💣</div>
+                <div class="game-name">Мины</div>
+            </div>
+            <div class="game-menu-item" onclick="openGame('contracts')">
+                <div class="game-icon">📝</div>
+                <div class="game-name">Контракты</div>
+            </div>
+            <div class="game-menu-item" onclick="openGame('cases')">
+                <div class="game-icon">🎁</div>
+                <div class="game-name">Кейсы</div>
+            </div>
+            <div class="game-menu-item" onclick="openGame('rocket')">
+                <div class="game-icon">🚀</div>
+                <div class="game-name">Ракетка</div>
+            </div>
+        </div>
+        
         <div class="footer">
             TON Casino © 2024 • v3.0
         </div>
@@ -156,8 +176,66 @@
         </div>
     </div>
 
+    <!-- Модальные окна игр -->
+    <div id="game-mines-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeGameModal('mines')">&times;</span>
+            <h3>💣 Игра "Мины"</h3>
+            <div class="game-content">
+                <p>Скоро здесь появится игра "Мины"!</p>
+                <p>Выбирайте клетки и избегайте мин, чтобы увеличить свой выигрыш.</p>
+            </div>
+            <button class="btn btn-primary" onclick="closeGameModal('mines')">
+                Понятно
+            </button>
+        </div>
+    </div>
+
+    <div id="game-contracts-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeGameModal('contracts')">&times;</span>
+            <h3>📝 Игра "Контракты"</h3>
+            <div class="game-content">
+                <p>Скоро здесь появится игра "Контракты"!</p>
+                <p>Заключайте контракты и получайте прибыль от успешных сделок.</p>
+            </div>
+            <button class="btn btn-primary" onclick="closeGameModal('contracts')">
+                Понятно
+            </button>
+        </div>
+    </div>
+
+    <div id="game-cases-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeGameModal('cases')">&times;</span>
+            <h3>🎁 Игра "Кейсы"</h3>
+            <div class="game-content">
+                <p>Скоро здесь появится игра "Кейсы"!</p>
+                <p>Открывайте кейсы и получайте ценные призы в TON.</p>
+            </div>
+            <button class="btn btn-primary" onclick="closeGameModal('cases')">
+                Понятно
+            </button>
+        </div>
+    </div>
+
+    <div id="game-rocket-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeGameModal('rocket')">&times;</span>
+            <h3>🚀 Игра "Ракетка"</h3>
+            <div class="game-content">
+                <p>Скоро здесь появится игра "Ракетка"!</p>
+                <p>Запускайте ракету и забирайте выигрыш до того, как она взорвется.</p>
+            </div>
+            <button class="btn btn-primary" onclick="closeGameModal('rocket')">
+                Понятно
+            </button>
+        </div>
+    </div>
+
     <script src="components/header.js"></script>
     <script src="components/depositModal.js"></script>
+    <script src="components/gamesMenu.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

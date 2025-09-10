@@ -1,32 +1,13 @@
-// Функции для управления модальными окнами
-function openDepositModal() {
-    document.getElementById('deposit-modal').style.display = 'block';
+// Управление игровым меню и модальными окнами игр
+function openGame(gameType) {
+    document.getElementById(`game-${gameType}-modal`).style.display = 'block';
 }
 
-function closeDepositModal() {
-    document.getElementById('deposit-modal').style.display = 'none';
-    document.getElementById('deposit-amount').value = '';
+function closeGameModal(gameType) {
+    document.getElementById(`game-${gameType}-modal`).style.display = 'none';
 }
 
-function openWithdrawModal() {
-    document.getElementById('withdraw-modal').style.display = 'block';
-}
-
-function closeWithdrawModal() {
-    document.getElementById('withdraw-modal').style.display = 'none';
-    document.getElementById('withdraw-amount').value = '';
-    document.getElementById('withdraw-address').value = '';
-}
-
-function openAdminPanel() {
-    app.openAdminPanel();
-}
-
-function closeAdminPanel() {
-    app.closeAdminPanel();
-}
-
-// Закрытие модальных окон при клике вне их
+// Закрытие модальных окон игр при клике вне их
 window.onclick = function(event) {
     const depositModal = document.getElementById('deposit-modal');
     const withdrawModal = document.getElementById('withdraw-modal');

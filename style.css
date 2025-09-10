@@ -16,6 +16,7 @@ body {
     margin: 0 auto;
     padding: 20px;
     min-height: 100vh;
+    padding-bottom: 80px; /* Добавлено место для нижнего меню */
 }
 
 .header {
@@ -241,6 +242,53 @@ body {
     padding: 20px;
 }
 
+/* Нижнее игровое меню */
+.games-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(25, 30, 42, 0.98);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    z-index: 1000;
+}
+
+.game-menu-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    min-width: 60px;
+}
+
+.game-menu-item:hover {
+    background: rgba(102, 126, 234, 0.2);
+    transform: translateY(-2px);
+}
+
+.game-menu-item:active {
+    transform: scale(0.95);
+}
+
+.game-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.game-name {
+    font-size: 10px;
+    color: #a0a0a0;
+    text-align: center;
+    font-weight: 500;
+}
+
 .footer {
     text-align: center;
     color: rgba(255, 255, 255, 0.6);
@@ -318,6 +366,14 @@ input[type="text"]:focus {
     line-height: 1.4;
 }
 
+/* Стили для контента игр */
+.game-content {
+    text-align: center;
+    padding: 20px 0;
+    color: #a0a0a0;
+    line-height: 1.6;
+}
+
 /* Admin Panel Styles */
 .admin-stats {
     margin: 20px 0;
@@ -366,6 +422,23 @@ input[type="text"]:focus {
     .modal-content {
         margin: 20% auto;
         width: 95%;
+    }
+    
+    .games-menu {
+        padding: 8px 0;
+    }
+    
+    .game-menu-item {
+        padding: 6px 8px;
+        min-width: 50px;
+    }
+    
+    .game-icon {
+        font-size: 20px;
+    }
+    
+    .game-name {
+        font-size: 9px;
     }
 }
 

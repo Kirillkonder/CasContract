@@ -337,17 +337,12 @@ class TonCasinoApp {
         const address = document.getElementById('withdraw-address').value;
 
         if (!amount || amount < 1 || !address) {
-            alert('Заполните все поля корректно. Минимальный вывод: 1 TON');
-            return;
-        }
-
-        if (!address.startsWith('UQ') || address.length < 48) {
-            alert('Введите корректный TON адрес (начинается с UQ...)');
+            alert('Заполните все поля корректно');
             return;
         }
 
         try {
-            const response = await fetch('/api/withdraw', {
+            const response = await fetch('/api/create-withdraw', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -361,29 +356,30 @@ class TonCasinoApp {
             const result = await response.json();
             
             if (result.success) {
-                const title = result.demo ? "✅ Демо-вывод" : "✅ Вывод выполнен";
-                const message = result.demo ? 
-                    `Демо-вывод ${amount} TON успешно обработан` :
-                    `Вывод ${amount} TON успешно обработан`;
-                
-                this.tg.showPopup({
-                    title: title,
-                    message: message,
-                    buttons: [{ type: "ok" }]
-                });
-                
-                this.userData.balance = result.new_balance;
-                if (this.demoMode) {
-                    this.userData.demo_balance = result.new_balance;
+                if (result.demo) {
+                    this.tg.showPopup({
+                        title: "✅ Демо-вывод",
+                        message: `Демо-вывод ${amount} TON успешно обработан!`,
+                        buttons: [{ type: "ok" }]
+                    });
+                    
+                    this.userData.balance = result.new_balance;
+                    if (this.demoMode) {
+                        this.userData.demo_balance = result.new_balance;
+                    }
+                    this.updateUI();
+                    await this.loadTransactionHistory();
                 } else {
-                    this.userData.main_balance = result.new_balance;
+                    this.tg.showPopup({
+                        title: "⏳ Вывод средств",
+                        message: `Запрос на вывод ${amount} TON отправлен! Ожидайте обработки.`,
+                        buttons: [{ type: "ok" }]
+                    });
                 }
-                this.updateUI();
-                await this.loadTransactionHistory();
                 
                 closeWithdrawModal();
             } else {
-                alert('Ошибка при выводе средств: ' + result.error);
+                alert('Ошибка при выводе: ' + result.error);
             }
         } catch (error) {
             console.error('Withdraw error:', error);
@@ -392,16 +388,72 @@ class TonCasinoApp {
     }
 
     setupEventListeners() {
-        window.processDeposit = () => this.processDeposit();
-        window.processWithdraw = () => this.processWithdraw();
-        window.toggleMode = () => this.toggleMode();
-        window.openAdminPanel = () => this.openAdminPanel();
-        window.closeAdminPanel = () => this.closeAdminPanel();
-        window.withdrawProfit = () => this.withdrawProfit();
+        // Закрытие модальных окон при клике вне их
+        window.onclick = function(event) {
+            const depositModal = document.getElementById('deposit-modal');
+            const withdrawModal = document.getElementById('withdraw-modal');
+            const adminModal = document.getElementById('admin-modal');
+            
+            if (event.target === depositModal) {
+                closeDepositModal();
+            }
+            if (event.target === withdrawModal) {
+                closeWithdrawModal();
+            }
+            if (event.target === adminModal) {
+                closeAdminPanel();
+            }
+        }
     }
 }
 
-// Запуск приложения
-document.addEventListener('DOMContentLoaded', () => {
-    new TonCasinoApp();
+// Глобальные функции для кнопок
+let app;
+
+function openDepositModal() {
+    document.getElementById('deposit-modal').style.display = 'block';
+}
+
+function closeDepositModal() {
+    document.getElementById('deposit-modal').style.display = 'none';
+    document.getElementById('deposit-amount').value = '';
+}
+
+function openWithdrawModal() {
+    document.getElementById('withdraw-modal').style.display = 'block';
+}
+
+function closeWithdrawModal() {
+    document.getElementById('withdraw-modal').style.display = 'none';
+    document.getElementById('withdraw-amount').value = '';
+    document.getElementById('withdraw-address').value = '';
+}
+
+function openAdminPanel() {
+    app.openAdminPanel();
+}
+
+function closeAdminPanel() {
+    app.closeAdminPanel();
+}
+
+function toggleMode() {
+    app.toggleMode();
+}
+
+function processDeposit() {
+    app.processDeposit();
+}
+
+function processWithdraw() {
+    app.processWithdraw();
+}
+
+function withdrawProfit() {
+    app.withdrawProfit();
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    app = new TonCasinoApp();
 });
