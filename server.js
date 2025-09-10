@@ -557,7 +557,7 @@ app.post('/api/withdraw', async (req, res) => {
 
 // Mines Game Routes
 app.get('/mines', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'mines.html'));
+    res.sendFile(path.join(__dirname, 'mines.html'));
 });
 
 app.post('/api/mines/start', async (req, res) => {

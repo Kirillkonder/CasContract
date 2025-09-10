@@ -1,6 +1,12 @@
 // Управление игровым меню и модальными окнами игр
 function openGame(gameType) {
-    document.getElementById(`game-${gameType}-modal`).style.display = 'block';
+    if (gameType === 'mines') {
+        // Перенаправляем на страницу mines.html
+        window.location.href = 'mines.html';
+    } else {
+        // Для других игр показываем модальные окна
+        document.getElementById(`game-${gameType}-modal`).style.display = 'block';
+    }
 }
 
 function closeGameModal(gameType) {

@@ -178,19 +178,21 @@
 
     <!-- Модальные окна игр -->
     <div id="game-mines-modal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeGameModal('mines')">&times;</span>
-            <h3>💣 Игра "Мины"</h3>
-           <div class="game-item">
-    <h3>Mines</h3>
-    <p>Найдите алмазы и избегайте мин!</p>
-    <a href="mines.html" class="play-btn">Играть</a>
-</div>
-            <button class="btn btn-primary" onclick="closeGameModal('mines')">
-                Понятно
-            </button>
+    <div class="modal-content">
+        <span class="close" onclick="closeGameModal('mines')">&times;</span>
+        <h3>💣 Игра "Мины"</h3>
+        <div class="game-content">
+            <p>Найдите алмазы и избегайте мин!</p>
+            <p>💎 Выбирайте количество мин (3, 5 или 7)</p>
+            <p>💰 Ставки от 0.1 до 10 TON</p>
+            <p>🎯 Открывайте ячейки и увеличивайте множитель</p>
+            <p>🏆 Забирайте выигрыш в любой момент!</p>
         </div>
+        <button class="btn btn-primary" onclick="closeGameModal('mines')">
+            Понятно
+        </button>
     </div>
+</div>
 
     <div id="game-contracts-modal" class="modal">
         <div class="modal-content">
