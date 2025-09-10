@@ -820,6 +820,7 @@ cron.schedule('*/14 * * * *', () => {
     console.log('🔁 Keep-alive ping executed at:', new Date().toLocaleTimeString());
 });
 
+
 // Инициализация и запуск сервера
 async function startServer() {
     try {
@@ -837,3 +838,5 @@ async function startServer() {
         process.exit(1);
     }
 }
+
+startServer();
