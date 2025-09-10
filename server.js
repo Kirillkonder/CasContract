@@ -156,15 +156,14 @@ function generateMinesGame(minesCount) {
 }
 
 
-
+// server.js - правильная формула как на 1win
 function calculateMultiplier(openedCells, minesCount) {
     const totalCells = 25;
-    const riskFactor = 0.95; // Фактор риска как на 1win
+    const safeCells = totalCells - minesCount;
+    const remainingSafeCells = safeCells - openedCells;
     
-    // Формула с экспоненциальным ростом как на 1win
-    const multiplier = (1 - riskFactor) / 
-        (1 - Math.pow(riskFactor, totalCells - minesCount)) * 
-        Math.pow(riskFactor, openedCells - 1);
+    // Правильная формула: множитель = (totalCells - minesCount) / remainingSafeCells
+    const multiplier = (totalCells - minesCount) / remainingSafeCells;
     
     return parseFloat(multiplier.toFixed(2));
 }
