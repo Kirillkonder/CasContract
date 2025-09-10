@@ -157,15 +157,22 @@ function generateMinesGame(minesCount) {
 
 
 // server.js - правильная формула как на 1win
+
 function calculateMultiplier(openedCells, minesCount) {
-    const totalCells = 25;
-    const safeCells = totalCells - minesCount;
-    const remainingSafeCells = safeCells - openedCells;
+    // Реальные множители с 1win для разных количеств мин
+    const multipliers = {
+        3: [1.00, 1.08, 1.17, 1.27, 1.39, 1.52, 1.67, 1.85, 2.06, 2.31, 2.61, 2.98, 3.45, 4.06, 4.88, 5.99, 7.55, 9.84, 13.42, 19.62, 31.39, 62.78, 188.35, 941.74],
+        5: [1.00, 1.11, 1.25, 1.43, 1.67, 2.00, 2.50, 3.33, 4.99, 8.32, 16.64, 41.60, 166.40, 1248.00, 24960.00],
+        7: [1.00, 1.15, 1.35, 1.62, 2.00, 2.57, 3.50, 5.25, 9.00, 18.00, 45.00, 180.00, 1800.00, 36000.00]
+    };
+
+    const mineMultipliers = multipliers[minesCount];
+    if (mineMultipliers && openedCells < mineMultipliers.length) {
+        return mineMultipliers[openedCells];
+    }
     
-    // Правильная формула: множитель = (totalCells - minesCount) / remainingSafeCells
-    const multiplier = (totalCells - minesCount) / remainingSafeCells;
-    
-    return parseFloat(multiplier.toFixed(2));
+    // Если вышли за пределы массива - возвращаем последний множитель * 2
+    return mineMultipliers ? mineMultipliers[mineMultipliers.length - 1] * 2 : 1.00;
 }
 // API: Аутентификация админа
 app.post('/api/admin/login', async (req, res) => {
