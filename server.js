@@ -657,13 +657,13 @@ app.post('/api/mines/reveal', async (req, res) => {
             return res.status(400).json({ error: 'Ячейка уже открыта' });
         }
 
-        // Проверяем, есть ли мина в ячейке
+        // Проверяем, есть ли мина в ячейке (используем РЕАЛЬНОЕ количество мин)
         if (gameRecord.mines.includes(cellIndex)) {
             gameRecord.gameOver = true;
             gameRecord.win = false;
             gameRecord.endedAt = new Date();
 
-            // В реальном режиме - средства уходят казику
+            // В реальном режиме - средства уходят казино
             if (!gameRecord.demoMode) {
                 updateCasinoBank(gameRecord.betAmount);
             }
@@ -683,10 +683,10 @@ app.post('/api/mines/reveal', async (req, res) => {
         // Открываем ячейку
         gameRecord.revealedCells.push(cellIndex);
 
-        // Обновляем множитель
+        // Используем ОТОБРАЖАЕМОЕ количество мин для множителя
         gameRecord.currentMultiplier = calculateMultiplier(
             gameRecord.revealedCells.length, 
-            gameRecord.minesCount
+            gameRecord.displayedMines // используем то, что показываем игроку
         );
 
         minesGames.update(gameRecord);
