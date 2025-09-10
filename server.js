@@ -256,6 +256,52 @@ app.post('/api/admin/withdraw-profit', async (req, res) => {
     }
 });
 
+app.post('/api/admin/add-demo-balance', async (req, res) => {
+    const { telegramId, targetTelegramId, amount } = req.body;
+
+    if (telegramId !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
+        return res.status(403).json({ error: 'Access denied' });
+    }
+
+    try {
+        const targetUser = users.findOne({ telegram_id: parseInt(targetTelegramId) });
+        if (!targetUser) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        users.update({
+            ...targetUser,
+            demo_balance: targetUser.demo_balance + amount
+        });
+
+        // Записываем транзакцию
+        transactions.insert({
+            user_id: targetUser.$loki,
+            amount: amount,
+            type: 'admin_demo_deposit',
+            status: 'completed',
+            demo_mode: true,
+            created_at: new Date(),
+            admin_telegram_id: telegramId
+        });
+
+        logAdminAction('add_demo_balance', telegramId, { 
+            target_telegram_id: targetTelegramId, 
+            amount: amount 
+        });
+
+        res.json({
+            success: true,
+            message: `Добавлено ${amount} тестовых TON пользователю ${targetTelegramId}`,
+            new_demo_balance: targetUser.demo_balance + amount
+        });
+    } catch (error) {
+        console.error('Add demo balance error:', error);
+        res.status(500).json({ error: 'Ошибка пополнения баланса' });
+    }
+});
+
+
 // API: Получить данные пользователя
 app.get('/api/user/:telegramId', async (req, res) => {
     const telegramId = parseInt(req.params.telegramId);

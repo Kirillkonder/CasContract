@@ -332,6 +332,39 @@ class TonCasinoApp {
         }, 5000);
     }
 
+    async addDemoBalance() {
+    const targetTelegramId = prompt('ID пользователя для пополнения:');
+    const amount = parseFloat(prompt('Сумма для пополнения (тестовые TON):'));
+    
+    if (!targetTelegramId || !amount || amount < 1) {
+        alert('Введите корректные данные');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/admin/add-demo-balance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                telegramId: this.tg.initDataUnsafe.user.id,
+                targetTelegramId: targetTelegramId,
+                amount: amount
+            })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(`Успешно добавлено ${amount} тестовых TON пользователю ${targetTelegramId}`);
+        } else {
+            alert('Ошибка: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Add demo balance error:', error);
+        alert('Ошибка при пополнении баланса');
+    }
+}
+
     async processWithdraw() {
         const amount = parseFloat(document.getElementById('withdraw-amount').value);
         const address = document.getElementById('withdraw-address').value;
@@ -451,6 +484,10 @@ function processWithdraw() {
 
 function withdrawProfit() {
     app.withdrawProfit();
+}
+
+function addDemoBalance() {
+    app.addDemoBalance();
 }
 
 // Инициализация при загрузке

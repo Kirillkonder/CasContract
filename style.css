@@ -593,3 +593,8 @@ input[type="text"]:focus {
     background: #f8d7da;
     color: #721c24;
 }
+
+.btn-test {
+    background: linear-gradient(135deg, #74b9ff, #5a9de6);
+    color: white;
+}
