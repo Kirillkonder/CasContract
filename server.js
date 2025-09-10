@@ -155,92 +155,59 @@ function generateMinesGame(minesCount) {
     };
 }
 
-// server.js - исправленная функция calculateMultiplier
-function calculateMultiplier(openedCells, minesCount, totalCells = 25) {
-    // Новая формула расчета множителя (аналогично популярным казино)
-    const baseMultiplier = 1;
-    const riskFactor = 0.95; // Фактор риска
-    
-    // Вероятность успеха на следующем шаге
+
+function calculateMultiplier(openedCells, minesCount) {
+    // Новая правильная формула расчета множителя
+    const totalCells = 25;
+    const safeCells = totalCells - minesCount;
+    const remainingSafeCells = safeCells - openedCells;
     const remainingCells = totalCells - openedCells;
-    const remainingMines = minesCount;
-    const successProbability = (remainingCells - remainingMines) / remainingCells;
     
-    // Множитель увеличивается экспоненциально с каждым успешным шагом
-    const multiplier = baseMultiplier * (1 / successProbability);
+    // Множитель = общее количество клеток / оставшиеся безопасные клетки
+    const multiplier = remainingCells / remainingSafeCells;
     
     return parseFloat(multiplier.toFixed(2));
 }
+// API: Аутентификация админа
+app.post('/api/admin/login', async (req, res) => {
+    const { telegramId, password } = req.body;
 
-// Обновленный обработчик reveal в Mines
-app.post('/api/mines/reveal', async (req, res) => {
-    try {
-        const { gameId, cellIndex, telegramId } = req.body;
-
-        const gameRecord = minesGames.get(gameId);
-        if (!gameRecord) {
-            return res.status(404).json({ error: 'Игра не найдена' });
-        }
-
-        if (gameRecord.telegramId !== parseInt(telegramId)) {
-            return res.status(403).json({ error: 'Доступ запрещен' });
-        }
-
-        if (gameRecord.gameOver) {
-            return res.status(400).json({ error: 'Игра уже завершена' });
-        }
-
-        if (gameRecord.revealedCells.includes(cellIndex)) {
-            return res.status(400).json({ error: 'Ячейка уже открыта' });
-        }
-
-        // Проверяем, есть ли мина в ячейке
-        if (gameRecord.mines.includes(cellIndex)) {
-            gameRecord.gameOver = true;
-            gameRecord.win = false;
-            gameRecord.endedAt = new Date();
-
-            // В реальном режиме - средства уходят казино
-            if (!gameRecord.demoMode) {
-                updateCasinoBank(gameRecord.betAmount);
-            }
-
-            minesGames.update(gameRecord);
-
-            return res.json({
-                success: true,
-                gameOver: true,
-                win: false,
-                mineHit: true,
-                cellIndex: cellIndex,
-                currentMultiplier: gameRecord.currentMultiplier
-            });
-        }
-
-        // Открываем ячейку
-        gameRecord.revealedCells.push(cellIndex);
-
-        // Обновляем множитель с новой логикой
-        gameRecord.currentMultiplier = calculateMultiplier(
-            gameRecord.revealedCells.length, 
-            gameRecord.minesCount
-        );
-
-        minesGames.update(gameRecord);
-
-        res.json({
-            success: true,
-            gameOver: false,
-            revealedCell: cellIndex,
-            currentMultiplier: gameRecord.currentMultiplier,
-            potentialWin: gameRecord.betAmount * gameRecord.currentMultiplier
-        });
-
-    } catch (error) {
-        console.error('Mines reveal error:', error);
-        res.status(500).json({ error: 'Ошибка открытия ячейки' });
+    if (password === process.env.ADMIN_PASSWORD && 
+        parseInt(telegramId) === parseInt(process.env.OWNER_TELEGRAM_ID)) {
+        
+        logAdminAction('admin_login', telegramId);
+        res.json({ success: true, isAdmin: true });
+    } else {
+        res.json({ success: false, isAdmin: false });
     }
 });
+
+// API: Получить данные админки
+app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
+    const telegramId = parseInt(req.params.telegramId);
+
+    if (telegramId !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
+        return res.status(403).json({ error: 'Access denied' });
+    }
+
+    try {
+        const bank = getCasinoBank();
+        const totalUsers = users.count();
+        const totalTransactions = transactions.count();
+        const totalMinesGames = minesGames.count();
+
+        res.json({
+            bank_balance: bank.total_balance,
+            total_users: totalUsers,
+            total_transactions: totalTransactions,
+            total_mines_games: totalMinesGames
+        });
+    } catch (error) {
+        console.error('Admin dashboard error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 // API: Вывод прибыли владельцу
 app.post('/api/admin/withdraw-profit', async (req, res) => {
     const { telegramId, amount } = req.body;
