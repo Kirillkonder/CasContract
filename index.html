@@ -1,3 +1,4 @@
+[file name]: index.html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -11,23 +12,44 @@
     <div class="container">
         <!-- Header будет вставляться через JS -->
         <div id="header"></div>
+        
+        <!-- Кнопка админ-панели (скрыта по умолчанию) -->
+        <button class="btn btn-admin" id="admin-button" onclick="openAdminPanel()" style="display: none;">
+            👑 Админ-панель
+        </button>
 
+        <!-- Режимы -->
         <div class="mode-switcher">
-    <div class="mode-badge" id="mode-badge">MAINNET</div>
-    <div class="mode-info" id="mode-info">
-        🌐 Реальный режим - настоящие TON
-    </div>
-    <button class="btn btn-mode" id="mode-button" onclick="toggleMode()">
-        🔄 Перейти к тестовым TON
-    </button>
-</div>
+            <div class="mode-badge" id="mode-badge">MAINNET</div>
+            <div class="mode-info" id="mode-info">
+                🌐 Реальный режим - настоящие TON
+            </div>
+            <button class="btn btn-mode" id="mode-button" onclick="toggleMode()">
+                🔄 Перейти к тестовым TON
+            </button>
+        </div>
         
         <!-- Основной контент -->
         <div class="profile-card">
+            <div class="demo-badge" id="demo-badge">TESTNET</div>
             <div class="balance-section">
                 <div class="balance-label">Ваш баланс</div>
                 <div class="balance-amount" id="balance">0</div>
                 <div class="balance-currency">TON coins</div>
+            </div>
+        </div>
+        
+        <!-- Игры -->
+        <div class="games-section">
+            <div class="section-title">🎰 Игры казино</div>
+            
+            <button class="btn btn-primary" onclick="playRoulette()">
+                🎡 Играть в рулетку
+            </button>
+            
+            <div class="game-info">
+                <p>🎯 Ставки: red/black (2x) или число (36x)</p>
+                <p>💰 Минимальная ставка: 1 TON</p>
             </div>
         </div>
         
@@ -51,7 +73,7 @@
         </div>
         
         <div class="footer">
-            TON Casino © 2024 • v2.0
+            TON Casino © 2024 • v3.0
         </div>
     </div>
 
@@ -72,7 +94,7 @@
             </button>
             <div class="deposit-info">
                 <p>Минимальный депозит: 1 TON</p>
-                <p>Оплата через Crypto Pay</p>
+                <p id="deposit-mode-info">Оплата через Crypto Pay</p>
             </div>
         </div>
     </div>
@@ -99,7 +121,42 @@
             </button>
             <div class="withdraw-info">
                 <p>Минимальный вывод: 1 TON</p>
-                <p>Вывод через Crypto Pay</p>
+                <p id="withdraw-mode-info">Вывод через Crypto Pay</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно админ-панели -->
+    <div id="admin-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAdminPanel()">&times;</span>
+            <h3>👑 Админ-панель</h3>
+            
+            <div class="admin-stats">
+                <div class="admin-stat-item">
+                    <span class="admin-stat-label">🏦 Банк казино:</span>
+                    <span class="admin-stat-value" id="admin-bank-balance">0</span> TON
+                </div>
+                <div class="admin-stat-item">
+                    <span class="admin-stat-label">👥 Пользователей:</span>
+                    <span class="admin-stat-value" id="admin-total-users">0</span>
+                </div>
+                <div class="admin-stat-item">
+                    <span class="admin-stat-label">📊 Транзакций:</span>
+                    <span class="admin-stat-value" id="admin-total-transactions">0</span>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="withdrawProfit()">
+                💰 Вывести прибыль
+            </button>
+
+            <button class="btn btn-secondary" onclick="closeAdminPanel()">
+                ✕ Закрыть
+            </button>
+
+            <div class="admin-warning">
+                ⚠️ Только для владельца казино
             </div>
         </div>
     </div>
