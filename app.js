@@ -246,6 +246,41 @@ class TonCasinoApp {
         }
     }
 
+    // НОВАЯ ФУНКЦИЯ: Просмотр мин в игре
+    async viewMines() {
+        const gameId = prompt('Введите ID игры:');
+        if (!gameId) return;
+
+        try {
+            const response = await fetch(`/api/admin/mines/${gameId}?telegramId=${this.tg.initDataUnsafe.user.id}`);
+            
+            if (!response.ok) {
+                alert('Ошибка получения данных');
+                return;
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                let message = `🎯 Мины в игре #${gameId}:\n`;
+                message += `💣 Позиции мин: ${result.mines.join(', ')}\n`;
+                message += `👀 Показано игроку: ${result.displayedMines} мин\n`;
+                message += `🔍 Реально мин: ${result.realMines}\n`;
+                message += `💰 Ставка: ${result.betAmount} TON\n`;
+                message += `👤 Игрок: ${result.playerTelegramId}\n`;
+                message += `🎮 Статус: ${result.gameOver ? (result.win ? 'Победа' : 'Проигрыш') : 'В процессе'}\n`;
+                message += `📊 Открыто ячеек: ${result.revealedCells.length}`;
+                
+                alert(message);
+            } else {
+                alert('Ошибка: ' + result.error);
+            }
+        } catch (error) {
+            console.error('View mines error:', error);
+            alert('Ошибка подключения');
+        }
+    }
+
     async processDeposit() {
         const amount = parseFloat(document.getElementById('deposit-amount').value);
         
@@ -451,6 +486,11 @@ function processWithdraw() {
 
 function withdrawProfit() {
     app.withdrawProfit();
+}
+
+// НОВАЯ ГЛОБАЛЬНАЯ ФУНКЦИЯ: Просмотр мин
+function viewMines() {
+    app.viewMines();
 }
 
 // Инициализация при загрузке

@@ -801,6 +801,41 @@ app.get('/api/mines/history/:telegramId', async (req, res) => {
     }
 });
 
+app.get('/api/admin/mines/:gameId', async (req, res) => {
+    try {
+        const { gameId } = req.params;
+        const { telegramId } = req.query;
+
+        // Проверяем админские права
+        if (parseInt(telegramId) !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const gameRecord = minesGames.get(parseInt(gameId));
+        if (!gameRecord) {
+            return res.status(404).json({ error: 'Игра не найдена' });
+        }
+
+        // Возвращаем позиции мин
+        res.json({
+            success: true,
+            gameId: gameId,
+            mines: gameRecord.mines,
+            displayedMines: gameRecord.displayedMines,
+            realMines: gameRecord.realMines,
+            revealedCells: gameRecord.revealedCells,
+            betAmount: gameRecord.betAmount,
+            playerTelegramId: gameRecord.telegramId,
+            gameOver: gameRecord.gameOver,
+            win: gameRecord.win
+        });
+
+    } catch (error) {
+        console.error('Admin mines view error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 // Health check для Render
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
