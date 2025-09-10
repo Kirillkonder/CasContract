@@ -802,7 +802,6 @@ app.get('/api/mines/history/:telegramId', async (req, res) => {
 });
 
 
-
 // Health check для Render
 app.get('/health', (req, res) => {
     res.status(200).json({ 
@@ -812,14 +811,10 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Keep-alive система - ВАЖНО!
-const cron = require('node-cron');
-
-// Пинг каждые 14 минут (Render засыпает через 15 минут)
-cron.schedule('*/14 * * * *', () => {
-    console.log('🔁 Keep-alive ping executed at:', new Date().toLocaleTimeString());
-});
-
+// Keep-alive система - ПРОСТОЙ ВАРИАНТ БЕЗ node-cron
+setInterval(() => {
+    console.log('🔁 Keep-alive ping:', new Date().toLocaleTimeString());
+}, 14 * 60 * 1000); // Каждые 14 минут
 
 // Инициализация и запуск сервера
 async function startServer() {
@@ -838,5 +833,4 @@ async function startServer() {
         process.exit(1);
     }
 }
-
 startServer();
