@@ -801,9 +801,23 @@ app.get('/api/mines/history/:telegramId', async (req, res) => {
     }
 });
 
+
+
 // Health check для Render
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+    res.status(200).json({ 
+        status: 'OK', 
+        message: 'Server is awake',
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Keep-alive система - ВАЖНО!
+const cron = require('node-cron');
+
+// Пинг каждые 14 минут (Render засыпает через 15 минут)
+cron.schedule('*/14 * * * *', () => {
+    console.log('🔁 Keep-alive ping executed at:', new Date().toLocaleTimeString());
 });
 
 // Инициализация и запуск сервера
@@ -816,11 +830,10 @@ async function startServer() {
             console.log(`🏦 Casino bank initialized`);
             console.log(`👑 Owner ID: ${process.env.OWNER_TELEGRAM_ID}`);
             console.log(`💣 Mines game ready`);
+            console.log('🔄 Keep-alive service started (ping every 14 minutes)');
         });
     } catch (error) {
         console.error('Failed to start server:', error);
         process.exit(1);
     }
 }
-
-startServer();
