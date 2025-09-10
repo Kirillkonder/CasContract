@@ -567,14 +567,23 @@ app.get('/mines', (req, res) => {
     res.sendFile(path.join(__dirname, 'mines.html'));
 });
 
+// server.js - изменяем логику количества мин
 app.post('/api/mines/start', async (req, res) => {
     try {
         const { telegramId, betAmount, minesCount, demoMode } = req.body;
         
-        if (betAmount < 0.1 || betAmount > 100) {
+        // Маппинг: что показываем -> сколько реально
+        const realMinesCount = {
+            3: 5,  // показываем 3, реально 5 мин
+            5: 7,  // показываем 5, реально 7 мин  
+            7: 9   // показываем 7, реально 9 мин
+        }[minesCount];
+
+        if (betAmount < 0.1 || betAmount > 10) {
             return res.status(400).json({ error: 'Ставка должна быть от 0.1 до 10 TON' });
         }
 
+        // Проверяем валидность выбранного количества мин
         if (![3, 5, 7].includes(minesCount)) {
             return res.status(400).json({ error: 'Количество мин должно быть 3, 5 или 7' });
         }
@@ -589,13 +598,15 @@ app.post('/api/mines/start', async (req, res) => {
             return res.status(400).json({ error: 'Недостаточно средств' });
         }
 
-        // Создаем игру
-        const gameState = generateMinesGame(minesCount);
+        // Создаем игру с РЕАЛЬНЫМ количеством мин
+        const gameState = generateMinesGame(realMinesCount);
         gameState.betAmount = betAmount;
         gameState.demoMode = demoMode;
         gameState.userId = user.$loki;
         gameState.telegramId = telegramId;
         gameState.createdAt = new Date();
+        gameState.displayedMines = minesCount; // сохраняем то, что показываем пользователю
+        gameState.realMines = realMinesCount;   // сохраняем реальное количество
 
         // Сохраняем игру в базу
         const gameRecord = minesGames.insert(gameState);
@@ -616,7 +627,8 @@ app.post('/api/mines/start', async (req, res) => {
         res.json({
             success: true,
             gameId: gameRecord.$loki,
-            gameState: gameState
+            gameState: gameState,
+            displayedMines: minesCount // возвращаем то, что показываем пользователю
         });
 
     } catch (error) {
