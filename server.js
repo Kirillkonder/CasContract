@@ -22,7 +22,7 @@ const dbPath = process.env.NODE_ENV === 'production' ?
 
 // LokiJS база данных
 let db;
-let users, transactions, casinoBank, adminLogs;
+let users, transactions, casinoBank, adminLogs, minesGames;
 
 function initDatabase() {
     return new Promise((resolve) => {
@@ -33,6 +33,7 @@ function initDatabase() {
                 transactions = db.getCollection('transactions');
                 casinoBank = db.getCollection('casino_bank');
                 adminLogs = db.getCollection('admin_logs');
+                minesGames = db.getCollection('mines_games');
                 
                 if (!users) {
                     users = db.addCollection('users', { 
@@ -61,6 +62,12 @@ function initDatabase() {
                 if (!adminLogs) {
                     adminLogs = db.addCollection('admin_logs', {
                         indices: ['created_at']
+                    });
+                }
+
+                if (!minesGames) {
+                    minesGames = db.addCollection('mines_games', {
+                        indices: ['user_id', 'created_at', 'demo_mode']
                     });
                 }
                 
@@ -124,6 +131,42 @@ function updateCasinoBank(amount) {
     });
 }
 
+// Mines Game Functions
+function generateMinesGame(minesCount) {
+    const totalCells = 25;
+    const mines = [];
+    
+    // Генерируем мины
+    while (mines.length < minesCount) {
+        const randomCell = Math.floor(Math.random() * totalCells);
+        if (!mines.includes(randomCell)) {
+            mines.push(randomCell);
+        }
+    }
+    
+    return {
+        mines,
+        minesCount,
+        revealedCells: [],
+        gameOver: false,
+        win: false,
+        currentMultiplier: 1,
+        betAmount: 0
+    };
+}
+
+function calculateMultiplier(openedCells, minesCount) {
+    // Формула расчета множителя (аналогично 1win)
+    const baseMultiplier = 1;
+    const riskFactor = 0.95; // Фактор риска
+    
+    const multiplier = baseMultiplier * (1 - riskFactor) / 
+        (1 - Math.pow(riskFactor, 25 - minesCount)) * 
+        Math.pow(riskFactor, openedCells - 1);
+    
+    return parseFloat(multiplier.toFixed(2));
+}
+
 // API: Аутентификация админа
 app.post('/api/admin/login', async (req, res) => {
     const { telegramId, password } = req.body;
@@ -150,11 +193,13 @@ app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
         const bank = getCasinoBank();
         const totalUsers = users.count();
         const totalTransactions = transactions.count();
+        const totalMinesGames = minesGames.count();
 
         res.json({
             bank_balance: bank.total_balance,
             total_users: totalUsers,
-            total_transactions: totalTransactions
+            total_transactions: totalTransactions,
+            total_mines_games: totalMinesGames
         });
     } catch (error) {
         console.error('Admin dashboard error:', error);
@@ -510,6 +555,234 @@ app.post('/api/withdraw', async (req, res) => {
     }
 });
 
+// Mines Game Routes
+app.get('/mines', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'mines.html'));
+});
+
+app.post('/api/mines/start', async (req, res) => {
+    try {
+        const { telegramId, betAmount, minesCount, demoMode } = req.body;
+        
+        if (betAmount < 0.1 || betAmount > 10) {
+            return res.status(400).json({ error: 'Ставка должна быть от 0.1 до 10 TON' });
+        }
+
+        if (![3, 5, 7].includes(minesCount)) {
+            return res.status(400).json({ error: 'Количество мин должно быть 3, 5 или 7' });
+        }
+
+        const user = users.findOne({ telegram_id: parseInt(telegramId) });
+        if (!user) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        const currentBalance = demoMode ? user.demo_balance : user.main_balance;
+        if (currentBalance < betAmount) {
+            return res.status(400).json({ error: 'Недостаточно средств' });
+        }
+
+        // Создаем игру
+        const gameState = generateMinesGame(minesCount);
+        gameState.betAmount = betAmount;
+        gameState.demoMode = demoMode;
+        gameState.userId = user.$loki;
+        gameState.telegramId = telegramId;
+        gameState.createdAt = new Date();
+
+        // Сохраняем игру в базу
+        const gameRecord = minesGames.insert(gameState);
+
+        // Списываем средства
+        if (demoMode) {
+            users.update({
+                ...user,
+                demo_balance: user.demo_balance - betAmount
+            });
+        } else {
+            users.update({
+                ...user,
+                main_balance: user.main_balance - betAmount
+            });
+        }
+
+        res.json({
+            success: true,
+            gameId: gameRecord.$loki,
+            gameState: gameState
+        });
+
+    } catch (error) {
+        console.error('Mines start error:', error);
+        res.status(500).json({ error: 'Ошибка начала игры' });
+    }
+});
+
+app.post('/api/mines/reveal', async (req, res) => {
+    try {
+        const { gameId, cellIndex, telegramId } = req.body;
+
+        const gameRecord = minesGames.get(gameId);
+        if (!gameRecord) {
+            return res.status(404).json({ error: 'Игра не найдена' });
+        }
+
+        if (gameRecord.telegramId !== parseInt(telegramId)) {
+            return res.status(403).json({ error: 'Доступ запрещен' });
+        }
+
+        if (gameRecord.gameOver) {
+            return res.status(400).json({ error: 'Игра уже завершена' });
+        }
+
+        if (gameRecord.revealedCells.includes(cellIndex)) {
+            return res.status(400).json({ error: 'Ячейка уже открыта' });
+        }
+
+        // Проверяем, есть ли мина в ячейке
+        if (gameRecord.mines.includes(cellIndex)) {
+            gameRecord.gameOver = true;
+            gameRecord.win = false;
+            gameRecord.endedAt = new Date();
+
+            // В реальном режиме - средства уходят казику
+            if (!gameRecord.demoMode) {
+                updateCasinoBank(gameRecord.betAmount);
+            }
+
+            minesGames.update(gameRecord);
+
+            return res.json({
+                success: true,
+                gameOver: true,
+                win: false,
+                mineHit: true,
+                cellIndex: cellIndex,
+                currentMultiplier: gameRecord.currentMultiplier
+            });
+        }
+
+        // Открываем ячейку
+        gameRecord.revealedCells.push(cellIndex);
+
+        // Обновляем множитель
+        gameRecord.currentMultiplier = calculateMultiplier(
+            gameRecord.revealedCells.length, 
+            gameRecord.minesCount
+        );
+
+        minesGames.update(gameRecord);
+
+        res.json({
+            success: true,
+            gameOver: false,
+            revealedCell: cellIndex,
+            currentMultiplier: gameRecord.currentMultiplier,
+            potentialWin: gameRecord.betAmount * gameRecord.currentMultiplier
+        });
+
+    } catch (error) {
+        console.error('Mines reveal error:', error);
+        res.status(500).json({ error: 'Ошибка открытия ячейки' });
+    }
+});
+
+app.post('/api/mines/cashout', async (req, res) => {
+    try {
+        const { gameId, telegramId } = req.body;
+
+        const gameRecord = minesGames.get(gameId);
+        if (!gameRecord) {
+            return res.status(404).json({ error: 'Игра не найдена' });
+        }
+
+        if (gameRecord.telegramId !== parseInt(telegramId)) {
+            return res.status(403).json({ error: 'Доступ запрещен' });
+        }
+
+        if (gameRecord.gameOver) {
+            return res.status(400).json({ error: 'Игра уже завершена' });
+        }
+
+        if (gameRecord.revealedCells.length === 0) {
+            return res.status(400).json({ error: 'Не открыто ни одной ячейки' });
+        }
+
+        gameRecord.gameOver = true;
+        gameRecord.win = true;
+        gameRecord.endedAt = new Date();
+
+        const winAmount = gameRecord.betAmount * gameRecord.currentMultiplier;
+        const user = users.findOne({ telegram_id: parseInt(telegramId) });
+
+        if (gameRecord.demoMode) {
+            users.update({
+                ...user,
+                demo_balance: user.demo_balance + winAmount
+            });
+        } else {
+            users.update({
+                ...user,
+                main_balance: user.main_balance + winAmount
+            });
+
+            // Обновляем банк казино (вычитаем выигрыш)
+            updateCasinoBank(-winAmount);
+        }
+
+        minesGames.update(gameRecord);
+
+        // Записываем транзакцию
+        transactions.insert({
+            user_id: user.$loki,
+            amount: winAmount,
+            type: 'mines_win',
+            status: 'completed',
+            demo_mode: gameRecord.demoMode,
+            game_id: gameId,
+            created_at: new Date()
+        });
+
+        res.json({
+            success: true,
+            gameOver: true,
+            win: true,
+            winAmount: winAmount,
+            multiplier: gameRecord.currentMultiplier,
+            newBalance: gameRecord.demoMode ? user.demo_balance + winAmount : user.main_balance + winAmount
+        });
+
+    } catch (error) {
+        console.error('Mines cashout error:', error);
+        res.status(500).json({ error: 'Ошибка вывода средств' });
+    }
+});
+
+app.get('/api/mines/history/:telegramId', async (req, res) => {
+    try {
+        const telegramId = parseInt(req.params.telegramId);
+        const user = users.findOne({ telegram_id: telegramId });
+        
+        if (!user) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        const userGames = minesGames.chain()
+            .find({ telegramId: telegramId })
+            .simplesort('createdAt', true)
+            .data();
+
+        res.json({
+            success: true,
+            games: userGames
+        });
+
+    } catch (error) {
+        console.error('Mines history error:', error);
+        res.status(500).json({ error: 'Ошибка получения истории' });
+    }
+});
+
 // Health check для Render
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
@@ -524,6 +797,7 @@ async function startServer() {
             console.log(`🚀 Server running on port ${PORT}`);
             console.log(`🏦 Casino bank initialized`);
             console.log(`👑 Owner ID: ${process.env.OWNER_TELEGRAM_ID}`);
+            console.log(`💣 Mines game ready`);
         });
     } catch (error) {
         console.error('Failed to start server:', error);

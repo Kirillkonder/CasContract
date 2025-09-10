@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mines - Casino Gift Contract</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .mines-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .bet-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .bet-input {
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .mines-select {
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .start-btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .start-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        
+        .mines-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .mine-cell {
+            aspect-ratio: 1;
+            background: #007bff;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+        }
+        
+        .mine-cell.revealed {
+            background: #28a745;
+        }
+        
+        .mine-cell.mine {
+            background: #dc3545;
+        }
+        
+        .game-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .cashout-btn {
+            padding: 15px 30px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .cashout-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .result-message {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        
+        .win {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .lose {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎰 Mines Game</h1>
+            <div class="balance">
+                Баланс: <span id="balance">0</span> TON
+            </div>
+        </header>
+
+        <div class="mines-container">
+            <div class="bet-controls">
+                <input type="number" class="bet-input" id="betAmount" min="0.1" max="10" step="0.1" value="0.1" placeholder="Ставка">
+                <select class="mines-select" id="minesCount">
+                    <option value="3">3 мины</option>
+                    <option value="5">5 мин</option>
+                    <option value="7">7 мин</option>
+                </select>
+                <button class="start-btn" id="startGame">Начать игру</button>
+            </div>
+
+            <div class="game-info" id="gameInfo" style="display: none;">
+                <div>Множитель: <span id="multiplier">1x</span></div>
+                <div>Выигрыш: <span id="potentialWin">0</span> TON</div>
+            </div>
+
+            <div class="mines-grid" id="minesGrid" style="display: none;"></div>
+
+            <div class="game-controls">
+                <button class="cashout-btn" id="cashoutBtn" disabled>Забрать</button>
+            </div>
+
+            <div id="resultMessage" class="result-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentGame = null;
+        let isDemoMode = true;
+
+        document.getElementById('startGame').addEventListener('click', startGame);
+        document.getElementById('cashoutBtn').addEventListener('click', cashout);
+
+        function startGame() {
+            const betAmount = parseFloat(document.getElementById('betAmount').value);
+            const minesCount = parseInt(document.getElementById('minesCount').value);
+            
+            if (betAmount < 0.1 || betAmount > 10) {
+                alert('Ставка должна быть от 0.1 до 10 TON');
+                return;
+            }
+
+            fetch('/api/mines/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    betAmount,
+                    minesCount,
+                    demo: isDemoMode
+                })
+            })
+            .then(response => response.json())
+            .then(gameState => {
+                currentGame = gameState;
+                setupGameUI();
+            })
+            .catch(error => {
+                console.error('Error starting game:', error);
+                alert('Ошибка начала игры');
+            });
+        }
+
+        function setupGameUI() {
+            document.getElementById('gameInfo').style.display = 'flex';
+            document.getElementById('minesGrid').style.display = 'grid';
+            document.getElementById('cashoutBtn').disabled = false;
+            document.getElementById('startGame').disabled = true;
+
+            updateMultiplier();
+            createGrid();
+        }
+
+        function createGrid() {
+            const grid = document.getElementById('minesGrid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < 25; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'mine-cell';
+                cell.dataset.index = i;
+                cell.textContent = '?';
+                
+                cell.addEventListener('click', () => revealCell(i));
+                grid.appendChild(cell);
+            }
+        }
+
+        function revealCell(cellIndex) {
+            if (!currentGame || currentGame.gameOver) return;
+
+            fetch('/api/mines/reveal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    cellIndex,
+                    demo: isDemoMode
+                })
+            })
+            .then(response => response.json())
+            .then(gameState => {
+                currentGame = gameState;
+                updateCellUI(cellIndex);
+                updateMultiplier();
+
+                if (gameState.gameOver) {
+                    endGame();
+                }
+            })
+            .catch(error => {
+                console.error('Error revealing cell:', error);
+                alert('Ошибка открытия ячейки');
+            });
+        }
+
+        function updateCellUI(cellIndex) {
+            const cell = document.querySelector(`.mine-cell[data-index="${cellIndex}"]`);
+            
+            if (currentGame.mines.includes(cellIndex)) {
+                cell.className = 'mine-cell mine';
+                cell.textContent = '💣';
+            } else {
+                cell.className = 'mine-cell revealed';
+                cell.textContent = '💰';
+            }
+            
+            cell.style.pointerEvents = 'none';
+        }
+
+        function updateMultiplier() {
+            document.getElementById('multiplier').textContent = currentGame.currentMultiplier.toFixed(2) + 'x';
+            
+            if (currentGame.betAmount > 0) {
+                const potentialWin = currentGame.betAmount * currentGame.currentMultiplier;
+                document.getElementById('potentialWin').textContent = potentialWin.toFixed(2);
+            }
+        }
+
+        function cashout() {
+            if (!currentGame || currentGame.gameOver) return;
+
+            fetch('/api/mines/cashout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    demo: isDemoMode
+                })
+            })
+            .then(response => response.json())
+            .then(gameState => {
+                currentGame = gameState;
+                endGame();
+                updateBalance();
+            })
+            .catch(error => {
+                console.error('Error cashing out:', error);
+                alert('Ошибка вывода средств');
+            });
+        }
+
+        function endGame() {
+            document.getElementById('cashoutBtn').disabled = true;
+            document.getElementById('startGame').disabled = false;
+
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.style.display = 'block';
+
+            if (currentGame.win) {
+                const winAmount = currentGame.betAmount * currentGame.currentMultiplier;
+                resultMessage.className = 'result-message win';
+                resultMessage.textContent = `Поздравляем! Вы выиграли ${winAmount.toFixed(2)} TON!`;
+            } else {
+                resultMessage.className = 'result-message lose';
+                resultMessage.textContent = 'Игра окончена! Вы проиграли.';
+            }
+
+            // Показываем все мины
+            currentGame.mines.forEach(mineIndex => {
+                const cell = document.querySelector(`.mine-cell[data-index="${mineIndex}"]`);
+                if (cell && !cell.classList.contains('revealed')) {
+                    cell.className = 'mine-cell mine';
+                    cell.textContent = '💣';
+                }
+            });
+
+            // Блокируем все ячейки
+            document.querySelectorAll('.mine-cell').forEach(cell => {
+                cell.style.pointerEvents = 'none';
+            });
+        }
+
+        function updateBalance() {
+            // Здесь должна быть логика обновления баланса
+            // В реальном проекте нужно получать актуальный баланс с сервера
+        }
+
+        // Инициализация
+        updateBalance();
+    </script>
+</body>
+</html>
