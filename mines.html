@@ -348,14 +348,19 @@
             cell.style.pointerEvents = 'none';
         }
 
+        // mines.html - обновленная функция updateMultiplier
         function updateMultiplier() {
             document.getElementById('multiplier').textContent = currentGame.currentMultiplier.toFixed(2) + 'x';
             
             if (currentGame.betAmount > 0) {
                 const potentialWin = currentGame.betAmount * currentGame.currentMultiplier;
                 document.getElementById('potentialWin').textContent = potentialWin.toFixed(2);
+                
+                // Обновляем отображение информации о ставке
+                const betInfo = `Ставка: ${currentGame.betAmount} TON | Баланс: ${userData.balance} TON`;
+                document.getElementById('betInfo').textContent = betInfo;
             }
-        }
+}
 
         async function cashout() {
             if (!currentGame || currentGame.gameOver) return;
