@@ -395,6 +395,8 @@
             }
         }
 
+        
+
         async function cashout() {
             if (!userBet) return;
 
@@ -434,6 +436,64 @@
                 console.error('Cashout error:', error);
                 alert('Ошибка вывода');
             }
+        }
+
+        async function placeBet() {
+            const betAmount = parseFloat(document.getElementById('betAmount').value);
+    
+    if (betAmount < 1 || betAmount > 50) {
+        alert('Ставка должна быть от 1 до 50 TON');
+        return;
+    }
+
+    try {
+        const tg = window.Telegram.WebApp;
+        const telegramId = tg.initDataUnsafe.user.id;
+
+        const response = await fetch('/api/rocket/place-bet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                telegramId: telegramId,
+                betAmount: betAmount,
+                demoMode: isDemoMode
+            })
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+            // Показываем точную ошибку с сервера
+            alert(result.error || 'Ошибка размещения ставки');
+            console.error('Server error:', result);
+            return;
+        }
+
+        if (result.success) {
+            userBet = {
+                betId: result.betId,
+                amount: betAmount,
+                cashoutMultiplier: 1.00
+            };
+
+            document.getElementById('yourBet').textContent = betAmount + ' TON';
+            document.getElementById('placeBetBtn').disabled = true;
+            document.getElementById('cashoutBtn').disabled = false;
+            updateBalance();
+
+            // Если игра еще не запущена, запускаем ее
+            if (!currentGame) {
+                startGame();
+            }
+
+            addBetToList(tg.initDataUnsafe.user.first_name, betAmount);
+        }
+    } catch (error) {
+        console.error('Place bet error:', error);
+        alert('Ошибка размещения ставки: ' + error.message);
+    }
         }
 
         function resetGame() {

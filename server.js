@@ -860,6 +860,58 @@ app.get('/api/mines/history/:telegramId', async (req, res) => {
 });
 
 
+app.post('/api/rocket/place-bet', async (req, res) => {
+    try {
+        const { telegramId, betAmount, demoMode } = req.body;
+
+        if (betAmount < 1 || betAmount > 50) {
+            return res.status(400).json({ error: 'Ставка должна быть от 1 до 50 TON' });
+        }
+
+        const user = users.findOne({ telegram_id: parseInt(telegramId) });
+        if (!user) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        // Проверяем баланс в зависимости от режима
+        const currentBalance = demoMode ? user.demo_balance : user.main_balance;
+        if (currentBalance < betAmount) {
+            return res.status(400).json({ error: 'Недостаточно средств' });
+        }
+
+        // Списываем средства в зависимости от режима
+        if (demoMode) {
+            users.update({
+                ...user,
+                demo_balance: user.demo_balance - betAmount
+            });
+        } else {
+            users.update({
+                ...user,
+                main_balance: user.main_balance - betAmount
+            });
+        }
+
+        // Создаем ставку
+        const bet = {
+            telegramId: parseInt(telegramId),
+            amount: betAmount,
+            demoMode: demoMode,
+            status: 'active',
+            createdAt: new Date(),
+            cashoutMultiplier: null,
+            winAmount: null
+        };
+
+        rocketBets.insert(bet);
+
+        res.json({ success: true, betId: bet.$loki });
+    } catch (error) {
+        console.error('Place bet error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.post('/api/rocket/cashout', async (req, res) => {
     try {
         const { betId, cashoutMultiplier, telegramId } = req.body;
@@ -875,10 +927,19 @@ app.post('/api/rocket/cashout', async (req, res) => {
 
         const winAmount = bet.amount * cashoutMultiplier;
         
-        // Зачисляем выигрыш
-        const user = users.find({ telegramId: parseInt(telegramId) })[0];
-        user.balance += winAmount;
-        users.update(user);
+        // Зачисляем выигрыш в зависимости от режима
+        const user = users.findOne({ telegram_id: parseInt(telegramId) });
+        if (bet.demoMode) {
+            users.update({
+                ...user,
+                demo_balance: user.demo_balance + winAmount
+            });
+        } else {
+            users.update({
+                ...user,
+                main_balance: user.main_balance + winAmount
+            });
+        }
 
         // Обновляем ставку
         bet.status = 'cashed_out';
@@ -898,9 +959,9 @@ app.get('/api/rocket/active-bets', async (req, res) => {
         const activeBets = rocketBets.find({ status: 'active' });
         
         const betsWithUsernames = await Promise.all(activeBets.map(async (bet) => {
-            const user = users.find({ telegramId: bet.telegramId })[0];
+            const user = users.findOne({ telegram_id: bet.telegramId });
             return {
-                username: user ? user.first_name : 'Unknown',
+                username: user ? (user.first_name || `User ${bet.telegramId}`) : 'Unknown',
                 amount: bet.amount
             };
         }));
