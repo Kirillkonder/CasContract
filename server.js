@@ -6,7 +6,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const cron = require('node-cron');
 const Loki = require('lokijs');
-
+const WebSocket = require('ws');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -217,6 +217,319 @@ function startNewRocketRound() {
             simulateRocketGame();
         }
     }, 1000);
+}
+
+const wss = new WebSocket.Server({ server: app.listen(PORT) });
+const connectedClients = new Map();
+wss.on('connection', function connection(ws) {
+    console.log('🔗 New WebSocket connection');
+    
+    ws.on('message', function message(data) {
+        try {
+            const message = JSON.parse(data);
+            
+            if (message.type === 'auth') {
+                // Аутентификация клиента
+                connectedClients.set(message.telegramId, ws);
+                ws.telegramId = message.telegramId;
+                
+                // Отправляем текущее состояние игры
+                ws.send(JSON.stringify({
+                    type: 'game_state',
+                    state: global.rocketGameState
+                }));
+            }
+            
+            if (message.type === 'place_bet') {
+                handleRocketBet(message);
+            }
+            
+            if (message.type === 'cashout') {
+                handleRocketCashout(message);
+            }
+            
+        } catch (error) {
+            console.error('WebSocket message error:', error);
+        }
+    });
+    
+    ws.on('close', function() {
+        console.log('🔌 WebSocket connection closed');
+        if (ws.telegramId) {
+            connectedClients.delete(ws.telegramId);
+        }
+    });
+});
+
+// Функция для отправки сообщений всем клиентам
+function broadcast(message) {
+    const data = JSON.stringify(message);
+    connectedClients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(data);
+        }
+    });
+}
+
+// Функция для отправки сообщения конкретному клиенту
+function sendToClient(telegramId, message) {
+    const client = connectedClients.get(telegramId);
+    if (client && client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(message));
+    }
+}
+
+// Обработка ставок через WebSocket
+async function handleRocketBet(message) {
+    const { telegramId, betAmount, autoCashout } = message;
+    
+    try {
+        const user = users.findOne({ telegram_id: parseInt(telegramId) });
+        if (!user) {
+            sendToClient(telegramId, { type: 'bet_error', error: 'User not found' });
+            return;
+        }
+
+        if (!global.rocketGameState.isRoundPreparing) {
+            sendToClient(telegramId, { type: 'bet_error', error: 'Round already started' });
+            return;
+        }
+
+        const currentBalance = user.demo_mode ? user.demo_balance : user.main_balance;
+        
+        if (currentBalance < betAmount) {
+            sendToClient(telegramId, { type: 'bet_error', error: 'Insufficient balance' });
+            return;
+        }
+
+        // Списываем ставку
+        if (user.demo_mode) {
+            users.update({
+                ...user,
+                demo_balance: user.demo_balance - betAmount
+            });
+        } else {
+            users.update({
+                ...user,
+                main_balance: user.main_balance - betAmount
+            });
+        }
+
+        // Создаем запись ставки
+        const betRecord = rocketBets.insert({
+            telegramId: parseInt(telegramId),
+            betAmount: betAmount,
+            autoCashout: autoCashout,
+            status: 'placed',
+            createdAt: new Date(),
+            demoMode: user.demo_mode,
+            roundCrashPoint: global.rocketGameState.crashPoint
+        });
+
+        // Добавляем в текущий раунд
+        global.rocketGameState.bets.push({
+            betId: betRecord.$loki,
+            telegramId: parseInt(telegramId),
+            betAmount: betAmount,
+            autoCashout: autoCashout,
+            demoMode: user.demo_mode,
+            cashedOut: false,
+            cashoutMultiplier: null,
+            username: user.username || `User${telegramId}`
+        });
+
+        // Записываем транзакцию
+        transactions.insert({
+            user_id: user.$loki,
+            amount: -betAmount,
+            type: 'rocket_bet',
+            status: 'completed',
+            game_id: betRecord.$loki,
+            created_at: new Date(),
+            demo_mode: user.demo_mode
+        });
+
+        // Отправляем подтверждение
+        sendToClient(telegramId, {
+            type: 'bet_placed',
+            betId: betRecord.$loki,
+            newBalance: user.demo_mode ? user.demo_balance - betAmount : user.main_balance - betAmount
+        });
+
+        // Рассылаем обновление всем клиентам
+        broadcast({
+            type: 'bet_added',
+            bet: {
+                betId: betRecord.$loki,
+                telegramId: parseInt(telegramId),
+                betAmount: betAmount,
+                demoMode: user.demo_mode,
+                username: user.username || `User${telegramId}`
+            }
+        });
+
+    } catch (error) {
+        console.error('WebSocket bet error:', error);
+        sendToClient(telegramId, { type: 'bet_error', error: 'Internal server error' });
+    }
+}
+
+// Обработка кэшаута через WebSocket
+async function handleRocketCashout(message) {
+    const { betId } = message;
+    
+    try {
+        const bet = rocketBets.get(parseInt(betId));
+        if (!bet) {
+            sendToClient(message.telegramId, { type: 'cashout_error', error: 'Bet not found' });
+            return;
+        }
+
+        if (bet.status !== 'placed') {
+            sendToClient(message.telegramId, { type: 'cashout_error', error: 'Bet already processed' });
+            return;
+        }
+
+        const user = users.findOne({ telegram_id: bet.telegramId });
+        if (!user) {
+            sendToClient(message.telegramId, { type: 'cashout_error', error: 'User not found' });
+            return;
+        }
+
+        if (!global.rocketGameState.gameActive) {
+            sendToClient(message.telegramId, { type: 'cashout_error', error: 'Game not active' });
+            return;
+        }
+
+        const currentMultiplier = global.rocketGameState.currentMultiplier;
+        const winAmount = bet.betAmount * currentMultiplier;
+
+        // Обновляем ставку
+        rocketBets.update({
+            ...bet,
+            status: 'cashed_out',
+            cashoutMultiplier: currentMultiplier,
+            winAmount: winAmount,
+            updatedAt: new Date()
+        });
+
+        // Обновляем в текущем раунде
+        const roundBet = global.rocketGameState.bets.find(b => b.betId === parseInt(betId));
+        if (roundBet) {
+            roundBet.cashedOut = true;
+            roundBet.cashoutMultiplier = currentMultiplier;
+        }
+
+        // Зачисляем выигрыш
+        if (bet.demoMode) {
+            users.update({
+                ...user,
+                demo_balance: user.demo_balance + winAmount
+            });
+        } else {
+            users.update({
+                ...user,
+                main_balance: user.main_balance + winAmount
+            });
+
+            // Обновляем банк казино
+            const profit = winAmount - bet.betAmount;
+            if (profit > 0) {
+                updateCasinoBank(-profit);
+            }
+        }
+
+        // Записываем транзакцию
+        transactions.insert({
+            user_id: user.$loki,
+            amount: winAmount,
+            type: 'rocket_win',
+            status: 'completed',
+            game_id: bet.$loki,
+            created_at: new Date(),
+            demo_mode: bet.demoMode,
+            multiplier: currentMultiplier
+        });
+
+        // Отправляем подтверждение
+        sendToClient(bet.telegramId, {
+            type: 'cashout_success',
+            winAmount: winAmount,
+            multiplier: currentMultiplier,
+            newBalance: bet.demoMode ? user.demo_balance + winAmount : user.main_balance + winAmount
+        });
+
+        // Рассылаем обновление
+        broadcast({
+            type: 'cashout_processed',
+            betId: betId,
+            multiplier: currentMultiplier,
+            winAmount: winAmount
+        });
+
+    } catch (error) {
+        console.error('WebSocket cashout error:', error);
+        sendToClient(message.telegramId, { type: 'cashout_error', error: 'Internal server error' });
+    }
+}
+
+// Модифицируем функцию simulateRocketGame для рассылки обновлений
+function simulateRocketGame() {
+    console.log('🚀 Rocket launch! Target:', global.rocketGameState.crashPoint.toFixed(2) + 'x');
+    
+    let multiplier = 1.00;
+    const gameInterval = setInterval(() => {
+        if (!global.rocketGameState.gameActive) {
+            clearInterval(gameInterval);
+            return;
+        }
+        
+        multiplier += 0.01;
+        global.rocketGameState.currentMultiplier = multiplier;
+        
+        // Рассылаем обновление множителя всем клиентам
+        broadcast({
+            type: 'multiplier_update',
+            multiplier: multiplier
+        });
+        
+        // Проверяем автокэшаут для ставок
+        global.rocketGameState.bets.forEach(bet => {
+            if (!bet.cashedOut && bet.autoCashout && multiplier >= bet.autoCashout) {
+                handleRocketCashout({
+                    betId: bet.betId,
+                    telegramId: bet.telegramId
+                });
+            }
+        });
+        
+        // Проверяем достигли ли точки краха
+        if (multiplier >= global.rocketGameState.crashPoint) {
+            clearInterval(gameInterval);
+            global.rocketGameState.gameActive = false;
+            
+            console.log('💥 Rocket crashed at:', multiplier.toFixed(2) + 'x');
+            
+            // Рассылаем сообщение о крахе
+            broadcast({
+                type: 'game_crashed',
+                multiplier: multiplier
+            });
+            
+            // Обрабатываем все активные ставки как проигравшие
+            processCrashedBets();
+            
+            // Запускаем новый раунд через 5 секунд
+            setTimeout(() => {
+                startNewRocketRound();
+                // Рассылаем информацию о новом раунде
+                broadcast({
+                    type: 'new_round_starting',
+                    timer: 10
+                });
+            }, 5000);
+        }
+    }, 100);
 }
 
 // Генерация точки краха
@@ -1134,10 +1447,11 @@ async function startServer() {
         await initDatabase();
         
         app.listen(PORT, () => {
-            console.log(`🚀 Server running on port ${PORT}`);
+            console.log(`🚀 Rocket game WebSocket server running on port ${PORT}`);
             console.log(`🏦 Casino bank initialized`);
             console.log(`👑 Owner ID: ${process.env.OWNER_TELEGRAM_ID}`);
             console.log(`💣 Mines game ready`);
+            
             
             // Запускаем игру Rocket
             startNewRocketRound();
