@@ -157,40 +157,38 @@
             to { height: 100px; opacity: 0; }
         }
 
-        .players-count {
-            position: absolute;
-            top: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 14px;
-            color: #74b9ff;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 5px 10px;
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(25, 30, 42, 0.8);
             border-radius: 10px;
         }
 
-        .round-timer {
-            position: absolute;
-            top: 90px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 14px;
-            color: #fdcb6e;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 5px 10px;
-            border-radius: 10px;
+        .stat-item {
+            text-align: center;
+            padding: 5px;
         }
 
-        .fake-players {
-            position: absolute;
-            top: 120px;
-            left: 50%;
-            transform: translateX(-50%);
+        .stat-label {
             font-size: 12px;
             color: #a0a0a0;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 3px 8px;
-            border-radius: 8px;
+            margin-bottom: 3px;
+        }
+
+        .stat-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #74b9ff;
+        }
+
+        .timer-value {
+            color: #fdcb6e;
+        }
+
+        .players-value {
+            color: #00b894;
         }
     </style>
 </head>
@@ -206,12 +204,20 @@
             </div>
         </div>
 
+        <div class="game-stats">
+            <div class="stat-item">
+                <div class="stat-label">Игроков онлайн</div>
+                <div class="stat-value players-value" id="playersCount">1</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Следующий раунд</div>
+                <div class="stat-value timer-value" id="roundTimer">10с</div>
+            </div>
+        </div>
+
         <div class="rocket-container">
             <div class="rocket-canvas" id="rocketCanvas">
                 <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
-                <div class="players-count" id="playersCount">Игроков: 0</div>
-                <div class="round-timer" id="roundTimer">Следующий раунд: 10с</div>
-                <div class="fake-players" id="fakePlayers">Всего онлайн: 50+</div>
                 <div class="rocket" id="rocket">🚀</div>
             </div>
 
@@ -252,22 +258,33 @@
         let rocketInterval = null;
         let currentMultiplier = 1.00;
         let userBet = null;
-        let activePlayers = 0;
+        let activePlayers = 1; // Текущий пользователь уже на странице
         let lastExplosionMultiplier = 1.0;
         let roundTimer = 10; // 10 секунд между раундами
         let timerInterval = null;
-        let fakePlayersCount = 50; // Всегда показываем 50+ игроков онлайн
+        let fakeBetsInterval = null;
+
+        // Список случайных имен для фейковых игроков
+        const fakeUsernames = [
+            "CryptoPro", "TonMaster", "RocketKing", "CryptoWhale", 
+            "TonInvestor", "SpaceTraveler", "MoonRacer", "StarGazer",
+            "CryptoNinja", "BlockchainPro", "TonHunter", "SpaceExplorer",
+            "CryptoPilot", "RocketMan", "AstroTrader", "CosmicGambler"
+        ];
 
         document.addEventListener('DOMContentLoaded', function() {
             loadUserData();
             setupEventListeners();
             loadActiveBets();
             
+            // Увеличиваем счетчик игроков при загрузке страницы
+            updatePlayersCount(1);
+            
+            // Запускаем генерацию фейковых ставок
+            startFakeBets();
+            
             // Обновляем количество игроков каждые 5 секунд
             setInterval(loadActiveBets, 5000);
-            
-            // Показываем всегда 50+ игроков онлайн
-            updateFakePlayersCount();
         });
 
         function goBack() {
@@ -359,7 +376,6 @@
                     }
 
                     addBetToList(tg.initDataUnsafe.user.first_name, betAmount);
-                    updatePlayersCount(1); // Увеличиваем счетчик игроков
                 }
             } catch (error) {
                 console.error('Place bet error:', error);
@@ -522,112 +538,85 @@
             currentGame = null;
             document.getElementById('multiplierDisplay').textContent = '1.00x';
             document.getElementById('rocket').style.bottom = '50px';
+            document.getElementById('currentMultiplier').textContent = '1.00x';
             
-            // Запускаем таймер между раундами
+            // Запускаем таймер перед следующим раундом
             startRoundTimer();
         }
 
         function startRoundTimer() {
             roundTimer = 10;
-            document.getElementById('roundTimer').textContent = `Следующий раунд: ${roundTimer}с`;
-            document.getElementById('placeBetBtn').disabled = true;
+            document.getElementById('roundTimer').textContent = roundTimer + 'с';
             
             timerInterval = setInterval(() => {
                 roundTimer--;
-                document.getElementById('roundTimer').textContent = `Следующий раунд: ${roundTimer}с`;
+                document.getElementById('roundTimer').textContent = roundTimer + 'с';
                 
                 if (roundTimer <= 0) {
                     clearInterval(timerInterval);
                     timerInterval = null;
-                    document.getElementById('roundTimer').textContent = 'Идет полет!';
-                    document.getElementById('placeBetBtn').disabled = false;
+                    document.getElementById('roundTimer').textContent = '0с';
+                    
+                    // Если есть активные ставки, запускаем новую игру
+                    if (document.getElementById('betsContainer').children.length > 0) {
+                        startGame();
+                    }
                 }
             }, 1000);
         }
 
-        async function loadActiveBets() {
-            try {
-                const response = await fetch('/api/rocket/active-bets');
-                if (response.ok) {
-                    const bets = await response.json();
-                    updateBetsList(bets);
-                    updatePlayersCount(bets.length);
-                }
-            } catch (error) {
-                console.error('Error loading active bets:', error);
+        function updateBalance() {
+            if (userData && userBet) {
+                const newBalance = userData.balance - userBet.amount;
+                document.getElementById('balance').textContent = newBalance.toFixed(2);
             }
-        }
-
-        function updateBetsList(bets) {
-            const container = document.getElementById('betsContainer');
-            const countElement = document.getElementById('activeBetsCount');
-            
-            countElement.textContent = bets.length;
-            
-            if (bets.length === 0) {
-                container.innerHTML = '<div class="no-bets">Ставок пока нет</div>';
-                return;
-            }
-            
-            container.innerHTML = '';
-            bets.forEach(bet => {
-                const betElement = document.createElement('div');
-                betElement.className = 'bet-item';
-                betElement.innerHTML = `
-                    <span>${bet.username}</span>
-                    <span>${bet.amount} TON</span>
-                `;
-                container.appendChild(betElement);
-            });
-        }
-
-        function addBetToList(username, amount) {
-            const container = document.getElementById('betsContainer');
-            const countElement = document.getElementById('activeBetsCount');
-            
-            // Убираем сообщение "Ставок пока нет"
-            if (container.querySelector('.no-bets')) {
-                container.innerHTML = '';
-            }
-            
-            const betElement = document.createElement('div');
-            betElement.className = 'bet-item';
-            betElement.innerHTML = `
-                <span>${username}</span>
-                <span>${amount} TON</span>
-            `;
-            container.appendChild(betElement);
-            
-            // Обновляем счетчик
-            const currentCount = parseInt(countElement.textContent);
-            countElement.textContent = currentCount + 1;
         }
 
         function updatePlayersCount(count) {
             activePlayers = count;
-            document.getElementById('playersCount').textContent = `Игроков: ${count}`;
+            document.getElementById('playersCount').textContent = count;
         }
 
-        function updateFakePlayersCount() {
-            // Всегда показываем 50+ игроков онлайн
-            document.getElementById('fakePlayers').textContent = 'Всего онлайн: 50+';
+        function loadActiveBets() {
+            // В реальном приложении здесь был бы запрос к серверу
+            // Для демо просто обновляем счетчик на основе активных игроков
+            const activeBets = document.getElementById('betsContainer').children.length;
+            document.getElementById('activeBetsCount').textContent = activeBets;
         }
 
-        async function updateBalance() {
-            try {
-                const tg = window.Telegram.WebApp;
-                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                    const telegramId = tg.initDataUnsafe.user.id;
-                    
-                    const response = await fetch(`/api/user/${telegramId}`);
-                    if (response.ok) {
-                        userData = await response.json();
-                        document.getElementById('balance').textContent = userData.balance.toFixed(2);
-                    }
-                }
-            } catch (error) {
-                console.error('Error updating balance:', error);
+        function addBetToList(username, amount) {
+            const betsContainer = document.getElementById('betsContainer');
+            
+            // Убираем сообщение "Ставок пока нет"
+            const noBets = betsContainer.querySelector('.no-bets');
+            if (noBets) {
+                noBets.remove();
             }
+            
+            const betItem = document.createElement('div');
+            betItem.className = 'bet-item';
+            betItem.innerHTML = `
+                <span>${username}</span>
+                <span>${amount} TON</span>
+            `;
+            
+            betsContainer.appendChild(betItem);
+            document.getElementById('activeBetsCount').textContent = betsContainer.children.length;
+        }
+
+        function startFakeBets() {
+            // Генерируем случайные ставки от фейковых игроков
+            fakeBetsInterval = setInterval(() => {
+                if (Math.random() < 0.3) { // 30% шанс каждые 5 секунд
+                    const randomUsername = fakeUsernames[Math.floor(Math.random() * fakeUsernames.length)];
+                    const randomBetAmount = Math.floor(Math.random() * 20) + 1; // 1-20 TON
+                    
+                    addBetToList(randomUsername, randomBetAmount);
+                    
+                    // Увеличиваем счетчик игроков при каждой новой ставке
+                    updatePlayersCount(activePlayers + 1);
+                }
+            }, 5000);
         }
     </script>
 </body>
