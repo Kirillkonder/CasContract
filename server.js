@@ -860,7 +860,7 @@ app.get('/api/mines/history/:telegramId', async (req, res) => {
 });
 
 
-p.post('/api/rocket/cashout', async (req, res) => {
+app.post('/api/rocket/cashout', async (req, res) => {
     try {
         const { betId, cashoutMultiplier, telegramId } = req.body;
 
