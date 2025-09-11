@@ -76,6 +76,109 @@ function initDatabase() {
                 rocketBets = db.addCollection('rocket_bets', {
                     indices: ['telegramId', 'createdAt', 'status']
                 });
+
+                // Глобальное состояние игры Rocket
+global.rocketGameState = {
+    isRoundPreparing: true,
+    roundTimer: 10,
+    bets: [],
+    crashPoint: null,
+    currentMultiplier: 1.00,
+    gameActive: false
+};
+
+// Функция для управления раундами Rocket
+function startNewRocketRound() {
+    console.log('🚀 Starting new Rocket round...');
+    
+    global.rocketGameState.isRoundPreparing = true;
+    global.rocketGameState.roundTimer = 10;
+    global.rocketGameState.bets = [];
+    global.rocketGameState.crashPoint = generateCrashPoint();
+    global.rocketGameState.currentMultiplier = 1.00;
+    global.rocketGameState.gameActive = false;
+    
+    console.log('🎯 Crash point set to:', global.rocketGameState.crashPoint.toFixed(2) + 'x');
+    
+    // Запускаем таймер раунда
+    const roundInterval = setInterval(() => {
+        global.rocketGameState.roundTimer--;
+        
+        if (global.rocketGameState.roundTimer <= 0) {
+            clearInterval(roundInterval);
+            global.rocketGameState.isRoundPreparing = false;
+            global.rocketGameState.gameActive = true;
+            
+            console.log('🎮 Rocket game started!');
+            simulateRocketGame();
+        }
+    }, 1000);
+}
+
+// Генерация точки краха
+function generateCrashPoint() {
+    const probabilities = [
+        { multiplier: 1.5, chance: 0.3 },
+        { multiplier: 2.0, chance: 0.2 },
+        { multiplier: 3.0, chance: 0.15 },
+        { multiplier: 5.0, chance: 0.1 },
+        { multiplier: 10.0, chance: 0.05 },
+        { multiplier: 20.0, chance: 0.02 },
+        { multiplier: 50.0, chance: 0.01 }
+    ];
+
+    let random = Math.random();
+    let cumulative = 0;
+
+    for (const prob of probabilities) {
+        cumulative += prob.chance;
+        if (random <= cumulative) {
+            return prob.multiplier;
+        }
+    }
+
+    return 1.1 + Math.random() * 98.9;
+}
+
+// Симуляция игры Rocket
+function simulateRocketGame() {
+    console.log('🚀 Rocket launch! Target:', global.rocketGameState.crashPoint.toFixed(2) + 'x');
+    
+    let multiplier = 1.00;
+    const gameInterval = setInterval(() => {
+        if (!global.rocketGameState.gameActive) {
+            clearInterval(gameInterval);
+            return;
+        }
+        
+        multiplier += 0.01;
+        global.rocketGameState.currentMultiplier = multiplier;
+        
+        // Проверяем достигли ли точки краха
+        if (multiplier >= global.rocketGameState.crashPoint) {
+            clearInterval(gameInterval);
+            global.rocketGameState.gameActive = false;
+            
+            console.log('💥 Rocket crashed at:', multiplier.toFixed(2) + 'x');
+            
+            // Обрабатываем все активные ставки как проигравшие
+            processCrashedBets();
+            
+            // Запускаем новый раунд через 5 секунд
+            setTimeout(() => {
+                startNewRocketRound();
+            }, 5000);
+        }
+    }, 100); // Обновление каждые 100ms
+}
+
+// Обработка ставок при крахе
+function processCrashedBets() {
+    // Здесь обрабатываем все активные ставки как проигравшие
+    console.log('💸 Processing', global.rocketGameState.bets.length, 'crashed bets');
+    
+    // В реальном приложении здесь была бы логика обновления БД
+}
             }
                 
                 console.log('LokiJS database initialized');
@@ -864,6 +967,14 @@ app.post('/api/rocket/place-bet', async (req, res) => {
     try {
         const { telegramId, betAmount, demoMode } = req.body;
 
+        // 🔥 ПРОВЕРКА: Только во время подготовки раунда!
+        if (!global.rocketGameState.isRoundPreparing) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Прием ставок закрыт! Дождитесь следующего раунда.' 
+            });
+        }
+
         if (betAmount < 1 || betAmount > 50) {
             return res.status(400).json({ error: 'Ставка должна быть от 1 до 50 TON' });
         }
@@ -905,7 +1016,16 @@ app.post('/api/rocket/place-bet', async (req, res) => {
 
         rocketBets.insert(bet);
 
+        // 🔥 ДОБАВЛЯЕМ СТАВКУ В ТЕКУЩИЙ РАУНД
+        global.rocketGameState.bets.push({
+            betId: bet.$loki,
+            telegramId: parseInt(telegramId),
+            amount: betAmount,
+            demoMode: demoMode
+        });
+
         res.json({ success: true, betId: bet.$loki });
+
     } catch (error) {
         console.error('Place bet error:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -914,45 +1034,60 @@ app.post('/api/rocket/place-bet', async (req, res) => {
 
 app.post('/api/rocket/cashout', async (req, res) => {
     try {
-        const { betId, cashoutMultiplier, telegramId } = req.body;
-
-        const bet = rocketBets.get(betId);
-        if (!bet || bet.telegramId !== parseInt(telegramId)) {
-            return res.status(404).json({ error: 'Ставка не найдена' });
-        }
-
-        if (bet.status !== 'active') {
-            return res.status(400).json({ error: 'Ставка уже обработана' });
-        }
-
-        const winAmount = bet.amount * cashoutMultiplier;
+        const { telegramId, betId, multiplier, demoMode } = req.body;
         
-        // Зачисляем выигрыш в зависимости от режима
-        const user = users.findOne({ telegram_id: parseInt(telegramId) });
-        if (bet.demoMode) {
-            users.update({
-                ...user,
-                demo_balance: user.demo_balance + winAmount
-            });
-        } else {
-            users.update({
-                ...user,
-                main_balance: user.main_balance + winAmount
+        const bet = await Bet.findById(betId);
+        if (!bet || bet.telegramId !== telegramId) {
+            return res.status(404).json({ success: false, error: 'Ставка не найдена' });
+        }
+        
+        if (bet.status !== 'active') {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Ставка уже обработана' 
             });
         }
-
+        
+        const winAmount = bet.amount * multiplier;
+        
         // Обновляем ставку
-        bet.status = 'cashed_out';
-        bet.cashoutMultiplier = cashoutMultiplier;
+        bet.status = 'won';
         bet.winAmount = winAmount;
-        rocketBets.update(bet);
-
-        res.json({ success: true, winAmount });
+        bet.cashoutMultiplier = multiplier;
+        await bet.save();
+        
+        // Начисляем выигрыш
+        const user = await User.findOne({ telegramId });
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'Пользователь не найден' });
+        }
+        
+        if (demoMode) {
+            user.demo_balance += winAmount;
+        } else {
+            user.balance += winAmount;
+        }
+        
+        await user.save();
+        
+        // Удаляем ставку из активной игры
+        if (global.gameState.bets) {
+            global.gameState.bets = global.gameState.bets.filter(b => b.betId.toString() !== betId);
+        }
+        
+        res.json({ 
+            success: true, 
+            winAmount,
+            newBalance: demoMode ? user.demo_balance : user.balance
+        });
+        
     } catch (error) {
-        console.error('Cashout error:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Error cashing out:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
     }
 });
+
+
 
 app.get('/api/rocket/active-bets', async (req, res) => {
     try {
@@ -997,6 +1132,8 @@ async function startServer() {
             console.log(`🏦 Casino bank initialized`);
             console.log(`👑 Owner ID: ${process.env.OWNER_TELEGRAM_ID}`);
             console.log(`💣 Mines game ready`);
+            startNewRocketRound();
+            console.log(`🎮 Rocket game system started`);
             console.log('🔄 Keep-alive service started (ping every 14 minutes)');
         });
     } catch (error) {

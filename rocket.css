@@ -198,3 +198,73 @@
     background: rgba(0, 184, 148, 0.2);
     border-left: 3px solid #00b894;
 }
+
+/* Добавьте эти стили в ваш rocket.css */
+.round-info {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.round-timer {
+    font-size: 18px;
+    font-weight: bold;
+    color: #00b894;
+}
+
+.bets-container {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.bet-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    margin: 5px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.bet-item.user-bet {
+    background: rgba(0, 184, 148, 0.2);
+    border: 1px solid #00b894;
+}
+
+.bot-avatar {
+    margin-right: 5px;
+}
+
+.no-bets {
+    text-align: center;
+    color: #636e72;
+    padding: 20px;
+}
+
+/* Анимации для ракеты и взрыва */
+.trail {
+    position: absolute;
+    width: 2px;
+    height: 20px;
+    background: linear-gradient(to top, #00b894, transparent);
+    animation: trailFade 1s ease-out;
+}
+
+@keyframes trailFade {
+    from { opacity: 1; height: 20px; }
+    to { opacity: 0; height: 40px; }
+}
+
+.explosion {
+    position: absolute;
+    font-size: 24px;
+    animation: explode 1s ease-out;
+}
+
+@keyframes explode {
+    from { transform: scale(1); opacity: 1; }
+    to { transform: scale(3); opacity: 0; }
+}
