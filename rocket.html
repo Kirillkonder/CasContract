@@ -168,6 +168,30 @@
             padding: 5px 10px;
             border-radius: 10px;
         }
+
+        .round-timer {
+            position: absolute;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #fdcb6e;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 10px;
+        }
+
+        .fake-players {
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #a0a0a0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 3px 8px;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -186,6 +210,8 @@
             <div class="rocket-canvas" id="rocketCanvas">
                 <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
                 <div class="players-count" id="playersCount">Игроков: 0</div>
+                <div class="round-timer" id="roundTimer">Следующий раунд: 10с</div>
+                <div class="fake-players" id="fakePlayers">Всего онлайн: 50+</div>
                 <div class="rocket" id="rocket">🚀</div>
             </div>
 
@@ -228,6 +254,9 @@
         let userBet = null;
         let activePlayers = 0;
         let lastExplosionMultiplier = 1.0;
+        let roundTimer = 10; // 10 секунд между раундами
+        let timerInterval = null;
+        let fakePlayersCount = 50; // Всегда показываем 50+ игроков онлайн
 
         document.addEventListener('DOMContentLoaded', function() {
             loadUserData();
@@ -236,6 +265,9 @@
             
             // Обновляем количество игроков каждые 5 секунд
             setInterval(loadActiveBets, 5000);
+            
+            // Показываем всегда 50+ игроков онлайн
+            updateFakePlayersCount();
         });
 
         function goBack() {
@@ -267,6 +299,12 @@
         }
 
         async function placeBet() {
+            // Блокируем кнопку если идет таймер между раундами
+            if (timerInterval) {
+                alert('Идет подготовка к следующему раунду! Подождите ' + roundTimer + ' секунд');
+                return;
+            }
+
             // Блокируем кнопку если игра уже идет
             if (currentGame) {
                 alert('Дождитесь окончания текущего раунда!');
@@ -472,61 +510,39 @@
                     document.getElementById('cashoutBtn').disabled = true;
                     document.getElementById('placeBetBtn').disabled = false;
                     updateBalance();
-                    updatePlayersCount(-1); // Уменьшаем счетчик игроков
                 }
             } catch (error) {
                 console.error('Cashout error:', error);
-                alert('Ошибка вывода');
+                alert('Ошибка вывода: ' + error.message);
             }
         }
 
         function resetGame() {
+            clearInterval(rocketInterval);
             currentGame = null;
-            document.getElementById('rocket').style.bottom = '50px';
             document.getElementById('multiplierDisplay').textContent = '1.00x';
+            document.getElementById('rocket').style.bottom = '50px';
             
-            // Проверяем есть ли еще активные ставки
-            loadActiveBets().then(() => {
-                const activeBets = document.getElementById('betsContainer').children.length;
-                if (activeBets > 0 && !document.querySelector('.no-bets')) {
-                    // Перезапускаем игру через 3 секунды если есть ставки
-                    setTimeout(() => {
-                        startGame();
-                    }, 3000);
+            // Запускаем таймер между раундами
+            startRoundTimer();
+        }
+
+        function startRoundTimer() {
+            roundTimer = 10;
+            document.getElementById('roundTimer').textContent = `Следующий раунд: ${roundTimer}с`;
+            document.getElementById('placeBetBtn').disabled = true;
+            
+            timerInterval = setInterval(() => {
+                roundTimer--;
+                document.getElementById('roundTimer').textContent = `Следующий раунд: ${roundTimer}с`;
+                
+                if (roundTimer <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    document.getElementById('roundTimer').textContent = 'Идет полет!';
+                    document.getElementById('placeBetBtn').disabled = false;
                 }
-            });
-        }
-
-        function addBetToList(username, amount) {
-            const betsContainer = document.getElementById('betsContainer');
-            
-            if (betsContainer.querySelector('.no-bets')) {
-                betsContainer.innerHTML = '';
-            }
-
-            const betItem = document.createElement('div');
-            betItem.className = 'bet-item';
-            betItem.innerHTML = `
-                <span>${username}:</span>
-                <span>${amount} TON</span>
-            `;
-            
-            betsContainer.appendChild(betItem);
-            betsContainer.scrollTop = betsContainer.scrollHeight;
-            
-            // Обновляем счетчик активных ставок
-            updateActiveBetsCount();
-        }
-
-        function updateActiveBetsCount() {
-            const bets = document.getElementById('betsContainer').children;
-            const count = bets.length;
-            document.getElementById('activeBetsCount').textContent = count;
-        }
-
-        function updatePlayersCount(change) {
-            activePlayers = Math.max(0, activePlayers + change);
-            document.getElementById('playersCount').textContent = `Игроков: ${activePlayers}`;
+            }, 1000);
         }
 
         async function loadActiveBets() {
@@ -534,50 +550,80 @@
                 const response = await fetch('/api/rocket/active-bets');
                 if (response.ok) {
                     const bets = await response.json();
-                    const betsContainer = document.getElementById('betsContainer');
-                    
-                    if (bets.length > 0) {
-                        betsContainer.innerHTML = '';
-                        bets.forEach(bet => {
-                            addBetToList(bet.username, bet.amount);
-                        });
-                        
-                        // Обновляем счетчик игроков
-                        activePlayers = bets.length;
-                        document.getElementById('playersCount').textContent = `Игроков: ${activePlayers}`;
-                        
-                        // Запускаем игру если есть активные ставки и игра не запущена
-                        if (!currentGame) {
-                            startGame();
-                        }
-                    } else {
-                        betsContainer.innerHTML = '<div class="no-bets">Ставок пока нет</div>';
-                        activePlayers = 0;
-                        document.getElementById('playersCount').textContent = `Игроков: 0`;
-                        
-                        // Останавливаем игру если нет ставок
-                        if (currentGame) {
-                            clearInterval(rocketInterval);
-                            resetGame();
-                        }
-                    }
-                    
-                    updateActiveBetsCount();
+                    updateBetsList(bets);
+                    updatePlayersCount(bets.length);
                 }
             } catch (error) {
-                console.error('Load bets error:', error);
+                console.error('Error loading active bets:', error);
             }
+        }
+
+        function updateBetsList(bets) {
+            const container = document.getElementById('betsContainer');
+            const countElement = document.getElementById('activeBetsCount');
+            
+            countElement.textContent = bets.length;
+            
+            if (bets.length === 0) {
+                container.innerHTML = '<div class="no-bets">Ставок пока нет</div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            bets.forEach(bet => {
+                const betElement = document.createElement('div');
+                betElement.className = 'bet-item';
+                betElement.innerHTML = `
+                    <span>${bet.username}</span>
+                    <span>${bet.amount} TON</span>
+                `;
+                container.appendChild(betElement);
+            });
+        }
+
+        function addBetToList(username, amount) {
+            const container = document.getElementById('betsContainer');
+            const countElement = document.getElementById('activeBetsCount');
+            
+            // Убираем сообщение "Ставок пока нет"
+            if (container.querySelector('.no-bets')) {
+                container.innerHTML = '';
+            }
+            
+            const betElement = document.createElement('div');
+            betElement.className = 'bet-item';
+            betElement.innerHTML = `
+                <span>${username}</span>
+                <span>${amount} TON</span>
+            `;
+            container.appendChild(betElement);
+            
+            // Обновляем счетчик
+            const currentCount = parseInt(countElement.textContent);
+            countElement.textContent = currentCount + 1;
+        }
+
+        function updatePlayersCount(count) {
+            activePlayers = count;
+            document.getElementById('playersCount').textContent = `Игроков: ${count}`;
+        }
+
+        function updateFakePlayersCount() {
+            // Всегда показываем 50+ игроков онлайн
+            document.getElementById('fakePlayers').textContent = 'Всего онлайн: 50+';
         }
 
         async function updateBalance() {
             try {
                 const tg = window.Telegram.WebApp;
-                const telegramId = tg.initDataUnsafe.user.id;
-                
-                const response = await fetch(`/api/user/${telegramId}`);
-                if (response.ok) {
-                    userData = await response.json();
-                    document.getElementById('balance').textContent = userData.balance.toFixed(2);
+                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                    const telegramId = tg.initDataUnsafe.user.id;
+                    
+                    const response = await fetch(`/api/user/${telegramId}`);
+                    if (response.ok) {
+                        userData = await response.json();
+                        document.getElementById('balance').textContent = userData.balance.toFixed(2);
+                    }
                 }
             } catch (error) {
                 console.error('Error updating balance:', error);
