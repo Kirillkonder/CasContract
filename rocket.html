@@ -156,6 +156,18 @@
             from { height: 0; opacity: 1; }
             to { height: 100px; opacity: 0; }
         }
+
+        .players-count {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #74b9ff;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -173,6 +185,7 @@
         <div class="rocket-container">
             <div class="rocket-canvas" id="rocketCanvas">
                 <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
+                <div class="players-count" id="playersCount">Игроков: 0</div>
                 <div class="rocket" id="rocket">🚀</div>
             </div>
 
@@ -198,7 +211,7 @@
             </div>
 
             <div class="bets-list">
-                <h3>Последние ставки</h3>
+                <h3>Активные ставки (<span id="activeBetsCount">0</span>)</h3>
                 <div id="betsContainer">
                     <div class="no-bets">Ставок пока нет</div>
                 </div>
@@ -213,11 +226,16 @@
         let rocketInterval = null;
         let currentMultiplier = 1.00;
         let userBet = null;
+        let activePlayers = 0;
+        let lastExplosionMultiplier = 1.0;
 
         document.addEventListener('DOMContentLoaded', function() {
             loadUserData();
             setupEventListeners();
             loadActiveBets();
+            
+            // Обновляем количество игроков каждые 5 секунд
+            setInterval(loadActiveBets, 5000);
         });
 
         function goBack() {
@@ -249,6 +267,12 @@
         }
 
         async function placeBet() {
+            // Блокируем кнопку если игра уже идет
+            if (currentGame) {
+                alert('Дождитесь окончания текущего раунда!');
+                return;
+            }
+
             const betAmount = parseFloat(document.getElementById('betAmount').value);
             
             if (betAmount < 1 || betAmount > 50) {
@@ -272,13 +296,13 @@
                     })
                 });
 
+                const result = await response.json();
+                
                 if (!response.ok) {
-                    const error = await response.json();
-                    alert(error.error || 'Ошибка размещения ставки');
+                    alert(result.error || 'Ошибка размещения ставки');
                     return;
                 }
 
-                const result = await response.json();
                 if (result.success) {
                     userBet = {
                         betId: result.betId,
@@ -291,16 +315,17 @@
                     document.getElementById('cashoutBtn').disabled = false;
                     updateBalance();
 
-                    // Если игра еще не запущена, запускаем ее
+                    // Запускаем игру если она еще не запущена
                     if (!currentGame) {
                         startGame();
                     }
 
                     addBetToList(tg.initDataUnsafe.user.first_name, betAmount);
+                    updatePlayersCount(1); // Увеличиваем счетчик игроков
                 }
             } catch (error) {
                 console.error('Place bet error:', error);
-                alert('Ошибка размещения ставки');
+                alert('Ошибка размещения ставки: ' + error.message);
             }
         }
 
@@ -315,16 +340,33 @@
         }
 
         function generateExplosionPoint() {
-            // Генерируем точку взрыва между 1.1x и 100x
-            return 1.1 + Math.random() * 98.9;
+            // Улучшенный алгоритм с непредсказуемыми взрывами
+            const baseMultiplier = 1.1 + Math.random() * 3.9; // 1.1x - 5x
+            const randomFactor = Math.random();
+            
+            // 70% chance маленький множитель (1.1x-5x)
+            // 25% chance средний множитель (5x-15x)  
+            // 5% chance большой множитель (15x-100x)
+            let explosionMultiplier;
+            
+            if (randomFactor < 0.7) {
+                explosionMultiplier = baseMultiplier;
+            } else if (randomFactor < 0.95) {
+                explosionMultiplier = 5 + Math.random() * 10; // 5x-15x
+            } else {
+                explosionMultiplier = 15 + Math.random() * 85; // 15x-100x
+            }
+            
+            lastExplosionMultiplier = explosionMultiplier;
+            return explosionMultiplier;
         }
 
         function updateRocket() {
             if (!currentGame) return;
 
-            // Увеличиваем множитель (логарифмическая кривая как в 1win)
+            // Улучшенная формула множителя (более резкий рост)
             const timeElapsed = (Date.now() - currentGame.startTime) / 1000;
-            currentMultiplier = 1 + Math.pow(timeElapsed, 1.5) / 10;
+            currentMultiplier = 1 + Math.pow(timeElapsed, 1.8) / 8;
 
             // Обновляем отображение
             document.getElementById('multiplierDisplay').textContent = currentMultiplier.toFixed(2) + 'x';
@@ -338,7 +380,8 @@
             // Обновляем позицию ракеты
             const rocket = document.getElementById('rocket');
             const canvasHeight = document.getElementById('rocketCanvas').offsetHeight;
-            const rocketPosition = Math.min(100, (currentMultiplier / 100) * 80);
+            const maxHeight = 80; // Максимальная высота в %
+            const rocketPosition = Math.min(maxHeight, (currentMultiplier / 100) * maxHeight);
             rocket.style.bottom = (50 + rocketPosition) + 'px';
 
             // Создаем след
@@ -395,8 +438,6 @@
             }
         }
 
-        
-
         async function cashout() {
             if (!userBet) return;
 
@@ -431,6 +472,7 @@
                     document.getElementById('cashoutBtn').disabled = true;
                     document.getElementById('placeBetBtn').disabled = false;
                     updateBalance();
+                    updatePlayersCount(-1); // Уменьшаем счетчик игроков
                 }
             } catch (error) {
                 console.error('Cashout error:', error);
@@ -438,75 +480,21 @@
             }
         }
 
-        async function placeBet() {
-            const betAmount = parseFloat(document.getElementById('betAmount').value);
-    
-    if (betAmount < 1 || betAmount > 50) {
-        alert('Ставка должна быть от 1 до 50 TON');
-        return;
-    }
-
-    try {
-        const tg = window.Telegram.WebApp;
-        const telegramId = tg.initDataUnsafe.user.id;
-
-        const response = await fetch('/api/rocket/place-bet', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                telegramId: telegramId,
-                betAmount: betAmount,
-                demoMode: isDemoMode
-            })
-        });
-
-        const result = await response.json();
-        
-        if (!response.ok) {
-            // Показываем точную ошибку с сервера
-            alert(result.error || 'Ошибка размещения ставки');
-            console.error('Server error:', result);
-            return;
-        }
-
-        if (result.success) {
-            userBet = {
-                betId: result.betId,
-                amount: betAmount,
-                cashoutMultiplier: 1.00
-            };
-
-            document.getElementById('yourBet').textContent = betAmount + ' TON';
-            document.getElementById('placeBetBtn').disabled = true;
-            document.getElementById('cashoutBtn').disabled = false;
-            updateBalance();
-
-            // Если игра еще не запущена, запускаем ее
-            if (!currentGame) {
-                startGame();
-            }
-
-            addBetToList(tg.initDataUnsafe.user.first_name, betAmount);
-        }
-    } catch (error) {
-        console.error('Place bet error:', error);
-        alert('Ошибка размещения ставки: ' + error.message);
-    }
-        }
-
         function resetGame() {
             currentGame = null;
             document.getElementById('rocket').style.bottom = '50px';
             document.getElementById('multiplierDisplay').textContent = '1.00x';
             
-            // Перезапускаем игру через 3 секунды
-            setTimeout(() => {
-                if (document.getElementById('betsContainer').children.length > 0) {
-                    startGame();
+            // Проверяем есть ли еще активные ставки
+            loadActiveBets().then(() => {
+                const activeBets = document.getElementById('betsContainer').children.length;
+                if (activeBets > 0 && !document.querySelector('.no-bets')) {
+                    // Перезапускаем игру через 3 секунды если есть ставки
+                    setTimeout(() => {
+                        startGame();
+                    }, 3000);
                 }
-            }, 3000);
+            });
         }
 
         function addBetToList(username, amount) {
@@ -525,6 +513,20 @@
             
             betsContainer.appendChild(betItem);
             betsContainer.scrollTop = betsContainer.scrollHeight;
+            
+            // Обновляем счетчик активных ставок
+            updateActiveBetsCount();
+        }
+
+        function updateActiveBetsCount() {
+            const bets = document.getElementById('betsContainer').children;
+            const count = bets.length;
+            document.getElementById('activeBetsCount').textContent = count;
+        }
+
+        function updatePlayersCount(change) {
+            activePlayers = Math.max(0, activePlayers + change);
+            document.getElementById('playersCount').textContent = `Игроков: ${activePlayers}`;
         }
 
         async function loadActiveBets() {
@@ -540,9 +542,27 @@
                             addBetToList(bet.username, bet.amount);
                         });
                         
-                        // Запускаем игру если есть активные ставки
-                        startGame();
+                        // Обновляем счетчик игроков
+                        activePlayers = bets.length;
+                        document.getElementById('playersCount').textContent = `Игроков: ${activePlayers}`;
+                        
+                        // Запускаем игру если есть активные ставки и игра не запущена
+                        if (!currentGame) {
+                            startGame();
+                        }
+                    } else {
+                        betsContainer.innerHTML = '<div class="no-bets">Ставок пока нет</div>';
+                        activePlayers = 0;
+                        document.getElementById('playersCount').textContent = `Игроков: 0`;
+                        
+                        // Останавливаем игру если нет ставок
+                        if (currentGame) {
+                            clearInterval(rocketInterval);
+                            resetGame();
+                        }
                     }
+                    
+                    updateActiveBetsCount();
                 }
             } catch (error) {
                 console.error('Load bets error:', error);
