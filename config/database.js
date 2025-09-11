@@ -1,6 +1,7 @@
 const path = require('path');
 const Loki = require('lokijs');
 
+// Глобальные переменные для коллекций
 let db;
 let users, transactions, casinoBank, adminLogs, minesGames;
 
@@ -88,14 +89,16 @@ function updateCasinoBank(amount) {
     });
 }
 
+// Экспортируем функции и коллекции
 module.exports = {
     initDatabase,
-    db,
-    users,
-    transactions,
-    casinoBank,
-    adminLogs,
-    minesGames,
+    // Экспортируем коллекции
+    getUsers: () => users,
+    getTransactions: () => transactions,
+    getCasinoBankCollection: () => casinoBank,
+    getAdminLogs: () => adminLogs,
+    getMinesGames: () => minesGames,
+    // Экспортируем функции
     logAdminAction,
     getCasinoBank,
     updateCasinoBank

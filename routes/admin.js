@@ -1,7 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { cryptoPayRequest } = require('../services/cryptoPay');
-const { users, transactions, minesGames, logAdminAction, getCasinoBank, updateCasinoBank } = require('../config/database');
+const { 
+    getUsers, 
+    getTransactions, 
+    getMinesGames, 
+    logAdminAction, 
+    getCasinoBank, 
+    updateCasinoBank 
+} = require('../config/database');
 const { isAdmin } = require('../middleware/auth');
 
 // API: Аутентификация админа
@@ -21,6 +28,10 @@ router.post('/login', async (req, res) => {
 // API: Получить данные админки
 router.get('/dashboard/:telegramId', isAdmin, async (req, res) => {
     try {
+        const users = getUsers();
+        const transactions = getTransactions();
+        const minesGames = getMinesGames();
+        
         const bank = getCasinoBank();
         const totalUsers = users.count();
         const totalTransactions = transactions.count();
@@ -80,6 +91,9 @@ router.post('/add-demo-balance', isAdmin, async (req, res) => {
     const { telegramId, targetTelegramId, amount } = req.body;
 
     try {
+        const users = getUsers();
+        const transactions = getTransactions();
+        
         const targetUser = users.findOne({ telegram_id: parseInt(targetTelegramId) });
         if (!targetUser) {
             return res.status(404).json({ error: 'Пользователь не найден' });

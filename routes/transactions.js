@@ -1,13 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const { cryptoPayRequest } = require('../services/cryptoPay');
-const { users, transactions, getCasinoBank, updateCasinoBank } = require('../config/database');
+const { getUsers, getTransactions, getCasinoBank, updateCasinoBank } = require('../config/database');
 
 // API: Получить историю транзакций
 router.get('/:telegramId', async (req, res) => {
     const telegramId = parseInt(req.params.telegramId);
 
     try {
+        const users = getUsers();
+        const transactions = getTransactions();
+        
         const user = users.findOne({ telegram_id: telegramId });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -37,6 +40,9 @@ router.post('/create-deposit', async (req, res) => {
     }
 
     try {
+        const users = getUsers();
+        const transactions = getTransactions();
+        
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -107,6 +113,9 @@ router.post('/check-deposit', async (req, res) => {
     const { telegramId, invoiceId } = req.body;
 
     try {
+        const users = getUsers();
+        const transactions = getTransactions();
+        
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -180,6 +189,9 @@ router.post('/create-withdrawal', async (req, res) => {
     }
 
     try {
+        const users = getUsers();
+        const transactions = getTransactions();
+        
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });

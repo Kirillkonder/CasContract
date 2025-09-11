@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { users } = require('../config/database');
+const { getUsers } = require('../config/database');
 
 // API: Получить данные пользователя
 router.get('/:telegramId', async (req, res) => {
     const telegramId = parseInt(req.params.telegramId);
 
     try {
+        const users = getUsers();
         let user = users.findOne({ telegram_id: telegramId });
         
         if (!user) {
@@ -44,6 +45,7 @@ router.post('/toggle-mode', async (req, res) => {
     const { telegramId } = req.body;
 
     try {
+        const users = getUsers();
         let user = users.findOne({ telegram_id: parseInt(telegramId) });
         
         if (!user) {

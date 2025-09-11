@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { users, minesGames, getCasinoBank, updateCasinoBank } = require('../config/database');
+const { getUsers, getMinesGames, getCasinoBank, updateCasinoBank } = require('../config/database');
 const { generateMinesGame, calculateMultiplier } = require('../services/minesGame');
 
 // API: Начать новую игру в Mines
@@ -16,6 +16,9 @@ router.post('/start-game', async (req, res) => {
     }
 
     try {
+        const users = getUsers();
+        const minesGames = getMinesGames();
+        
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -68,6 +71,9 @@ router.post('/open-cell', async (req, res) => {
     const { telegramId, gameId, cellIndex } = req.body;
 
     try {
+        const users = getUsers();
+        const minesGames = getMinesGames();
+        
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -82,12 +88,12 @@ router.post('/open-cell', async (req, res) => {
             return res.status(400).json({ error: 'Game already finished' });
         }
 
-        if (game.revealedCells.includes(cellIndex)) {
+        if (game.revealedCells.includes(cellIndex) || game.revealedCells.includes(parseInt(cellIndex))) {
             return res.status(400).json({ error: 'Cell already revealed' });
         }
 
         // Проверяем, есть ли мина в клетке
-        const isMine = game.mines.includes(cellIndex);
+        const isMine = game.mines.includes(cellIndex) || game.mines.includes(parseInt(cellIndex));
 
         if (isMine) {
             // Игрок проиграл
@@ -146,6 +152,10 @@ router.post('/cashout', async (req, res) => {
     const { telegramId, gameId } = req.body;
 
     try {
+        const users = getUsers();
+        const minesGames = getMinesGames();
+        const transactions = getTransactions();
+        
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -190,6 +200,17 @@ router.post('/cashout', async (req, res) => {
             totalMultiplier: game.currentMultiplier
         });
 
+        // Записываем транзакцию выигрыша
+        transactions.insert({
+            user_id: user.$loki,
+            amount: userWinAmount,
+            type: 'mines_win',
+            status: 'completed',
+            demo_mode: game.demoMode,
+            game_id: gameId,
+            created_at: new Date()
+        });
+
         res.json({
             success: true,
             win: true,
@@ -211,6 +232,9 @@ router.get('/history/:telegramId', async (req, res) => {
     const telegramId = parseInt(req.params.telegramId);
 
     try {
+        const users = getUsers();
+        const minesGames = getMinesGames();
+        
         const user = users.findOne({ telegram_id: telegramId });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
