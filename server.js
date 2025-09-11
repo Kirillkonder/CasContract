@@ -6,6 +6,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const cron = require('node-cron');
 const Loki = require('lokijs');
+const RocketGameServer = require('./rocketServer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -872,13 +873,18 @@ async function startServer() {
     try {
         await initDatabase();
         
-        app.listen(PORT, () => {
+        const server = app.listen(PORT, () => {
             console.log(`🚀 Server running on port ${PORT}`);
             console.log(`🏦 Casino bank initialized`);
             console.log(`👑 Owner ID: ${process.env.OWNER_TELEGRAM_ID}`);
             console.log(`💣 Mines game ready`);
             console.log('🔄 Keep-alive service started (ping every 14 minutes)');
+            
+            // Запускаем сервер ракетки после успешного запуска основного сервера
+            const rocketServer = new RocketGameServer(server);
+            console.log('🚀 Rocket game server started');
         });
+        
     } catch (error) {
         console.error('Failed to start server:', error);
         process.exit(1);
