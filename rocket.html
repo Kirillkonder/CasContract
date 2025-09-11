@@ -6,508 +6,71 @@
     <title>Rocket - Casino Gift Contract</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* ... (ваши стили остаются без изменений) ... */
-    </style>
+    <link rel="stylesheet" href="rocket.css">
 </head>
 <body>
     <div class="container">
-        <!-- ... (ваш HTML остается без изменений) ... -->
+        <button class="back-button" onclick="goBack()">← Назад</button>
+        
+        <div class="rocket-header">
+            <h1>🚀 Rocket Game</h1>
+            <div class="balance">
+                Баланс: <span id="balance">0</span> TON
+                <span id="demo-badge" style="margin-left: 10px; padding: 2px 8px; background: #ffc107; border-radius: 10px; font-size: 12px;">TESTNET</span>
+            </div>
+        </div>
+
+        <div class="game-stats">
+            <div class="stat-item">
+                <div class="stat-label">Игроков онлайн</div>
+                <div class="stat-value players-value" id="playersCount">1</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Следующий раунд</div>
+                <div class="stat-value timer-value" id="roundTimer">10с</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Активных ставок</div>
+                <div class="stat-value" id="activeBetsCount">0</div>
+            </div>
+        </div>
+
+        <div class="rocket-container">
+            <div class="rocket-canvas" id="rocketCanvas">
+                <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
+                <div class="rocket" id="rocket">🚀</div>
+            </div>
+
+            <div class="bet-controls">
+                <input type="number" class="bet-input" id="betAmount" min="1" max="50" step="1" value="1" placeholder="Ставка в TON">
+                <button class="place-bet-btn" id="placeBetBtn">Поставить</button>
+                <button class="cashout-btn" id="cashoutBtn" disabled>Забрать</button>
+            </div>
+
+            <div class="game-info">
+                <div class="info-row">
+                    <span>Твоя ставка:</span>
+                    <span id="yourBet">0 TON</span>
+                </div>
+                <div class="info-row">
+                    <span>Потенциальный выигрыш:</span>
+                    <span id="potentialWin">0 TON</span>
+                </div>
+                <div class="info-row">
+                    <span>Текущий множитель:</span>
+                    <span id="currentMultiplier">1.00x</span>
+                </div>
+            </div>
+
+            <div class="bets-list">
+                <h3>Активные ставки</h3>
+                <div id="betsContainer">
+                    <div class="no-bets">Ставок пока нет</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script>
-        let currentGame = null;
-        let isDemoMode = true;
-        let userData = null;
-        let rocketInterval = null;
-        let currentMultiplier = 1.00;
-        let userBet = null;
-        let activePlayers = 1;
-        let lastExplosionMultiplier = 1.0;
-        let roundTimer = 10;
-        let timerInterval = null;
-        let botBetsInterval = null;
-        let activeBots = [];
-        let gameRound = 1;
-        let isRoundPreparation = false;
-
-        // Список ботов с разными стратегиями
-        const bots = [
-            { name: "CryptoPro", strategy: "aggressive", avatar: "🤖" },
-            { name: "TonMaster", strategy: "conservative", avatar: "👾" },
-            { name: "RocketKing", strategy: "moderate", avatar: "🦾" },
-            { name: "CryptoWhale", strategy: "aggressive", avatar: "🐋" },
-            { name: "TonInvestor", strategy: "conservative", avatar: "💼" },
-            { name: "SpaceTraveler", strategy: "moderate", avatar: "👨‍🚀" },
-            { name: "MoonRacer", strategy: "aggressive", avatar: "🌙" },
-            { name: "StarGazer", strategy: "conservative", avatar: "⭐" },
-            { name: "CryptoNinja", strategy: "moderate", avatar: "🥷" },
-            { name: "BlockchainPro", strategy: "aggressive", avatar: "⛓️" }
-        ];
-
-        // Стратегии кэшаута для ботов (в x)
-        const botStrategies = {
-            conservative: { min: 1.5, max: 3.0 },
-            moderate: { min: 2.0, max: 5.0 },
-            aggressive: { min: 3.0, max: 8.0 }
-        };
-
-        document.addEventListener('DOMContentLoaded', function() {
-            loadUserData();
-            setupEventListeners();
-            startBotActivity();
-            updatePlayersCount(3 + Math.floor(Math.random() * 8)); // 3-10 игроков онлайн
-            
-            // Запускаем первый раунд сразу
-            startNewRound();
-        });
-
-        function goBack() {
-            window.location.href = 'index.html';
-        }
-
-        async function loadUserData() {
-            try {
-                const tg = window.Telegram.WebApp;
-                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                    const telegramId = tg.initDataUnsafe.user.id;
-                    
-                    const response = await fetch(`/api/user/${telegramId}`);
-                    if (response.ok) {
-                        userData = await response.json();
-                        document.getElementById('balance').textContent = userData.balance.toFixed(2);
-                        isDemoMode = userData.demo_mode;
-                        document.getElementById('demo-badge').textContent = isDemoMode ? 'TESTNET' : 'MAINNET';
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
-            }
-        }
-
-        function setupEventListeners() {
-            document.getElementById('placeBetBtn').addEventListener('click', placeBet);
-            document.getElementById('cashoutBtn').addEventListener('click', cashout);
-        }
-
-        function startNewRound() {
-            clearInterval(timerInterval);
-            clearInterval(rocketInterval);
-            isRoundPreparation = true;
-            roundTimer = 10;
-            updateRoundTimer();
-            
-            // Сбрасываем игру
-            resetGame();
-            
-            // Генерируем ботов для этого раунда (3-6 ботов)
-            const botsInRound = 3 + Math.floor(Math.random() * 4);
-            activeBots = [];
-            
-            for (let i = 0; i < botsInRound; i++) {
-                const bot = {...bots[Math.floor(Math.random() * bots.length)]};
-                bot.betAmount = generateBotBet(bot.strategy);
-                bot.cashoutMultiplier = generateCashoutPoint(bot.strategy);
-                bot.id = 'bot-' + Date.now() + '-' + i;
-                activeBots.push(bot);
-                
-                // Бот делает ставку
-                addBotBet(bot);
-            }
-            
-            // Разрешаем ставки во время подготовки
-            document.getElementById('placeBetBtn').disabled = false;
-            
-            // Запускаем таймер раунда
-            timerInterval = setInterval(() => {
-                roundTimer--;
-                updateRoundTimer();
-                
-                if (roundTimer <= 0) {
-                    clearInterval(timerInterval);
-                    isRoundPreparation = false;
-                    startGame();
-                }
-            }, 1000);
-        }
-
-        function generateBotBet(strategy) {
-            const baseAmount = {
-                conservative: 1 + Math.random() * 4,   // 1-5 TON
-                moderate: 2 + Math.random() * 8,       // 2-10 TON
-                aggressive: 5 + Math.random() * 15     // 5-20 TON
-            }[strategy];
-            
-            return Math.round(baseAmount);
-        }
-
-        function generateCashoutPoint(strategy) {
-            const strategyRange = botStrategies[strategy];
-            return strategyRange.min + Math.random() * (strategyRange.max - strategyRange.min);
-        }
-
-        function addBotBet(bot) {
-            const betsContainer = document.getElementById('betsContainer');
-            const noBets = betsContainer.querySelector('.no-bets');
-            if (noBets) noBets.remove();
-            
-            const betItem = document.createElement('div');
-            betItem.className = 'bet-item';
-            betItem.id = bot.id;
-            betItem.innerHTML = `
-                <span><span class="bot-avatar">${bot.avatar}</span>${bot.name}</span>
-                <span>${bot.betAmount} TON</span>
-            `;
-            
-            betsContainer.appendChild(betItem);
-            updateBetsCount();
-        }
-
-        function updateBotsCashout() {
-            activeBots.forEach(bot => {
-                if (currentMultiplier >= bot.cashoutMultiplier) {
-                    // Бот забирает выигрыш
-                    cashoutBot(bot);
-                }
-            });
-        }
-
-        function cashoutBot(bot) {
-            const winAmount = bot.betAmount * currentMultiplier;
-            const betElement = document.getElementById(bot.id);
-            
-            if (betElement) {
-                betElement.innerHTML = `
-                    <span><span class="bot-avatar">${bot.avatar}</span>${bot.name}</span>
-                    <span style="color: #00b894;">+${winAmount.toFixed(2)} TON (${currentMultiplier.toFixed(2)}x)</span>
-                `;
-                
-                // Удаляем бота из активных через 2 секунды
-                setTimeout(() => {
-                    if (betElement.parentNode) {
-                        betElement.parentNode.removeChild(betElement);
-                    }
-                    activeBots = activeBots.filter(b => b.id !== bot.id);
-                    updateBetsCount();
-                }, 2000);
-            }
-        }
-
-        function startBotActivity() {
-            // Боты периодически присоединяются к игре
-            botBetsInterval = setInterval(() => {
-                if (Math.random() < 0.4 && activeBots.length < 8) {
-                    const newBot = {...bots[Math.floor(Math.random() * bots.length)]};
-                    newBot.betAmount = generateBotBet(newBot.strategy);
-                    newBot.cashoutMultiplier = generateCashoutPoint(newBot.strategy);
-                    newBot.id = 'bot-' + Date.now() + '-' + Math.random();
-                    activeBots.push(newBot);
-                    
-                    addBotBet(newBot);
-                    updatePlayersCount(activePlayers + 1);
-                }
-            }, 8000);
-        }
-
-        async function placeBet() {
-            // Разрешаем ставки во время подготовки раунда
-            if (currentGame && !isRoundPreparation) {
-                alert('Раунд уже начался! Дождитесь следующего раунда.');
-                return;
-            }
-
-            const betAmount = parseFloat(document.getElementById('betAmount').value);
-            
-            if (betAmount < 1 || betAmount > 50) {
-                alert('Ставка должна быть от 1 до 50 TON');
-                return;
-            }
-
-            try {
-                const tg = window.Telegram.WebApp;
-                const telegramId = tg.initDataUnsafe.user.id;
-
-                const response = await fetch('/api/rocket/place-bet', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        telegramId: telegramId,
-                        betAmount: betAmount,
-                        demoMode: isDemoMode
-                    })
-                });
-
-                const result = await response.json();
-                
-                if (!response.ok) {
-                    alert(result.error || 'Ошибка размещения ставки');
-                    return;
-                }
-
-                if (result.success) {
-                    userBet = {
-                        betId: result.betId,
-                        amount: betAmount,
-                        cashoutMultiplier: 1.00
-                    };
-
-                    document.getElementById('yourBet').textContent = betAmount + ' TON';
-                    document.getElementById('placeBetBtn').disabled = true;
-                    document.getElementById('cashoutBtn').disabled = false;
-
-                    // Добавляем ставку в список
-                    const betsContainer = document.getElementById('betsContainer');
-                    const noBets = betsContainer.querySelector('.no-bets');
-                    if (noBets) noBets.remove();
-                    
-                    const betItem = document.createElement('div');
-                    betItem.className = 'bet-item user-bet';
-                    betItem.id = 'user-bet';
-                    betItem.innerHTML = `
-                        <span>👤 Вы</span>
-                        <span>${betAmount} TON</span>
-                    `;
-                    
-                    betsContainer.appendChild(betItem);
-                    updateBetsCount();
-                    
-                    updatePlayersCount(activePlayers + 1);
-                }
-            } catch (error) {
-                console.error('Error placing bet:', error);
-                alert('Ошибка соединения');
-            }
-        }
-
-        function startGame() {
-            if (currentGame) return;
-
-            currentGame = {
-                startTime: Date.now(),
-                explosionPoint: 1.0 + Math.random() * 9.0  // Взрыв между 1x и 10x
-            };
-
-            currentMultiplier = 1.00;
-            updateMultiplierDisplay();
-
-            rocketInterval = setInterval(updateRocket, 100);
-        }
-
-        function updateRocket() {
-            if (!currentGame) return;
-
-            // Увеличиваем множитель (немного случайности для реализма)
-            const increment = 0.05 + Math.random() * 0.1;
-            currentMultiplier += increment;
-            
-            // Обновляем отображение
-            updateMultiplierDisplay();
-            
-            // Обновляем позицию ракеты
-            const rocket = document.getElementById('rocket');
-            const canvasHeight = document.getElementById('rocketCanvas').offsetHeight;
-            const maxHeight = canvasHeight - 100;
-            const rocketHeight = maxHeight * (1 - (currentMultiplier - 1) / 9);
-            
-            rocket.style.bottom = Math.max(50, rocketHeight) + 'px';
-            
-            // Добавляем след
-            addRocketTrail();
-            
-            // Проверяем взрыв
-            if (currentMultiplier >= currentGame.explosionPoint) {
-                endGame();
-                return;
-            }
-            
-            // Боты решают, забирать ли выигрыш
-            updateBotsCashout();
-        }
-
-        function addRocketTrail() {
-            const rocket = document.getElementById('rocket');
-            const rocketRect = rocket.getBoundingClientRect();
-            const canvasRect = document.getElementById('rocketCanvas').getBoundingClientRect();
-            
-            const trail = document.createElement('div');
-            trail.className = 'trail';
-            trail.style.left = (rocketRect.left - canvasRect.left + rocketRect.width / 2) + 'px';
-            trail.style.bottom = (rocketRect.bottom - canvasRect.bottom) + 'px';
-            
-            document.getElementById('rocketCanvas').appendChild(trail);
-            
-            setTimeout(() => {
-                if (trail.parentNode) {
-                    trail.parentNode.removeChild(trail);
-                }
-            }, 1000);
-        }
-
-        function endGame() {
-            clearInterval(rocketInterval);
-            rocketInterval = null;
-            
-            lastExplosionMultiplier = currentMultiplier;
-            
-            // Показываем взрыв
-            const rocket = document.getElementById('rocket');
-            const explosion = document.createElement('div');
-            explosion.className = 'explosion';
-            explosion.textContent = '💥';
-            explosion.style.left = rocket.style.left;
-            explosion.style.bottom = rocket.style.bottom;
-            
-            document.getElementById('rocketCanvas').appendChild(explosion);
-            
-            setTimeout(() => {
-                if (explosion.parentNode) {
-                    explosion.parentNode.removeChild(explosion);
-                }
-            }, 500);
-            
-            // Автоматически забираем выигрыш пользователя, если он не успел
-            if (userBet) {
-                cashout(true);
-            }
-            
-            // Забираем выигрыши у всех оставшихся ботов
-            activeBots.forEach(bot => cashoutBot(bot));
-            
-            // Очищаем игру
-            currentGame = null;
-            
-            // Запускаем новый раунд через 5 секунд
-            setTimeout(() => {
-                startNewRound();
-            }, 5000);
-        }
-
-        async function cashout(auto = false) {
-            if (!userBet) return;
-
-            try {
-                const tg = window.Telegram.WebApp;
-                const telegramId = tg.initDataUnsafe.user.id;
-
-                const response = await fetch('/api/rocket/cashout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        telegramId: telegramId,
-                        betId: userBet.betId,
-                        multiplier: currentMultiplier,
-                        demoMode: isDemoMode
-                    })
-                });
-
-                const result = await response.json();
-                
-                if (!response.ok) {
-                    alert(result.error || 'Ошибка вывода средств');
-                    return;
-                }
-
-                if (result.success) {
-                    const winAmount = userBet.amount * currentMultiplier;
-                    
-                    // Обновляем UI
-                    const userBetElement = document.getElementById('user-bet');
-                    if (userBetElement) {
-                        userBetElement.innerHTML = `
-                            <span>👤 Вы</span>
-                            <span style="color: #00b894;">+${winAmount.toFixed(2)} TON (${currentMultiplier.toFixed(2)}x)</span>
-                        `;
-                    }
-                    
-                    document.getElementById('yourBet').textContent = '0 TON';
-                    document.getElementById('potentialWin').textContent = '0 TON';
-                    document.getElementById('placeBetBtn').disabled = false;
-                    document.getElementById('cashoutBtn').disabled = true;
-                    
-                    // Обновляем баланс
-                    if (userData) {
-                        userData.balance = result.newBalance;
-                        document.getElementById('balance').textContent = userData.balance.toFixed(2);
-                    }
-                    
-                    userBet = null;
-                    updatePlayersCount(activePlayers - 1);
-                    
-                    setTimeout(() => {
-                        if (userBetElement && userBetElement.parentNode) {
-                            userBetElement.parentNode.removeChild(userBetElement);
-                            updateBetsCount();
-                        }
-                    }, 2000);
-                }
-            } catch (error) {
-                console.error('Error cashing out:', error);
-                alert('Ошибка соединения');
-            }
-        }
-
-        function resetGame() {
-            clearInterval(rocketInterval);
-            rocketInterval = null;
-            currentGame = null;
-            currentMultiplier = 1.00;
-            
-            // Сбрасываем ракету
-            const rocket = document.getElementById('rocket');
-            rocket.style.bottom = '50px';
-            
-            // Обновляем отображение
-            updateMultiplierDisplay();
-            document.getElementById('yourBet').textContent = '0 TON';
-            document.getElementById('potentialWin').textContent = '0 TON';
-            document.getElementById('cashoutBtn').disabled = true;
-            
-            // Очищаем список ставок (кроме ботов)
-            const betsContainer = document.getElementById('betsContainer');
-            const userBetElement = document.getElementById('user-bet');
-            if (userBetElement) {
-                betsContainer.removeChild(userBetElement);
-            }
-            
-            userBet = null;
-            gameRound++;
-        }
-
-        function updateMultiplierDisplay() {
-            document.getElementById('multiplierDisplay').textContent = currentMultiplier.toFixed(2) + 'x';
-            document.getElementById('currentMultiplier').textContent = currentMultiplier.toFixed(2) + 'x';
-            
-            if (userBet) {
-                const potentialWin = userBet.amount * currentMultiplier;
-                document.getElementById('potentialWin').textContent = potentialWin.toFixed(2) + ' TON';
-            }
-        }
-
-        function updatePlayersCount(count) {
-            activePlayers = count;
-            document.getElementById('playersCount').textContent = count;
-        }
-
-        function updateBetsCount() {
-            const betsContainer = document.getElementById('betsContainer');
-            const betCount = betsContainer.querySelectorAll('.bet-item').length;
-            document.getElementById('activeBetsCount').textContent = betCount;
-            
-            if (betCount === 0) {
-                const noBets = document.createElement('div');
-                noBets.className = 'no-bets';
-                noBets.textContent = 'Ставок пока нет';
-                betsContainer.appendChild(noBets);
-            }
-        }
-
-        function updateRoundTimer() {
-            document.getElementById('roundTimer').textContent = roundTimer + 's';
-        }
-    </script>
+    <script src="rocket.js"></script>
 </body>
 </html>
