@@ -13,54 +13,25 @@
             padding: 20px;
         }
         
-        .bet-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        .bet-input {
-            padding: 12px;
-            border: 2px solid #333;
-            border-radius: 8px;
-            font-size: 16px;
-            width: 100px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        
-        .start-btn {
-            padding: 12px 24px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        
-        .start-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .game-area {
-            background: rgba(25, 30, 42, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+        .rocket-header {
             text-align: center;
-            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .rocket-canvas {
+            width: 100%;
             height: 300px;
+            background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            position: relative;
             overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
         
         .rocket {
             position: absolute;
-            bottom: 20px;
+            bottom: 50px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 40px;
@@ -74,62 +45,116 @@
             transform: translateX(-50%);
             font-size: 24px;
             font-weight: bold;
-            color: #00ff88;
+            color: #00b894;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
         }
         
-        .cashout-btn {
-            padding: 15px 30px;
-            background: #28a745;
+        .bet-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .bet-input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(35, 40, 52, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            min-width: 120px;
+        }
+        
+        .place-bet-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #00b894, #008066);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
-            margin: 10px;
         }
         
-        .cashout-btn:disabled {
-            background: #ccc;
+        .place-bet-btn:disabled {
+            background: #666;
             cursor: not-allowed;
         }
         
-        .auto-cashout {
-            margin: 15px 0;
+        .cashout-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #fdcb6e, #e6a336);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
         }
         
-        .auto-input {
-            padding: 10px;
-            border: 2px solid #333;
-            border-radius: 5px;
-            font-size: 14px;
-            width: 80px;
-            margin: 0 10px;
+        .cashout-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
         }
         
-        .history-item {
+        .game-info {
+            background: rgba(25, 30, 42, 0.8);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
             display: flex;
             justify-content: space-between;
-            padding: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .bets-list {
+            background: rgba(25, 30, 42, 0.8);
+            border-radius: 15px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .bet-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .win {
-            color: #00ff88;
+        .bet-item:last-child {
+            border-bottom: none;
         }
         
-        .lose {
-            color: #ff4757;
+        .explosion {
+            position: absolute;
+            font-size: 60px;
+            animation: explode 0.5s ease-out;
         }
         
-        .back-button {
-            margin-bottom: 20px;
-            padding: 10px 20px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        @keyframes explode {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.5); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        
+        .trail {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, #ff6b6b);
+            animation: trail 1s linear;
+        }
+        
+        @keyframes trail {
+            from { height: 0; opacity: 1; }
+            to { height: 100px; opacity: 0; }
         }
     </style>
 </head>
@@ -137,39 +162,47 @@
     <div class="container">
         <button class="back-button" onclick="goBack()">← Назад</button>
         
-        <header>
+        <div class="rocket-header">
             <h1>🚀 Rocket Game</h1>
             <div class="balance">
                 Баланс: <span id="balance">0</span> TON
                 <span id="demo-badge" style="margin-left: 10px; padding: 2px 8px; background: #ffc107; border-radius: 10px; font-size: 12px;">TESTNET</span>
             </div>
-        </header>
+        </div>
 
         <div class="rocket-container">
-            <div class="bet-controls">
-                <input type="number" class="bet-input" id="betAmount" min="1" max="50" step="1" value="1" placeholder="Ставка">
-                <button class="start-btn" id="startGame">Запуск 🚀</button>
-            </div>
-
-            <div class="game-area" id="gameArea">
-                <div class="multiplier-display" id="multiplier">1.00x</div>
+            <div class="rocket-canvas" id="rocketCanvas">
+                <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
                 <div class="rocket" id="rocket">🚀</div>
             </div>
 
-            <div class="game-controls">
+            <div class="bet-controls">
+                <input type="number" class="bet-input" id="betAmount" min="1" max="50" step="1" value="1" placeholder="Ставка в TON">
+                <button class="place-bet-btn" id="placeBetBtn">Поставить</button>
                 <button class="cashout-btn" id="cashoutBtn" disabled>Забрать</button>
             </div>
 
-            <div class="auto-cashout">
-                <label>Авто-вывод на: </label>
-                <input type="number" class="auto-input" id="autoCashout" min="1.1" max="100" step="0.1" value="2.0" placeholder="2.0x">
-                <button onclick="setAutoCashout()">Установить</button>
+            <div class="game-info">
+                <div class="info-row">
+                    <span>Твоя ставка:</span>
+                    <span id="yourBet">0 TON</span>
+                </div>
+                <div class="info-row">
+                    <span>Потенциальный выигрыш:</span>
+                    <span id="potentialWin">0 TON</span>
+                </div>
+                <div class="info-row">
+                    <span>Текущий множитель:</span>
+                    <span id="currentMultiplier">1.00x</span>
+                </div>
             </div>
 
-            <div id="resultMessage" style="display: none; text-align: center; font-size: 18px; margin: 20px 0;"></div>
-
-            <h3>История игр</h3>
-            <div id="gameHistory"></div>
+            <div class="bets-list">
+                <h3>Последние ставки</h3>
+                <div id="betsContainer">
+                    <div class="no-bets">Ставок пока нет</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -177,27 +210,18 @@
         let currentGame = null;
         let isDemoMode = true;
         let userData = null;
-        let gameInterval = null;
-        let autoCashoutValue = 2.0;
+        let rocketInterval = null;
+        let currentMultiplier = 1.00;
+        let userBet = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             loadUserData();
-            document.getElementById('startGame').addEventListener('click', startGame);
-            document.getElementById('cashoutBtn').addEventListener('click', manualCashout);
-            loadGameHistory();
+            setupEventListeners();
+            loadActiveBets();
         });
 
         function goBack() {
             window.location.href = 'index.html';
-        }
-
-        function setAutoCashout() {
-            autoCashoutValue = parseFloat(document.getElementById('autoCashout').value);
-            if (autoCashoutValue < 1.1 || autoCashoutValue > 100) {
-                alert('Установите значение от 1.1 до 100');
-                return;
-            }
-            alert(`Авто-вывод установлен на ${autoCashoutValue}x`);
         }
 
         async function loadUserData() {
@@ -209,7 +233,7 @@
                     const response = await fetch(`/api/user/${telegramId}`);
                     if (response.ok) {
                         userData = await response.json();
-                        document.getElementById('balance').textContent = userData.balance;
+                        document.getElementById('balance').textContent = userData.balance.toFixed(2);
                         isDemoMode = userData.demo_mode;
                         document.getElementById('demo-badge').textContent = isDemoMode ? 'TESTNET' : 'MAINNET';
                     }
@@ -219,7 +243,12 @@
             }
         }
 
-        async function startGame() {
+        function setupEventListeners() {
+            document.getElementById('placeBetBtn').addEventListener('click', placeBet);
+            document.getElementById('cashoutBtn').addEventListener('click', cashout);
+        }
+
+        async function placeBet() {
             const betAmount = parseFloat(document.getElementById('betAmount').value);
             
             if (betAmount < 1 || betAmount > 50) {
@@ -231,7 +260,7 @@
                 const tg = window.Telegram.WebApp;
                 const telegramId = tg.initDataUnsafe.user.id;
 
-                const response = await fetch('/api/rocket/start', {
+                const response = await fetch('/api/rocket/place-bet', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -245,88 +274,143 @@
 
                 if (!response.ok) {
                     const error = await response.json();
-                    alert(error.error || 'Ошибка начала игры');
+                    alert(error.error || 'Ошибка размещения ставки');
                     return;
                 }
 
                 const result = await response.json();
                 if (result.success) {
-                    currentGame = {
-                        gameId: result.gameId,
-                        betAmount: betAmount,
-                        crashPoint: result.crashPoint,
-                        currentMultiplier: 1.0,
-                        isRunning: true
+                    userBet = {
+                        betId: result.betId,
+                        amount: betAmount,
+                        cashoutMultiplier: 1.00
                     };
 
-                    document.getElementById('startGame').disabled = true;
+                    document.getElementById('yourBet').textContent = betAmount + ' TON';
+                    document.getElementById('placeBetBtn').disabled = true;
                     document.getElementById('cashoutBtn').disabled = false;
-                    document.getElementById('resultMessage').style.display = 'none';
-
-                    startRocketAnimation();
                     updateBalance();
+
+                    // Если игра еще не запущена, запускаем ее
+                    if (!currentGame) {
+                        startGame();
+                    }
+
+                    addBetToList(tg.initDataUnsafe.user.first_name, betAmount);
                 }
             } catch (error) {
-                console.error('Error starting game:', error);
-                alert('Ошибка начала игры');
+                console.error('Place bet error:', error);
+                alert('Ошибка размещения ставки');
             }
         }
 
-        function startRocketAnimation() {
-            let multiplier = 1.0;
-            const rocket = document.getElementById('rocket');
-            const multiplierDisplay = document.getElementById('multiplier');
+        function startGame() {
+            currentMultiplier = 1.00;
+            currentGame = {
+                startTime: Date.now(),
+                explosionPoint: generateExplosionPoint()
+            };
+
+            rocketInterval = setInterval(updateRocket, 100);
+        }
+
+        function generateExplosionPoint() {
+            // Генерируем точку взрыва между 1.1x и 100x
+            return 1.1 + Math.random() * 98.9;
+        }
+
+        function updateRocket() {
+            if (!currentGame) return;
+
+            // Увеличиваем множитель (логарифмическая кривая как в 1win)
+            const timeElapsed = (Date.now() - currentGame.startTime) / 1000;
+            currentMultiplier = 1 + Math.pow(timeElapsed, 1.5) / 10;
+
+            // Обновляем отображение
+            document.getElementById('multiplierDisplay').textContent = currentMultiplier.toFixed(2) + 'x';
+            document.getElementById('currentMultiplier').textContent = currentMultiplier.toFixed(2) + 'x';
             
-            rocket.style.bottom = '20px';
-            multiplierDisplay.textContent = '1.00x';
+            if (userBet) {
+                const potentialWin = userBet.amount * currentMultiplier;
+                document.getElementById('potentialWin').textContent = potentialWin.toFixed(2) + ' TON';
+            }
 
-            gameInterval = setInterval(() => {
-                if (!currentGame || !currentGame.isRunning) return;
+            // Обновляем позицию ракеты
+            const rocket = document.getElementById('rocket');
+            const canvasHeight = document.getElementById('rocketCanvas').offsetHeight;
+            const rocketPosition = Math.min(100, (currentMultiplier / 100) * 80);
+            rocket.style.bottom = (50 + rocketPosition) + 'px';
 
-                multiplier += 0.01;
-                currentGame.currentMultiplier = multiplier;
+            // Создаем след
+            createTrail();
 
-                // Обновляем отображение
-                multiplierDisplay.textContent = multiplier.toFixed(2) + 'x';
-                
-                // Двигаем ракету
-                const newPosition = 20 + (multiplier * 2);
-                rocket.style.bottom = newPosition + 'px';
-
-                // Проверяем авто-вывод
-                if (multiplier >= autoCashoutValue) {
-                    autoCashout();
-                    return;
-                }
-
-                // Проверяем краш
-                if (multiplier >= currentGame.crashPoint) {
-                    endGame(false);
-                }
-            }, 100);
+            // Проверяем взрыв
+            if (currentMultiplier >= currentGame.explosionPoint) {
+                explode();
+            }
         }
 
-        async function manualCashout() {
-            if (!currentGame || !currentGame.isRunning) return;
-            await cashout(currentGame.currentMultiplier);
+        function createTrail() {
+            const rocket = document.getElementById('rocket');
+            const trail = document.createElement('div');
+            trail.className = 'trail';
+            
+            const rocketRect = rocket.getBoundingClientRect();
+            const canvasRect = document.getElementById('rocketCanvas').getBoundingClientRect();
+            
+            trail.style.left = (rocketRect.left + rocketRect.width/2 - canvasRect.left) + 'px';
+            trail.style.bottom = (rocketRect.bottom - canvasRect.bottom) + 'px';
+            
+            document.getElementById('rocketCanvas').appendChild(trail);
+            
+            setTimeout(() => {
+                trail.remove();
+            }, 1000);
         }
 
-        async function autoCashout() {
-            if (!currentGame || !currentGame.isRunning) return;
-            await cashout(autoCashoutValue);
+        function explode() {
+            clearInterval(rocketInterval);
+            
+            // Анимация взрыва
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.textContent = '💥';
+            explosion.style.left = '50%';
+            explosion.style.bottom = document.getElementById('rocket').style.bottom;
+            
+            document.getElementById('rocketCanvas').appendChild(explosion);
+            
+            setTimeout(() => {
+                explosion.remove();
+                resetGame();
+            }, 500);
+
+            // Все незакрытые ставки проигрывают
+            if (userBet) {
+                userBet = null;
+                document.getElementById('yourBet').textContent = '0 TON';
+                document.getElementById('potentialWin').textContent = '0 TON';
+                document.getElementById('cashoutBtn').disabled = true;
+                document.getElementById('placeBetBtn').disabled = false;
+            }
         }
 
-        async function cashout(multiplier) {
+        async function cashout() {
+            if (!userBet) return;
+
             try {
+                const tg = window.Telegram.WebApp;
+                const telegramId = tg.initDataUnsafe.user.id;
+
                 const response = await fetch('/api/rocket/cashout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        gameId: currentGame.gameId,
-                        telegramId: window.Telegram.WebApp.initDataUnsafe.user.id,
-                        multiplier: multiplier
+                        betId: userBet.betId,
+                        cashoutMultiplier: currentMultiplier,
+                        telegramId: telegramId
                     })
                 });
 
@@ -338,73 +422,85 @@
 
                 const result = await response.json();
                 if (result.success) {
-                    endGame(true, result.winAmount, multiplier);
+                    alert(`Успешно! Выигрыш: ${result.winAmount.toFixed(2)} TON`);
+                    userBet = null;
+                    document.getElementById('yourBet').textContent = '0 TON';
+                    document.getElementById('potentialWin').textContent = '0 TON';
+                    document.getElementById('cashoutBtn').disabled = true;
+                    document.getElementById('placeBetBtn').disabled = false;
                     updateBalance();
-                    loadGameHistory();
                 }
             } catch (error) {
-                console.error('Error cashing out:', error);
-                alert('Ошибка вывода средств');
+                console.error('Cashout error:', error);
+                alert('Ошибка вывода');
             }
         }
 
-        function endGame(isWin, winAmount = 0, multiplier = 0) {
-            clearInterval(gameInterval);
-            currentGame.isRunning = false;
+        function resetGame() {
+            currentGame = null;
+            document.getElementById('rocket').style.bottom = '50px';
+            document.getElementById('multiplierDisplay').textContent = '1.00x';
+            
+            // Перезапускаем игру через 3 секунды
+            setTimeout(() => {
+                if (document.getElementById('betsContainer').children.length > 0) {
+                    startGame();
+                }
+            }, 3000);
+        }
 
-            document.getElementById('startGame').disabled = false;
-            document.getElementById('cashoutBtn').disabled = true;
+        function addBetToList(username, amount) {
+            const betsContainer = document.getElementById('betsContainer');
+            
+            if (betsContainer.querySelector('.no-bets')) {
+                betsContainer.innerHTML = '';
+            }
 
-            const resultMessage = document.getElementById('resultMessage');
-            resultMessage.style.display = 'block';
+            const betItem = document.createElement('div');
+            betItem.className = 'bet-item';
+            betItem.innerHTML = `
+                <span>${username}:</span>
+                <span>${amount} TON</span>
+            `;
+            
+            betsContainer.appendChild(betItem);
+            betsContainer.scrollTop = betsContainer.scrollHeight;
+        }
 
-            if (isWin) {
-                resultMessage.innerHTML = `🎉 Вы успешно забрали ${winAmount.toFixed(2)} TON (${multiplier.toFixed(2)}x)!`;
-                resultMessage.style.color = '#00ff88';
-            } else {
-                resultMessage.innerHTML = `💥 Ракета взорвалась на ${currentGame.currentMultiplier.toFixed(2)}x! Вы проиграли ${currentGame.betAmount} TON`;
-                resultMessage.style.color = '#ff4757';
+        async function loadActiveBets() {
+            try {
+                const response = await fetch('/api/rocket/active-bets');
+                if (response.ok) {
+                    const bets = await response.json();
+                    const betsContainer = document.getElementById('betsContainer');
+                    
+                    if (bets.length > 0) {
+                        betsContainer.innerHTML = '';
+                        bets.forEach(bet => {
+                            addBetToList(bet.username, bet.amount);
+                        });
+                        
+                        // Запускаем игру если есть активные ставки
+                        startGame();
+                    }
+                }
+            } catch (error) {
+                console.error('Load bets error:', error);
             }
         }
 
         async function updateBalance() {
-            await loadUserData();
-        }
-
-        async function loadGameHistory() {
             try {
                 const tg = window.Telegram.WebApp;
                 const telegramId = tg.initDataUnsafe.user.id;
-
-                const response = await fetch(`/api/rocket/history/${telegramId}`);
-                if (!response.ok) return;
-
-                const result = await response.json();
-                if (result.success) {
-                    const historyContainer = document.getElementById('gameHistory');
-                    historyContainer.innerHTML = '';
-
-                    result.games.slice(0, 10).forEach(game => {
-                        const historyItem = document.createElement('div');
-                        historyItem.className = 'history-item';
-                        
-                        const date = new Date(game.createdAt).toLocaleString();
-                        const amount = game.betAmount;
-                        const multiplier = game.cashoutMultiplier || 0;
-                        const isWin = multiplier > 0;
-
-                        historyItem.innerHTML = `
-                            <span>${date}</span>
-                            <span class="${isWin ? 'win' : 'lose'}">
-                                ${isWin ? `+${(amount * multiplier).toFixed(2)} TON (${multiplier.toFixed(2)}x)` : `-${amount} TON`}
-                            </span>
-                        `;
-
-                        historyContainer.appendChild(historyItem);
-                    });
+                
+                const response = await fetch(`/api/user/${telegramId}`);
+                if (response.ok) {
+                    userData = await response.json();
+                    document.getElementById('balance').textContent = userData.balance.toFixed(2);
                 }
             } catch (error) {
-                console.error('Error loading history:', error);
+                console.error('Error updating balance:', error);
             }
         }
     </script>
