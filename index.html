@@ -48,28 +48,6 @@
         <div>Выигрыш: <span id="potentialWin">0</span> TON</div>
         <div id="betInfo">Ставка: 0 TON | Баланс: 0 TON</div>
     </div>
-
-    <!-- Модальное окно ракетки -->
-<div id="game-rocket-modal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeGameModal('rocket')">&times;</span>
-        <h3>🚀 Игра "Ракетка"</h3>
-        <div class="game-content">
-            <p>Запускайте ракету и забирайте выигрыш до взрыва!</p>
-            <p>💰 Ставки от 1 до 50 TON</p>
-            <p>🚀 Ракета летит до 100x</p>
-            <p>💥 Взрыв в случайный момент</p>
-            <p>🏆 Забирайте выигрыш в любой момент!</p>
-        </div>
-        <button class="btn btn-primary" onclick="window.location.href='rocket.html'">
-            🚀 Играть в Ракетку
-        </button>
-        <button class="btn btn-secondary" onclick="closeGameModal('rocket')">
-            Позже
-        </button>
-    </div>
-</div>
-    
         
         <div class="deposit-section">
             <div class="section-title">Управление балансом</div>
@@ -104,11 +82,11 @@
                 <div class="game-icon">🎁</div>
                 <div class="game-name">Кейсы</div>
             </div>
-            <div class="game-menu-item" onclick="window.location.href='rocket.html'">
-        <div class="game-icon">🚀</div>
-        <div class="game-name">Ракетка</div>
-    </div>
-</div>
+            <div class="game-menu-item" onclick="openGame('rocket')">
+                <div class="game-icon">🚀</div>
+                <div class="game-name">Ракетка</div>
+            </div>
+        </div>
         
         <div class="footer">
             TON Casino © 2024 • v3.0

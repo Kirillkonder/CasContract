@@ -3,9 +3,6 @@ function openGame(gameType) {
     if (gameType === 'mines') {
         // Перенаправляем на страницу mines.html
         window.location.href = 'mines.html';
-    } else if (gameType === 'rocket') {
-        // Перенаправляем на страницу rocket.html
-        window.location.href = 'rocket.html';
     } else {
         // Для других игр показываем модальные окна
         document.getElementById(`game-${gameType}-modal`).style.display = 'block';
