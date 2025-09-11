@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocket - Casino Gift Contract</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .rocket-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .bet-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .bet-input {
+            padding: 12px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .start-btn {
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .start-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .game-area {
+            background: rgba(25, 30, 42, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+        
+        .rocket {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 40px;
+            transition: bottom 0.1s linear;
+        }
+        
+        .multiplier-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        
+        .cashout-btn {
+            padding: 15px 30px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        
+        .cashout-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .auto-cashout {
+            margin: 15px 0;
+        }
+        
+        .auto-input {
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            font-size: 14px;
+            width: 80px;
+            margin: 0 10px;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .win {
+            color: #00ff88;
+        }
+        
+        .lose {
+            color: #ff4757;
+        }
+        
+        .back-button {
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-button" onclick="goBack()">← Назад</button>
+        
+        <header>
+            <h1>🚀 Rocket Game</h1>
+            <div class="balance">
+                Баланс: <span id="balance">0</span> TON
+                <span id="demo-badge" style="margin-left: 10px; padding: 2px 8px; background: #ffc107; border-radius: 10px; font-size: 12px;">TESTNET</span>
+            </div>
+        </header>
+
+        <div class="rocket-container">
+            <div class="bet-controls">
+                <input type="number" class="bet-input" id="betAmount" min="1" max="50" step="1" value="1" placeholder="Ставка">
+                <button class="start-btn" id="startGame">Запуск 🚀</button>
+            </div>
+
+            <div class="game-area" id="gameArea">
+                <div class="multiplier-display" id="multiplier">1.00x</div>
+                <div class="rocket" id="rocket">🚀</div>
+            </div>
+
+            <div class="game-controls">
+                <button class="cashout-btn" id="cashoutBtn" disabled>Забрать</button>
+            </div>
+
+            <div class="auto-cashout">
+                <label>Авто-вывод на: </label>
+                <input type="number" class="auto-input" id="autoCashout" min="1.1" max="100" step="0.1" value="2.0" placeholder="2.0x">
+                <button onclick="setAutoCashout()">Установить</button>
+            </div>
+
+            <div id="resultMessage" style="display: none; text-align: center; font-size: 18px; margin: 20px 0;"></div>
+
+            <h3>История игр</h3>
+            <div id="gameHistory"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentGame = null;
+        let isDemoMode = true;
+        let userData = null;
+        let gameInterval = null;
+        let autoCashoutValue = 2.0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            document.getElementById('startGame').addEventListener('click', startGame);
+            document.getElementById('cashoutBtn').addEventListener('click', manualCashout);
+            loadGameHistory();
+        });
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        function setAutoCashout() {
+            autoCashoutValue = parseFloat(document.getElementById('autoCashout').value);
+            if (autoCashoutValue < 1.1 || autoCashoutValue > 100) {
+                alert('Установите значение от 1.1 до 100');
+                return;
+            }
+            alert(`Авто-вывод установлен на ${autoCashoutValue}x`);
+        }
+
+        async function loadUserData() {
+            try {
+                const tg = window.Telegram.WebApp;
+                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                    const telegramId = tg.initDataUnsafe.user.id;
+                    
+                    const response = await fetch(`/api/user/${telegramId}`);
+                    if (response.ok) {
+                        userData = await response.json();
+                        document.getElementById('balance').textContent = userData.balance;
+                        isDemoMode = userData.demo_mode;
+                        document.getElementById('demo-badge').textContent = isDemoMode ? 'TESTNET' : 'MAINNET';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        async function startGame() {
+            const betAmount = parseFloat(document.getElementById('betAmount').value);
+            
+            if (betAmount < 1 || betAmount > 50) {
+                alert('Ставка должна быть от 1 до 50 TON');
+                return;
+            }
+
+            try {
+                const tg = window.Telegram.WebApp;
+                const telegramId = tg.initDataUnsafe.user.id;
+
+                const response = await fetch('/api/rocket/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegramId: telegramId,
+                        betAmount: betAmount,
+                        demoMode: isDemoMode
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(error.error || 'Ошибка начала игры');
+                    return;
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    currentGame = {
+                        gameId: result.gameId,
+                        betAmount: betAmount,
+                        crashPoint: result.crashPoint,
+                        currentMultiplier: 1.0,
+                        isRunning: true
+                    };
+
+                    document.getElementById('startGame').disabled = true;
+                    document.getElementById('cashoutBtn').disabled = false;
+                    document.getElementById('resultMessage').style.display = 'none';
+
+                    startRocketAnimation();
+                    updateBalance();
+                }
+            } catch (error) {
+                console.error('Error starting game:', error);
+                alert('Ошибка начала игры');
+            }
+        }
+
+        function startRocketAnimation() {
+            let multiplier = 1.0;
+            const rocket = document.getElementById('rocket');
+            const multiplierDisplay = document.getElementById('multiplier');
+            
+            rocket.style.bottom = '20px';
+            multiplierDisplay.textContent = '1.00x';
+
+            gameInterval = setInterval(() => {
+                if (!currentGame || !currentGame.isRunning) return;
+
+                multiplier += 0.01;
+                currentGame.currentMultiplier = multiplier;
+
+                // Обновляем отображение
+                multiplierDisplay.textContent = multiplier.toFixed(2) + 'x';
+                
+                // Двигаем ракету
+                const newPosition = 20 + (multiplier * 2);
+                rocket.style.bottom = newPosition + 'px';
+
+                // Проверяем авто-вывод
+                if (multiplier >= autoCashoutValue) {
+                    autoCashout();
+                    return;
+                }
+
+                // Проверяем краш
+                if (multiplier >= currentGame.crashPoint) {
+                    endGame(false);
+                }
+            }, 100);
+        }
+
+        async function manualCashout() {
+            if (!currentGame || !currentGame.isRunning) return;
+            await cashout(currentGame.currentMultiplier);
+        }
+
+        async function autoCashout() {
+            if (!currentGame || !currentGame.isRunning) return;
+            await cashout(autoCashoutValue);
+        }
+
+        async function cashout(multiplier) {
+            try {
+                const response = await fetch('/api/rocket/cashout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        gameId: currentGame.gameId,
+                        telegramId: window.Telegram.WebApp.initDataUnsafe.user.id,
+                        multiplier: multiplier
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(error.error || 'Ошибка вывода');
+                    return;
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    endGame(true, result.winAmount, multiplier);
+                    updateBalance();
+                    loadGameHistory();
+                }
+            } catch (error) {
+                console.error('Error cashing out:', error);
+                alert('Ошибка вывода средств');
+            }
+        }
+
+        function endGame(isWin, winAmount = 0, multiplier = 0) {
+            clearInterval(gameInterval);
+            currentGame.isRunning = false;
+
+            document.getElementById('startGame').disabled = false;
+            document.getElementById('cashoutBtn').disabled = true;
+
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.style.display = 'block';
+
+            if (isWin) {
+                resultMessage.innerHTML = `🎉 Вы успешно забрали ${winAmount.toFixed(2)} TON (${multiplier.toFixed(2)}x)!`;
+                resultMessage.style.color = '#00ff88';
+            } else {
+                resultMessage.innerHTML = `💥 Ракета взорвалась на ${currentGame.currentMultiplier.toFixed(2)}x! Вы проиграли ${currentGame.betAmount} TON`;
+                resultMessage.style.color = '#ff4757';
+            }
+        }
+
+        async function updateBalance() {
+            await loadUserData();
+        }
+
+        async function loadGameHistory() {
+            try {
+                const tg = window.Telegram.WebApp;
+                const telegramId = tg.initDataUnsafe.user.id;
+
+                const response = await fetch(`/api/rocket/history/${telegramId}`);
+                if (!response.ok) return;
+
+                const result = await response.json();
+                if (result.success) {
+                    const historyContainer = document.getElementById('gameHistory');
+                    historyContainer.innerHTML = '';
+
+                    result.games.slice(0, 10).forEach(game => {
+                        const historyItem = document.createElement('div');
+                        historyItem.className = 'history-item';
+                        
+                        const date = new Date(game.createdAt).toLocaleString();
+                        const amount = game.betAmount;
+                        const multiplier = game.cashoutMultiplier || 0;
+                        const isWin = multiplier > 0;
+
+                        historyItem.innerHTML = `
+                            <span>${date}</span>
+                            <span class="${isWin ? 'win' : 'lose'}">
+                                ${isWin ? `+${(amount * multiplier).toFixed(2)} TON (${multiplier.toFixed(2)}x)` : `-${amount} TON`}
+                            </span>
+                        `;
+
+                        historyContainer.appendChild(historyItem);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+    </script>
+</body>
+</html>

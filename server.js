@@ -6,7 +6,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const cron = require('node-cron');
 const Loki = require('lokijs');
-
+const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -22,7 +22,7 @@ const dbPath = process.env.NODE_ENV === 'production' ?
 
 // LokiJS база данных
 let db;
-let users, transactions, casinoBank, adminLogs, minesGames;
+let users, transactions, casinoBank, adminLogs, minesGames, rocketGames;
 
 function initDatabase() {
     return new Promise((resolve) => {
@@ -34,6 +34,7 @@ function initDatabase() {
                 casinoBank = db.getCollection('casino_bank');
                 adminLogs = db.getCollection('admin_logs');
                 minesGames = db.getCollection('mines_games');
+                rocketGames = db.getCollection('rocket_games');
                 
                 if (!users) {
                     users = db.addCollection('users', { 
@@ -67,6 +68,12 @@ function initDatabase() {
 
                 if (!minesGames) {
                     minesGames = db.addCollection('mines_games', {
+                        indices: ['user_id', 'created_at', 'demo_mode']
+                    });
+                }
+
+                if (!rocketGames) {
+                    rocketGames = db.addCollection('rocket_games', {
                         indices: ['user_id', 'created_at', 'demo_mode']
                     });
                 }
@@ -853,6 +860,192 @@ app.get('/api/mines/history/:telegramId', async (req, res) => {
 });
 
 
+// Rocket Game Routes
+app.get('/rocket', (req, res) => {
+    res.sendFile(path.join(__dirname, 'rocket.html'));
+});
+
+// API: Начать игру в ракетку
+app.post('/api/rocket/start', async (req, res) => {
+    try {
+        const { telegramId, betAmount, demoMode } = req.body;
+
+        if (betAmount < 1 || betAmount > 50) {
+            return res.status(400).json({ error: 'Ставка должна быть от 1 до 50 TON' });
+        }
+
+        const user = users.findOne({ telegram_id: parseInt(telegramId) });
+        if (!user) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        const currentBalance = demoMode ? user.demo_balance : user.main_balance;
+        if (currentBalance < betAmount) {
+            return res.status(400).json({ error: 'Недостаточно средств' });
+        }
+
+        // Генерируем множитель (от 1x до 100x)
+        const crashPoint = generateCrashPoint();
+        
+        const gameState = {
+            betAmount: betAmount,
+            demoMode: demoMode,
+            userId: user.$loki,
+            telegramId: telegramId,
+            crashPoint: crashPoint,
+            currentMultiplier: 1.0,
+            isCrashed: false,
+            cashoutMultiplier: 0,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        // Списываем средства
+        if (demoMode) {
+            users.update({
+                ...user,
+                demo_balance: user.demo_balance - betAmount
+            });
+        } else {
+            users.update({
+                ...user,
+                main_balance: user.main_balance - betAmount
+            });
+        }
+
+        // Сохраняем игру
+        const rocketGames = db.getCollection('rocket_games') || db.addCollection('rocket_games');
+        const gameRecord = rocketGames.insert(gameState);
+
+        res.json({
+            success: true,
+            gameId: gameRecord.$loki,
+            crashPoint: crashPoint,
+            betAmount: betAmount
+        });
+
+    } catch (error) {
+        console.error('Rocket start error:', error);
+        res.status(500).json({ error: 'Ошибка начала игры' });
+    }
+});
+
+// API: Забрать выигрыш в ракетке
+app.post('/api/rocket/cashout', async (req, res) => {
+    try {
+        const { gameId, telegramId, multiplier } = req.body;
+
+        const rocketGames = db.getCollection('rocket_games');
+        if (!rocketGames) {
+            return res.status(404).json({ error: 'Игра не найдена' });
+        }
+
+        const gameRecord = rocketGames.get(gameId);
+        if (!gameRecord) {
+            return res.status(404).json({ error: 'Игра не найдена' });
+        }
+
+        if (gameRecord.telegramId !== parseInt(telegramId)) {
+            return res.status(403).json({ error: 'Доступ запрещен' });
+        }
+
+        if (gameRecord.isCrashed) {
+            return res.status(400).json({ error: 'Игра уже завершена' });
+        }
+
+        const winAmount = gameRecord.betAmount * multiplier;
+        const user = users.findOne({ telegram_id: parseInt(telegramId) });
+
+        rocketGames.update({
+            ...gameRecord,
+            isCrashed: true,
+            cashoutMultiplier: multiplier,
+            updatedAt: new Date()
+        });
+
+        if (gameRecord.demoMode) {
+            users.update({
+                ...user,
+                demo_balance: user.demo_balance + winAmount
+            });
+        } else {
+            users.update({
+                ...user,
+                main_balance: user.main_balance + winAmount
+            });
+
+            // Обновляем банк казино
+            updateCasinoBank(-winAmount);
+        }
+
+        // Записываем транзакцию
+        transactions.insert({
+            user_id: user.$loki,
+            amount: winAmount,
+            type: 'rocket_win',
+            status: 'completed',
+            demo_mode: gameRecord.demoMode,
+            game_id: gameId,
+            multiplier: multiplier,
+            created_at: new Date()
+        });
+
+        res.json({
+            success: true,
+            winAmount: winAmount,
+            multiplier: multiplier,
+            newBalance: gameRecord.demoMode ? user.demo_balance + winAmount : user.main_balance + winAmount
+        });
+
+    } catch (error) {
+        console.error('Rocket cashout error:', error);
+        res.status(500).json({ error: 'Ошибка вывода средств' });
+    }
+});
+
+// API: Получить историю ракетки
+app.get('/api/rocket/history/:telegramId', async (req, res) => {
+    try {
+        const telegramId = parseInt(req.params.telegramId);
+        const user = users.findOne({ telegram_id: telegramId });
+        
+        if (!user) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        const rocketGames = db.getCollection('rocket_games');
+        if (!rocketGames) {
+            return res.json({ success: true, games: [] });
+        }
+
+        const userGames = rocketGames.chain()
+            .find({ telegramId: telegramId })
+            .simplesort('createdAt', true)
+            .data();
+
+        res.json({
+            success: true,
+            games: userGames
+        });
+
+    } catch (error) {
+        console.error('Rocket history error:', error);
+        res.status(500).json({ error: 'Ошибка получения истории' });
+    }
+});
+
+// Функция генерации точки краша (аналогично 1win)
+function generateCrashPoint() {
+    const e = 2**32;
+    const h = crypto.createHash('sha256').update(new Date().getTime().toString()).digest('hex');
+    const h1 = h.substring(0, 8);
+    const n = parseInt(h1, 16);
+    
+    const crashPoint = (100 * e - n) / (e - n);
+    return Math.max(1.00, Math.min(100.00, parseFloat(crashPoint.toFixed(2))));
+}
+
+
 // Health check для Render
 app.get('/health', (req, res) => {
     res.status(200).json({ 
@@ -877,6 +1070,7 @@ async function startServer() {
             console.log(`🏦 Casino bank initialized`);
             console.log(`👑 Owner ID: ${process.env.OWNER_TELEGRAM_ID}`);
             console.log(`💣 Mines game ready`);
+            console.log(`🚀 Rocket game ready`); // ДОБАВЬТЕ ЭТУ СТРОКУ
             console.log('🔄 Keep-alive service started (ping every 14 minutes)');
         });
     } catch (error) {

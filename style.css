@@ -598,3 +598,47 @@ input[type="text"]:focus {
     background: linear-gradient(135deg, #74b9ff, #5a9de6);
     color: white;
 }
+
+/* Добавьте эти стили в конец файла style.css */
+.game-button {
+    display: flex;
+    align-items: center;
+    background: rgba(35, 40, 52, 0.8);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.game-button:hover {
+    background: rgba(102, 126, 234, 0.2);
+    transform: translateY(-2px);
+}
+
+.game-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.game-info {
+    flex: 1;
+}
+
+.game-info h3 {
+    color: #f0f0f0;
+    margin-bottom: 5px;
+    font-size: 18px;
+}
+
+.game-info p {
+    color: #a0a0a0;
+    font-size: 14px;
+    margin: 0;
+}
+
+.game-arrow {
+    font-size: 20px;
+    color: #a0a0a0;
+}
