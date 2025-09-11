@@ -7,269 +7,12 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        .rocket-container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .rocket-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .rocket-canvas {
-            width: 100%;
-            height: 300px;
-            background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
-            border-radius: 15px;
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .rocket {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 40px;
-            transition: bottom 0.1s linear;
-        }
-        
-        .multiplier-display {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            color: #00b894;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 20px;
-            border-radius: 20px;
-        }
-        
-        .bet-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .bet-input {
-            flex: 1;
-            padding: 12px;
-            background: rgba(35, 40, 52, 0.8);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: white;
-            font-size: 16px;
-            min-width: 120px;
-        }
-        
-        .place-bet-btn {
-            padding: 12px 20px;
-            background: linear-gradient(135deg, #00b894, #008066);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        
-        .place-bet-btn:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-        
-        .cashout-btn {
-            padding: 12px 20px;
-            background: linear-gradient(135deg, #fdcb6e, #e6a336);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        
-        .cashout-btn:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-        
-        .game-info {
-            background: rgba(25, 30, 42, 0.8);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-        
-        .bets-list {
-            background: rgba(25, 30, 42, 0.8);
-            border-radius: 15px;
-            padding: 15px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        .bet-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .bet-item:last-child {
-            border-bottom: none;
-        }
-        
-        .explosion {
-            position: absolute;
-            font-size: 60px;
-            animation: explode 0.5s ease-out;
-        }
-        
-        @keyframes explode {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.5); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-        
-        .trail {
-            position: absolute;
-            width: 2px;
-            background: linear-gradient(to bottom, transparent, #ff6b6b);
-            animation: trail 1s linear;
-        }
-        
-        @keyframes trail {
-            from { height: 0; opacity: 1; }
-            to { height: 100px; opacity: 0; }
-        }
-
-        .game-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: rgba(25, 30, 42, 0.8);
-            border-radius: 10px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 5px;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #a0a0a0;
-            margin-bottom: 3px;
-        }
-
-        .stat-value {
-            font-size: 14px;
-            font-weight: bold;
-            color: #74b9ff;
-        }
-
-        .timer-value {
-            color: #fdcb6e;
-        }
-
-        .players-value {
-            color: #00b894;
-        }
-
-        .bot-avatar {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: inline-block;
-            margin-right: 8px;
-            text-align: center;
-            line-height: 20px;
-            font-size: 12px;
-        }
-
-        .user-bet {
-            background: rgba(0, 184, 148, 0.2);
-            border-left: 3px solid #00b894;
-        }
+        /* ... (ваши стили остаются без изменений) ... */
     </style>
 </head>
 <body>
     <div class="container">
-        <button class="back-button" onclick="goBack()">← Назад</button>
-        
-        <div class="rocket-header">
-            <h1>🚀 Rocket Game</h1>
-            <div class="balance">
-                Баланс: <span id="balance">0</span> TON
-                <span id="demo-badge" style="margin-left: 10px; padding: 2px 8px; background: #ffc107; border-radius: 10px; font-size: 12px;">TESTNET</span>
-            </div>
-        </div>
-
-        <div class="game-stats">
-            <div class="stat-item">
-                <div class="stat-label">Игроков онлайн</div>
-                <div class="stat-value players-value" id="playersCount">1</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Следующий раунд</div>
-                <div class="stat-value timer-value" id="roundTimer">10с</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Активных ставок</div>
-                <div class="stat-value" id="activeBetsCount">0</div>
-            </div>
-        </div>
-
-        <div class="rocket-container">
-            <div class="rocket-canvas" id="rocketCanvas">
-                <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
-                <div class="rocket" id="rocket">🚀</div>
-            </div>
-
-            <div class="bet-controls">
-                <input type="number" class="bet-input" id="betAmount" min="1" max="50" step="1" value="1" placeholder="Ставка в TON">
-                <button class="place-bet-btn" id="placeBetBtn">Поставить</button>
-                <button class="cashout-btn" id="cashoutBtn" disabled>Забрать</button>
-            </div>
-
-            <div class="game-info">
-                <div class="info-row">
-                    <span>Твоя ставка:</span>
-                    <span id="yourBet">0 TON</span>
-                </div>
-                <div class="info-row">
-                    <span>Потенциальный выигрыш:</span>
-                    <span id="potentialWin">0 TON</span>
-                </div>
-                <div class="info-row">
-                    <span>Текущий множитель:</span>
-                    <span id="currentMultiplier">1.00x</span>
-                </div>
-            </div>
-
-            <div class="bets-list">
-                <h3>Активные ставки</h3>
-                <div id="betsContainer">
-                    <div class="no-bets">Ставок пока нет</div>
-                </div>
-            </div>
-        </div>
+        <!-- ... (ваш HTML остается без изменений) ... -->
     </div>
 
     <script>
@@ -286,6 +29,7 @@
         let botBetsInterval = null;
         let activeBots = [];
         let gameRound = 1;
+        let isRoundPreparation = false;
 
         // Список ботов с разными стратегиями
         const bots = [
@@ -314,8 +58,8 @@
             startBotActivity();
             updatePlayersCount(3 + Math.floor(Math.random() * 8)); // 3-10 игроков онлайн
             
-            // Запускаем первый раунд через 5 секунд
-            setTimeout(startNewRound, 5000);
+            // Запускаем первый раунд сразу
+            startNewRound();
         });
 
         function goBack() {
@@ -348,8 +92,13 @@
 
         function startNewRound() {
             clearInterval(timerInterval);
+            clearInterval(rocketInterval);
+            isRoundPreparation = true;
             roundTimer = 10;
             updateRoundTimer();
+            
+            // Сбрасываем игру
+            resetGame();
             
             // Генерируем ботов для этого раунда (3-6 ботов)
             const botsInRound = 3 + Math.floor(Math.random() * 4);
@@ -366,6 +115,9 @@
                 addBotBet(bot);
             }
             
+            // Разрешаем ставки во время подготовки
+            document.getElementById('placeBetBtn').disabled = false;
+            
             // Запускаем таймер раунда
             timerInterval = setInterval(() => {
                 roundTimer--;
@@ -373,6 +125,7 @@
                 
                 if (roundTimer <= 0) {
                     clearInterval(timerInterval);
+                    isRoundPreparation = false;
                     startGame();
                 }
             }, 1000);
@@ -457,13 +210,9 @@
         }
 
         async function placeBet() {
-            if (timerInterval) {
-                alert('Идет подготовка к раунду! Подождите ' + roundTimer + ' секунд');
-                return;
-            }
-
-            if (currentGame) {
-                alert('Раунд уже начался!');
+            // Разрешаем ставки во время подготовки раунда
+            if (currentGame && !isRoundPreparation) {
+                alert('Раунд уже начался! Дождитесь следующего раунда.');
                 return;
             }
 
@@ -631,7 +380,6 @@
             
             // Запускаем новый раунд через 5 секунд
             setTimeout(() => {
-                resetGame();
                 startNewRound();
             }, 5000);
         }
@@ -716,7 +464,6 @@
             updateMultiplierDisplay();
             document.getElementById('yourBet').textContent = '0 TON';
             document.getElementById('potentialWin').textContent = '0 TON';
-            document.getElementById('placeBetBtn').disabled = false;
             document.getElementById('cashoutBtn').disabled = true;
             
             // Очищаем список ставок (кроме ботов)
@@ -759,7 +506,7 @@
         }
 
         function updateRoundTimer() {
-            document.getElementById('roundTimer').textContent = roundTimer + 'с';
+            document.getElementById('roundTimer').textContent = roundTimer + 's';
         }
     </script>
 </body>
