@@ -167,8 +167,7 @@
             countdownInterval = null;
         }
     }
-
-   function updateRocketPosition(multiplier) {
+function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const trailElement = document.getElementById('rocketTrail');
     
@@ -234,6 +233,8 @@
         trail.style.height = '0px';
     }, 1000);
 }
+
+
     function updatePlayersList(players) {
         const playersList = document.getElementById('playersList');
         const playersCount = document.getElementById('playersCount');
