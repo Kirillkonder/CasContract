@@ -49,13 +49,50 @@
 /* Игровое поле */
 .rocket-canvas {
     position: relative;
-    height: 400px;
-    background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
+    height: 300px;
+    background: linear-gradient(180deg, #0a0e14 0%, #131722 100%);
     border-radius: 20px;
     margin-bottom: 20px;
     overflow: hidden;
     border: 2px solid rgba(102, 126, 234, 0.3);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Сетка на фоне */
+.grid-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Маркеры множителей */
+.multiplier-markers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.multiplier-markers::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, 
+        transparent 0%,
+        rgba(102, 126, 234, 0.3) 10%,
+        rgba(102, 126, 234, 0.3) 90%,
+        transparent 100%);
+    transform: translateX(-50%);
 }
 
 /* Отображение множителя */
@@ -75,99 +112,176 @@
     border: 2px solid rgba(0, 184, 148, 0.3);
 }
 
+/* Контейнер ракеты */
+.rocket-container {
+    position: absolute;
+    bottom: 50px;
+    left: 50px;
+    transform: translateX(0);
+    transition: transform 0.1s linear;
+    z-index: 30;
+}
+
 /* Ракета */
 .rocket {
+    position: relative;
+    width: 40px;
+    height: 80px;
+    transform: translateX(0);
+    transition: transform 0.1s linear;
+}
+
+.rocket-body {
+    position: relative;
+    width: 20px;
+    height: 60px;
+    background: linear-gradient(45deg, #e0e0e0, #ffffff);
+    border-radius: 6px 6px 3px 3px;
+    margin: 0 auto;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.rocket-nose {
     position: absolute;
-    bottom: 80px;
+    top: -15px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 48px;
-    transition: bottom 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: 30;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-    animation: rocketFloat 2s ease-in-out infinite;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 15px solid #ff6b6b;
 }
 
-@keyframes rocketFloat {
-    0%, 100% { transform: translateX(-50%) translateY(0px) rotate(0deg); }
-    50% { transform: translateX(-50%) translateY(-5px) rotate(1deg); }
-}
-
-/* Шлейф ракеты */
-.trail {
+.rocket-window {
     position: absolute;
-    bottom: 80px;
+    top: 15px;
     left: 50%;
     transform: translateX(-50%);
-    width: 6px;
-    background: linear-gradient(to top, 
-        rgba(255, 118, 117, 0.8) 0%,
-        rgba(255, 118, 117, 0.6) 20%,
-        rgba(116, 185, 255, 0.4) 40%,
-        rgba(116, 185, 255, 0.2) 60%,
-        transparent 100%);
-    height: 0px;
-    z-index: 10;
-    border-radius: 3px 3px 0 0;
-}
-
-/* Линия траектории */
-.trajectory-line {
-    position: absolute;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 2px;
-    background: linear-gradient(to top, 
-        rgba(102, 126, 234, 0.4) 0%,
-        rgba(102, 126, 234, 0.2) 50%,
-        transparent 100%);
-    height: 320px;
-    z-index: 5;
-}
-
-/* Точки на траектории */
-.trajectory-dot {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    background: rgba(102, 126, 234, 0.8);
+    width: 8px;
+    height: 8px;
+    background: #74b9ff;
     border-radius: 50%;
+    box-shadow: 0 0 10px rgba(116, 185, 255, 0.8);
+}
+
+.rocket-fins {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
     transform: translateX(-50%);
-    z-index: 6;
+    display: flex;
+    gap: 15px;
+}
+
+.fin {
+    width: 5px;
+    height: 15px;
+    background: #ff6b6b;
+    border-radius: 2px;
+}
+
+.fin-left {
+    transform: rotate(-45deg);
+}
+
+.fin-right {
+    transform: rotate(45deg);
+}
+
+/* Огонь ракеты */
+.rocket-fire {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 15px;
+    height: 30px;
+}
+
+.fire-main {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 15px;
+    height: 25px;
+    background: linear-gradient(to top, #ff7675 0%, #e17055 30%, #fdcb6e 100%);
+    border-radius: 50% 50% 0 0;
+    filter: blur(3px);
+    animation: fireFlicker 0.3s ease-in-out infinite alternate;
+}
+
+.fire-particle {
+    position: absolute;
+    background: #fdcb6e;
+    border-radius: 50%;
+    filter: blur(2px);
+    animation: fireParticle 1s ease-out infinite;
+}
+
+.particle-1 {
+    width: 4px;
+    height: 4px;
+    bottom: -5px;
+    left: 30%;
+    animation-delay: 0.1s;
+}
+
+.particle-2 {
+    width: 3px;
+    height: 3px;
+    bottom: -8px;
+    left: 50%;
+    animation-delay: 0.3s;
+}
+
+.particle-3 {
+    width: 5px;
+    height: 5px;
+    bottom: -6px;
+    left: 70%;
+    animation-delay: 0.2s;
+}
+
+@keyframes fireFlicker {
+    0% { height: 20px; opacity: 0.8; }
+    100% { height: 25px; opacity: 1; }
+}
+
+@keyframes fireParticle {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-20px) scale(0.2);
+        opacity: 0;
+    }
 }
 
 /* Взрыв */
 .explosion {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 150px;
-    height: 150px;
-    background: radial-gradient(circle, 
-        #ff7675 0%, 
-        #e17055 30%, 
-        #d63031 60%, 
-        transparent 70%);
-    border-radius: 50%;
-    animation: explode 0.8s ease-out;
+    display: none;
     z-index: 40;
-    opacity: 0;
 }
 
-@keyframes explode {
-    0% { 
-        transform: translate(-50%, -50%) scale(0); 
-        opacity: 1; 
+.explosion-particle {
+    position: absolute;
+    background: radial-gradient(circle, #ff7675 0%, #e17055 50%, transparent 70%);
+    border-radius: 50%;
+    animation: explodeParticle 0.8s ease-out forwards;
+}
+
+@keyframes explodeParticle {
+    0% {
+        transform: scale(0) translate(0, 0);
+        opacity: 1;
     }
-    50% { 
-        transform: translate(-50%, -50%) scale(1.2); 
-        opacity: 0.8; 
-    }
-    100% { 
-        transform: translate(-50%, -50%) scale(2); 
-        opacity: 0; 
+    100% {
+        transform: scale(2) translate(var(--tx), var(--ty));
+        opacity: 0;
     }
 }
 
@@ -292,7 +406,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    background: rgba(35, 40, 52, 0.6);
+    background: rgba(35, 40, 52, 0.8);
     padding: 15px;
     border-radius: 12px;
 }
@@ -303,45 +417,52 @@
 
 .stat-item span {
     display: block;
-    font-size: 14px;
-    color: #a0a0a0;
+    font-size: 12px;
+    color: #b2bec3;
     margin-bottom: 5px;
 }
 
 .stat-item strong {
     font-size: 16px;
-    color: #f0f0f0;
+    color: white;
 }
 
-/* Анимация полета ракеты */
+/* Анимации */
 @keyframes rocketFly {
     0% {
-        transform: translateX(-50%) translateY(0) rotate(0deg);
-    }
-    25% {
-        transform: translateX(-50%) translateY(-2px) rotate(-1deg);
-    }
-    50% {
-        transform: translateX(-50%) translateY(0) rotate(0deg);
-    }
-    75% {
-        transform: translateX(-50%) translateY(2px) rotate(1deg);
+        transform: translateX(0) translateY(0);
     }
     100% {
-        transform: translateX(-50%) translateY(0) rotate(0deg);
+        transform: translateX(var(--target-x)) translateY(var(--target-y));
     }
 }
 
-.rocket-flying {
-    animation: rocketFly 0.5s ease-in-out infinite;
+@keyframes rocketCrash {
+    0% {
+        transform: translateX(var(--crash-x)) translateY(var(--crash-y)) rotate(0deg);
+    }
+    100% {
+        transform: translateX(var(--crash-x)) translateY(var(--crash-y)) rotate(360deg);
+    }
 }
 
-/* Анимация шлейфа */
-@keyframes trailGlow {
-    0%, 100% { opacity: 0.8; }
-    50% { opacity: 1; }
-}
-
-.trail-animated {
-    animation: trailGlow 0.3s ease-in-out infinite;
+/* Адаптивность */
+@media (max-width: 768px) {
+    .rocket-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .bet-controls {
+        flex-direction: column;
+    }
+    
+    .user-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .rocket-canvas {
+        height: 250px;
+    }
 }
