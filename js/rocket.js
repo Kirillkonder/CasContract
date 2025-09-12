@@ -1,4 +1,4 @@
-// rocket.js - исправленная версия (фикс отображения множителя на кнопке)
+// rocket.js - исправленная версия
 let ws = null;
 let currentUser = null;
 let isDemoMode = false;
@@ -7,14 +7,7 @@ let userCashedOut = false;
 let userPlayer = null;
 let rocketPosition = 50;
 let countdownInterval = null;
-let rocketSpeed = 0.1;
-
-// В самом начале, после объявления переменных
-document.addEventListener('DOMContentLoaded', function() {
-    initializeGame();
-    connectWebSocket();
-    resetRocketPosition(); // Добавьте эту строку
-});
+let rocketSpeed = 0.1; // Начальная скорость ракеты
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', function() {
@@ -83,8 +76,10 @@ function connectWebSocket() {
 }
 
 function updateGameState(gameState) {
+    // Обновляем глобальную переменную игры
     rocketGame = gameState;
     
+    // Обновляем статус игры
     const statusElement = document.getElementById('statusText');
     const countdownElement = document.getElementById('countdown');
     const statusClass = `status-${gameState.status}`;
@@ -97,7 +92,7 @@ function updateGameState(gameState) {
             countdownElement.textContent = '';
             clearCountdown();
             resetBettingUI();
-            rocketSpeed = 0.1;
+            rocketSpeed = 0.1; // Сбрасываем скорость при новой игре
             break;
             
         case 'counting':
@@ -117,10 +112,11 @@ function updateGameState(gameState) {
             statusElement.textContent = `Ракета взорвалась на ${gameState.crashPoint.toFixed(2)}x!`;
             countdownElement.textContent = '';
             clearCountdown();
-            crashRocket(); // Замените showExplosion() на crashRocket()
+            showExplosion();
             break;
     }
     
+    // Обновляем множитель
     document.getElementById('multiplierDisplay').textContent = gameState.multiplier.toFixed(2) + 'x';
     
     // Находим нашего игрока
@@ -136,9 +132,13 @@ function updateGameState(gameState) {
         }
     }
     
+    // Обновляем список игроков
     updatePlayersList(gameState.players);
+    
+    // Обновляем историю
     updateHistory(gameState.history);
     
+    // Обновляем потенциальный выигрыш
     if (userBet > 0 && !userCashedOut && gameState.status === 'flying') {
         const potentialWin = userBet * gameState.multiplier;
         document.getElementById('potentialWin').textContent = potentialWin.toFixed(2);
@@ -154,6 +154,7 @@ function startCountdown(endTime) {
         const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
         document.getElementById('countdown').textContent = `${timeLeft}с`;
         
+        // Обновляем текст кнопки ставки
         const betButton = document.getElementById('placeBetButton');
         if (timeLeft > 0) {
             betButton.textContent = `Поставить (${timeLeft}с)`;
@@ -183,17 +184,31 @@ function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const trailElement = document.getElementById('rocketTrail');
     
+    // Увеличиваем скорость ракеты с ростом множителя (экспоненциальное ускорение)
+    // Чем выше множитель, тем быстрее ракета летит
     rocketSpeed = 0.1 + (multiplier * 0.05);
+    
+    // Вычисляем новую позицию ракеты (от 50px до 250px)
     const newPosition = 50 + (multiplier * 2);
     rocketElement.style.bottom = `${newPosition}px`;
-    trailElement.style.height = `${newPosition - 90}px`;
-    rocketElement.style.transition = `bottom ${0.5/rocketSpeed}s linear`;
     
-    // Добавьте этот вызов для обновления множителя
-    updateMultiplier(multiplier);
+    // Обновляем след ракеты
+    trailElement.style.height = `${newPosition - 90}px`;
+    
+    // Добавляем анимацию ускорения
+    rocketElement.style.transition = `bottom ${0.5/rocketSpeed}s linear`;
 }
 
-
+function showExplosion() {
+    const canvas = document.getElementById('rocketCanvas');
+    const explosion = document.createElement('div');
+    explosion.className = 'explosion';
+    canvas.appendChild(explosion);
+    
+    setTimeout(() => {
+        canvas.removeChild(explosion);
+    }, 1000);
+}
 
 function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
@@ -248,16 +263,19 @@ async function placeBet() {
         return;
     }
     
+    // Запрещаем несколько ставок
     if (userBet > 0) {
         alert('Вы уже сделали ставку в этом раунде!');
         return;
     }
     
+    // Проверяем что игра в стадии приема ставок
     if (rocketGame.status !== 'counting') {
         alert('Сейчас нельзя сделать ставку! Дождитесь следующего раунда.');
         return;
     }
     
+    // Проверяем время для ставок
     const timeLeft = Math.ceil((rocketGame.endBetTime - Date.now()) / 1000);
     if (timeLeft <= 0) {
         alert('Время для ставок закончилось! Дождитесь следующего раунда.');
@@ -289,6 +307,7 @@ async function placeBet() {
             document.getElementById('userBet').textContent = betAmount.toFixed(2);
             document.getElementById('balance').textContent = result.new_balance.toFixed(2);
             
+            // Блокируем кнопку ставки
             document.getElementById('placeBetButton').disabled = true;
             document.getElementById('placeBetButton').textContent = 'Ставка сделана';
             
@@ -338,6 +357,7 @@ async function cashout() {
             userCashedOut = true;
             updateBettingUI();
             
+            // Обновляем баланс
             const response = await fetch(`/api/user/balance/${currentUser.id}`);
             if (response.ok) {
                 const userData = await response.json();
@@ -357,16 +377,13 @@ function updateBettingUI() {
     const betButton = document.getElementById('placeBetButton');
     const cashoutButton = document.getElementById('cashoutButton');
     
-    // ВАЖНОЕ ИСПРАВЛЕНИЕ: Всегда используем текущий множитель игры, а не множитель бота
-    const currentMultiplier = rocketGame.multiplier ? rocketGame.multiplier.toFixed(2) : '1.00';
-    
     if (rocketGame.status === 'counting') {
+        // В режиме ставок
         const timeLeft = rocketGame.endBetTime ? Math.ceil((rocketGame.endBetTime - Date.now()) / 1000) : 0;
         const canBet = timeLeft > 0;
         
         betButton.disabled = userBet > 0 || !canBet;
         cashoutButton.disabled = true;
-        cashoutButton.textContent = 'Забрать выигрыш'; // Сбрасываем текст кнопки
         
         if (userBet > 0) {
             betButton.textContent = 'Ставка сделана';
@@ -376,18 +393,16 @@ function updateBettingUI() {
             betButton.textContent = `Поставить (${timeLeft}с)`;
         }
     } else if (rocketGame.status === 'flying') {
+        // В полете
         betButton.disabled = true;
         betButton.textContent = 'Полёт...';
-        
-        // ИСПРАВЛЕНИЕ: Кнопка "Забрать" всегда показывает текущий множитель игры
         cashoutButton.disabled = userCashedOut || userBet === 0;
         
         if (!userCashedOut && userBet > 0) {
-            cashoutButton.textContent = `Забрать ${currentMultiplier}x`;
-        } else {
-            cashoutButton.textContent = 'Забрать выигрыш';
+            cashoutButton.textContent = `Забрать ${rocketGame.multiplier.toFixed(2)}x`;
         }
     } else {
+        // Ожидание или краш
         betButton.disabled = rocketGame.status !== 'waiting';
         cashoutButton.disabled = true;
         betButton.textContent = 'Поставить';
@@ -403,51 +418,7 @@ function resetBettingUI() {
     document.getElementById('potentialWin').textContent = '0';
     document.getElementById('placeBetButton').disabled = false;
     document.getElementById('placeBetButton').textContent = 'Поставить';
-    
-    // Сбрасываем текст кнопки "Забрать"
-    document.getElementById('cashoutButton').textContent = 'Забрать выигрыш';
-    
     updateBettingUI();
-}
-
-// Функция для взрыва ракеты
-function crashRocket() {
-    const rocket = document.getElementById('rocket');
-    const crashText = document.getElementById('crashText');
-    const multiplierDisplay = document.getElementById('multiplierDisplay');
-    
-    // Скрываем ракету и показываем текст "КРАХ"
-    rocket.style.display = 'none';
-    crashText.style.display = 'block';
-    multiplierDisplay.style.display = 'none';
-    
-    // Через 3 секунды возвращаем к исходному состоянию
-    setTimeout(() => {
-        crashText.style.display = 'none';
-        rocket.style.display = 'block';
-        multiplierDisplay.style.display = 'block';
-        resetRocketPosition();
-    }, 3000);
-}
-
-// Функция для сброса позиции ракеты
-function resetRocketPosition() {
-    const rocket = document.getElementById('rocket');
-    const trail = document.getElementById('rocketTrail');
-    rocket.style.bottom = '50px';
-    trail.style.height = '0px';
-}
-
-// Функция для обновления множителя
-function updateMultiplier(value) {
-    const multiplierDisplay = document.getElementById('multiplierDisplay');
-    multiplierDisplay.textContent = value.toFixed(2) + 'x';
-    
-    // Анимация пульсации
-    multiplierDisplay.classList.add('multiplier-animate');
-    setTimeout(() => {
-        multiplierDisplay.classList.remove('multiplier-animate');
-    }, 300);
 }
 
 // Глобальная переменная для доступа из WebSocket
