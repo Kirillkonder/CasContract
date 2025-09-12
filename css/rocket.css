@@ -46,18 +46,13 @@
     font-weight: bold;
 }
 
-/* Контейнер игрового поля */
-.rocket-game-container {
-    position: relative;
-    margin-bottom: 20px;
-}
-
 /* Игровое поле */
 .rocket-canvas {
     position: relative;
-    height: 400px;
+    height: 300px;
     background: linear-gradient(180deg, #0a0e14 0%, #131722 100%);
     border-radius: 20px;
+    margin-bottom: 20px;
     overflow: hidden;
     border: 2px solid rgba(102, 126, 234, 0.3);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
@@ -76,112 +71,120 @@
     background-size: 20px 20px;
 }
 
-/* Линия множителей */
-.multiplier-line {
+/* Траектория полета */
+.flight-trajectory {
     position: absolute;
-    bottom: 50px;
-    left: 20px;
-    right: 20px;
-    height: 3px;
-    background: linear-gradient(90deg, 
-        rgba(0, 184, 148, 0.3) 0%,
-        rgba(0, 184, 148, 0.6) 50%,
-        rgba(220, 53, 69, 0.8) 100%);
-    z-index: 5;
-}
-
-/* Маркеры на линии множителей */
-.multiplier-markers::before {
-    content: '';
-    position: absolute;
-    top: -5px;
-    bottom: -5px;
-    width: 2px;
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateX(-50%);
-}
-
-.multiplier-markers::after {
-    content: '';
-    position: absolute;
-    top: -8px;
-    bottom: -8px;
-    width: 1px;
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(-50%);
-}
-
-/* Значения множителей */
-.multiplier-values {
-    position: absolute;
-    top: -30px;
+    top: 0;
     left: 0;
     right: 0;
-    display: flex;
-    justify-content: space-between;
+    bottom: 0;
+    pointer-events: none;
 }
 
-.multiplier-values span {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.6);
-    font-weight: bold;
-}
-
-/* След ракеты */
-.rocket-trail {
+.trajectory-line {
     position: absolute;
-    bottom: 52px;
-    left: 20px;
-    height: 1px;
-    background: linear-gradient(90deg, 
-        rgba(0, 184, 148, 0.8) 0%,
-        rgba(220, 53, 69, 0.8) 100%);
-    width: 0;
-    z-index: 10;
-    transition: width 0.1s linear;
+    left: 50px;
+    top: 50%;
+    bottom: 50px;
+    width: 2px;
+    background: linear-gradient(to bottom, 
+        transparent 0%,
+        rgba(102, 126, 234, 0.5) 20%,
+        rgba(102, 126, 234, 0.5) 80%,
+        transparent 100%);
+    transform: translateX(-50%);
+}
+
+.trajectory-multipliers {
+    position: absolute;
+    left: 60px;
+    top: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.multiplier-marker {
+    position: absolute;
+    left: 0;
+    width: 30px;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 4px;
+    color: #00b894;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-50%);
+}
+
+/* Отображение множителя */
+.multiplier-display {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 36px;
+    font-weight: bold;
+    color: #00b894;
+    text-shadow: 0 0 15px rgba(0, 184, 148, 0.7);
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 20px;
+    border-radius: 15px;
+    border: 2px solid rgba(0, 184, 148, 0.3);
 }
 
 /* Контейнер ракеты */
-.rocket {
+.rocket-container {
     position: absolute;
-    bottom: 40px;
-    left: 20px;
+    bottom: 50px;
+    left: 40px;
     transform: translateX(0);
+    transition: all 0.1s ease-out;
     z-index: 30;
-    transition: transform 0.1s ease-out;
 }
 
 /* Ракета */
+.rocket {
+    position: relative;
+    width: 40px;
+    height: 80px;
+    transform: translateX(0);
+    transition: transform 0.1s ease-out;
+}
+
 .rocket-body {
     position: relative;
-    width: 24px;
+    width: 20px;
     height: 60px;
     background: linear-gradient(45deg, #e0e0e0, #ffffff);
     border-radius: 6px 6px 3px 3px;
     margin: 0 auto;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
-    transform: translateX(-50%);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
 .rocket-nose {
     position: absolute;
-    top: -12px;
+    top: -15px;
     left: 50%;
     transform: translateX(-50%);
     width: 0;
     height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-bottom: 12px solid #ff6b6b;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 15px solid #ff6b6b;
 }
 
 .rocket-window {
     position: absolute;
-    top: 12px;
+    top: 15px;
     left: 50%;
     transform: translateX(-50%);
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     background: #74b9ff;
     border-radius: 50%;
     box-shadow: 0 0 10px rgba(116, 185, 255, 0.8);
@@ -189,16 +192,16 @@
 
 .rocket-fins {
     position: absolute;
-    bottom: -4px;
+    bottom: -5px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 12px;
+    gap: 15px;
 }
 
 .fin {
-    width: 4px;
-    height: 12px;
+    width: 5px;
+    height: 15px;
     background: #ff6b6b;
     border-radius: 2px;
 }
@@ -214,12 +217,11 @@
 /* Огонь ракеты */
 .rocket-fire {
     position: absolute;
-    bottom: -18px;
+    bottom: -20px;
     left: 50%;
     transform: translateX(-50%);
-    width: 12px;
-    height: 25px;
-    z-index: 25;
+    width: 15px;
+    height: 30px;
 }
 
 .fire-main {
@@ -227,11 +229,11 @@
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 12px;
-    height: 20px;
+    width: 15px;
+    height: 25px;
     background: linear-gradient(to top, #ff7675 0%, #e17055 30%, #fdcb6e 100%);
     border-radius: 50% 50% 0 0;
-    filter: blur(2px);
+    filter: blur(3px);
     animation: fireFlicker 0.3s ease-in-out infinite alternate;
 }
 
@@ -239,37 +241,37 @@
     position: absolute;
     background: #fdcb6e;
     border-radius: 50%;
-    filter: blur(1px);
+    filter: blur(2px);
     animation: fireParticle 1s ease-out infinite;
 }
 
 .particle-1 {
-    width: 3px;
-    height: 3px;
-    bottom: -4px;
+    width: 4px;
+    height: 4px;
+    bottom: -5px;
     left: 30%;
     animation-delay: 0.1s;
 }
 
 .particle-2 {
-    width: 2px;
-    height: 2px;
-    bottom: -6px;
+    width: 3px;
+    height: 3px;
+    bottom: -8px;
     left: 50%;
     animation-delay: 0.3s;
 }
 
 .particle-3 {
-    width: 4px;
-    height: 4px;
-    bottom: -5px;
+    width: 5px;
+    height: 5px;
+    bottom: -6px;
     left: 70%;
     animation-delay: 0.2s;
 }
 
 @keyframes fireFlicker {
-    0% { height: 16px; opacity: 0.8; }
-    100% { height: 20px; opacity: 1; }
+    0% { height: 20px; opacity: 0.8; }
+    100% { height: 25px; opacity: 1; }
 }
 
 @keyframes fireParticle {
@@ -278,7 +280,7 @@
         opacity: 1;
     }
     100% {
-        transform: translateY(-15px) scale(0.2);
+        transform: translateY(-20px) scale(0.2);
         opacity: 0;
     }
 }
@@ -306,23 +308,6 @@
         transform: scale(2) translate(var(--tx), var(--ty));
         opacity: 0;
     }
-}
-
-/* Отображение множителя */
-.multiplier-display {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 36px;
-    font-weight: bold;
-    color: #00b894;
-    text-shadow: 0 0 15px rgba(0, 184, 148, 0.7);
-    z-index: 20;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 10px 20px;
-    border-radius: 15px;
-    border: 2px solid rgba(0, 184, 148, 0.3);
 }
 
 /* Статус игры */
@@ -355,11 +340,6 @@
     color: white;
 }
 
-.status-cashedout { 
-    background: linear-gradient(135deg, #fdcb6e, #e6a336);
-    color: white;
-}
-
 #statusText {
     font-weight: bold;
     font-size: 18px;
@@ -378,7 +358,7 @@
     border-radius: 20px;
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .bet-controls {
@@ -389,24 +369,23 @@
 
 .bet-input {
     flex: 1;
-    padding: 12px 15px;
+    padding: 15px;
+    background: rgba(35, 40, 52, 0.8);
     border: 2px solid rgba(102, 126, 234, 0.3);
     border-radius: 12px;
-    background: rgba(15, 20, 30, 0.8);
     color: white;
     font-size: 16px;
-    font-weight: bold;
+    text-align: center;
 }
 
 .bet-input:focus {
     outline: none;
     border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
 .bet-button {
-    padding: 12px 20px;
-    background: linear-gradient(135deg, #667eea, #5a6fd8);
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #00b894, #55efc4);
     border: none;
     border-radius: 12px;
     color: white;
@@ -415,25 +394,20 @@
     transition: all 0.3s ease;
 }
 
-.bet-button:hover:not(:disabled) {
+.bet-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
-
-.bet-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
 }
 
 .cashout-button {
     width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, #00b894, #00a382);
+    padding: 18px;
+    background: linear-gradient(135deg, #fdcb6e, #ffeaa7);
     border: none;
     border-radius: 12px;
-    color: white;
+    color: #1a1a1a;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
     transition: all 0.3s ease;
     margin-bottom: 15px;
@@ -441,22 +415,13 @@
 
 .cashout-button:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+    box-shadow: 0 5px 15px rgba(253, 203, 110, 0.4);
 }
 
 .cashout-button:disabled {
-    opacity: 0.6;
+    background: #636e72;
     cursor: not-allowed;
-}
-
-.cashout-button.cashing-out {
-    background: linear-gradient(135deg, #fdcb6e, #e6a336);
-    animation: pulseCashout 1s infinite;
-}
-
-@keyframes pulseCashout {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    transform: none;
 }
 
 .user-stats {
@@ -466,220 +431,52 @@
 }
 
 .stat-item {
-    background: rgba(15, 20, 30, 0.8);
-    padding: 12px;
-    border-radius: 10px;
+    background: rgba(35, 40, 52, 0.8);
+    padding: 15px;
+    border-radius: 12px;
     text-align: center;
 }
 
 .stat-item span {
     display: block;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.7);
+    color: #b2bec3;
     margin-bottom: 5px;
 }
 
 .stat-item strong {
-    display: block;
-    font-size: 14px;
-    color: white;
-}
-
-/* Авто-настройки */
-.auto-settings {
-    background: rgba(25, 30, 42, 0.95);
-    padding: 20px;
-    border-radius: 20px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.auto-settings h3 {
-    margin: 0 0 15px 0;
-    color: #f0f0f0;
-    font-size: 18px;
-}
-
-.auto-setting-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.auto-setting-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
-.auto-setting-item span {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 14px;
-}
-
-.auto-input {
-    width: 80px;
-    padding: 8px 10px;
-    border: 2px solid rgba(102, 126, 234, 0.3);
-    border-radius: 8px;
-    background: rgba(15, 20, 30, 0.8);
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
-    text-align: center;
-}
-
-/* Переключатель */
-.toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 24px;
-}
-
-.toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.toggle-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #2d3436;
-    transition: .4s;
-    border-radius: 24px;
-}
-
-.toggle-slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-}
-
-input:checked + .toggle-slider {
-    background: linear-gradient(135deg, #667eea, #5a6fd8);
-}
-
-input:checked + .toggle-slider:before {
-    transform: translateX(26px);
-}
-
-/* Список игроков */
-.players-list {
-    background: rgba(25, 30, 42, 0.95);
-    padding: 20px;
-    border-radius: 20px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.players-list h3 {
-    margin: 0 0 15px 0;
-    color: #f0f0f0;
-    font-size: 18px;
-}
-
-#playersList {
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.player-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    margin-bottom: 8px;
-    background: rgba(15, 20, 30, 0.8);
-    border-radius: 8px;
-    border-left: 3px solid #667eea;
-}
-
-.player-name {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 14px;
-}
-
-.player-bet {
-    color: #fdcb6e;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-/* История игр */
-.history-container {
-    background: rgba(25, 30, 42, 0.95);
-    padding: 20px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.history-container h3 {
-    margin: 0 0 15px 0;
-    color: #f0f0f0;
-    font-size: 18px;
-}
-
-.history-items {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 5px;
-}
-
-.history-item {
-    min-width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.history-win {
-    background: linear-gradient(135deg, #00b894, #00a382);
-    color: white;
-}
-
-.history-loss {
-    background: linear-gradient(135deg, #d63031, #c62828);
-    color: white;
+    font-size: 16px;
+    color: #00b894;
 }
 
 /* Анимации */
 @keyframes rocketTakeoff {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-360px); }
+    0% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-10px) scale(1.05);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+    }
 }
 
 @keyframes rocketFly {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(calc(100% - 40px)); }
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(calc(100vw - 100px));
+    }
 }
 
-@keyframes multiplierIncrease {
-    0% { color: #00b894; }
-    50% { color: #fdcb6e; }
-    100% { color: #ff7675; }
+.rocket-flying {
+    animation: rocketTakeoff 0.3s ease-out;
 }
 
 /* Адаптивность */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .rocket-container {
         padding: 10px;
     }
@@ -690,10 +487,6 @@ input:checked + .toggle-slider:before {
         text-align: center;
     }
     
-    .rocket-canvas {
-        height: 300px;
-    }
-    
     .bet-controls {
         flex-direction: column;
     }
@@ -702,13 +495,7 @@ input:checked + .toggle-slider:before {
         grid-template-columns: 1fr;
     }
     
-    .auto-setting-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-    
-    .auto-input {
-        width: 100%;
+    .rocket-canvas {
+        height: 250px;
     }
 }

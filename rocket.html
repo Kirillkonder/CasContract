@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/rocket.css">
 </head>
 <body>
-    <div class="container rocket-container">
+    <div class="container">
         <button class="back-button" onclick="goBack()">← Назад</button>
         
         <div class="rocket-header">
@@ -25,23 +25,19 @@
             <span id="countdown"></span>
         </div>
 
-        <div class="rocket-game-container">
-            <div class="rocket-canvas" id="rocketCanvas">
-                <div class="grid-lines"></div>
-                <div class="multiplier-line">
-                    <div class="multiplier-markers"></div>
-                    <div class="multiplier-values">
-                        <span>1x</span>
-                        <span>2x</span>
-                        <span>5x</span>
-                        <span>10x</span>
-                        <span>20x</span>
-                        <span>50x</span>
-                        <span>100x</span>
-                    </div>
-                </div>
-                
-                <div class="rocket-trail"></div>
+        <div class="rocket-canvas" id="rocketCanvas">
+            <div class="grid-lines"></div>
+            <div class="multiplier-markers"></div>
+            <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
+            
+            <!-- Траектория полета -->
+            <div class="flight-trajectory" id="flightTrajectory">
+                <div class="trajectory-line"></div>
+                <div class="trajectory-multipliers" id="trajectoryMultipliers"></div>
+            </div>
+            
+            <!-- Контейнер ракеты -->
+            <div class="rocket-container" id="rocketContainer">
                 <div class="rocket" id="rocket">
                     <div class="rocket-body">
                         <div class="rocket-nose"></div>
@@ -58,16 +54,15 @@
                         <div class="fire-particle particle-3"></div>
                     </div>
                 </div>
-                
-                <div class="explosion" id="explosion">
-                    <div class="explosion-particle"></div>
-                    <div class="explosion-particle"></div>
-                    <div class="explosion-particle"></div>
-                    <div class="explosion-particle"></div>
-                    <div class="explosion-particle"></div>
-                </div>
-                
-                <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
+            </div>
+            
+            <!-- Взрыв -->
+            <div class="explosion" id="explosion">
+                <div class="explosion-particle"></div>
+                <div class="explosion-particle"></div>
+                <div class="explosion-particle"></div>
+                <div class="explosion-particle"></div>
+                <div class="explosion-particle"></div>
             </div>
         </div>
 
