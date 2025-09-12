@@ -272,8 +272,12 @@ function startRocketGame() {
   }, 10000);
 }
 
+// server.js - исправленная функция startRocketFlight
 function startRocketFlight() {
   const startTime = Date.now();
+  let baseSpeed = 0.1; // Базовая скорость
+  let acceleration = 0.05; // Ускорение
+  
   const flightInterval = setInterval(() => {
     if (rocketGame.status !== 'flying') {
       clearInterval(flightInterval);
@@ -281,7 +285,10 @@ function startRocketFlight() {
     }
 
     const elapsed = (Date.now() - startTime) / 1000;
-    rocketGame.multiplier = 1.00 + (elapsed * 0.1); // Увеличиваем множитель со временем
+    
+    // Экспоненциальное увеличение множителя с ускорением
+    // Чем больше времени прошло, тем быстрее растет множитель
+    rocketGame.multiplier = 1.00 + (elapsed * baseSpeed * Math.exp(elapsed * acceleration));
 
     // Проверяем автоматический вывод у ботов
     rocketGame.players.forEach(player => {
@@ -301,7 +308,6 @@ function startRocketFlight() {
     broadcastRocketUpdate();
   }, 100); // Обновляем каждые 100ms
 }
-
 function processRocketGameEnd() {
   // Сохраняем игру в историю
   const gameRecord = rocketGames.insert({
