@@ -308,6 +308,8 @@ function startRocketFlight() {
     broadcastRocketUpdate();
   }, 100); // Обновляем каждые 100ms
 }
+
+
 function processRocketGameEnd() {
   // Сохраняем игру в историю
   const gameRecord = rocketGames.insert({

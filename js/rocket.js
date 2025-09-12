@@ -426,4 +426,4 @@ let rocketGame = {
     status: 'waiting',
     multiplier: 1.00,
     endBetTime: 0
-};  
+};
