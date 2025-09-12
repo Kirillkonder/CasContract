@@ -1,123 +1,94 @@
-<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rocket Game</title>
+    <title>Rocket</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/rocket.css">
 </head>
 <body>
-    <div class="container">
-        <button class="back-button" onclick="goBack()">← Назад</button>
-        
-        <div class="rocket-header">
-            <h1>🚀 Rocket Game</h1>
-            <div class="balance">
-                Баланс: <span id="balance">0</span> TON
-                <span id="demo-badge" class="demo-badge">TESTNET</span>
+    <div class="rocket-container">
+        <!-- Верхняя панель с балансом и статусом -->
+        <div class="top-panel">
+            <div class="balance-display">
+                <span class="balance-amount" id="balance">0</span>
+                <span class="ton-label">TON</span>
+                <span id="demo-badge" class="demo-badge">TEST</span>
+            </div>
+            
+            <div class="game-timer" id="gameStatus">
+                <span id="statusText">Ожидание</span>
+                <span id="countdown"></span>
             </div>
         </div>
 
-        <div class="game-status" id="gameStatus">
-            <span id="statusText">Ожидание начала игры...</span>
-            <span id="countdown"></span>
+        <!-- История множителей над игровым полем -->
+        <div class="history-top" id="historyItems">
+            <!-- История будет добавляться динамически -->
         </div>
 
-        <div class="rocket-canvas" id="rocketCanvas">
-            <div class="grid-lines"></div>
-            
-            <!-- Множители по траектории -->
-            <div class="multiplier-markers">
-                <div class="multiplier-marker" style="left: 10%;">1.5x</div>
-                <div class="multiplier-marker" style="left: 20%;">2x</div>
-                <div class="multiplier-marker" style="left: 35%;">3x</div>
-                <div class="multiplier-marker" style="left: 50%;">5x</div>
-                <div class="multiplier-marker" style="left: 65%;">10x</div>
-                <div class="multiplier-marker" style="left: 80%;">20x</div>
-                <div class="multiplier-marker" style="left: 90%;">50x</div>
-            </div>
-            
-            <!-- Траектория полета -->
-            <div class="flight-trajectory">
+        <!-- Основное игровое поле -->
+        <div class="game-field">
+            <div class="rocket-canvas" id="rocketCanvas">
+                <!-- Сетка -->
+                <div class="grid-lines"></div>
+                
+                <!-- Линия траектории -->
                 <div class="trajectory-line"></div>
-            </div>
-            
-            <!-- Контейнер ракеты -->
-            <div class="rocket-container" id="rocketContainer">
+                
+                <!-- Маркеры множителей -->
+                <div class="multiplier-markers">
+                    <div class="marker" style="left: 20%">2x</div>
+                    <div class="marker" style="left: 40%">5x</div>
+                    <div class="marker" style="left: 60%">10x</div>
+                    <div class="marker" style="left: 80%">20x</div>
+                </div>
+                
+                <!-- Ракета -->
                 <div class="rocket" id="rocket">
-                    <div class="rocket-body">
-                        <div class="rocket-nose"></div>
-                        <div class="rocket-window"></div>
-                        <div class="rocket-fins">
-                            <div class="fin fin-left"></div>
-                            <div class="fin fin-right"></div>
-                        </div>
-                    </div>
-                    <div class="rocket-fire" id="rocketFire">
-                        <div class="fire-main"></div>
-                        <div class="fire-particle particle-1"></div>
-                        <div class="fire-particle particle-2"></div>
-                        <div class="fire-particle particle-3"></div>
-                    </div>
+                    <div class="rocket-icon">🚀</div>
                 </div>
+                
+                <!-- Текущий множитель -->
+                <div class="current-multiplier" id="multiplierDisplay">1.00x</div>
             </div>
-            
-            <!-- Взрыв -->
-            <div class="explosion" id="explosion">
-                <div class="explosion-particle"></div>
-                <div class="explosion-particle"></div>
-                <div class="explosion-particle"></div>
-                <div class="explosion-particle"></div>
-                <div class="explosion-particle"></div>
-            </div>
-
-            <!-- Отображение текущего множителя -->
-            <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
         </div>
 
-        <!-- Панель ставок как на второй фотографии -->
-        <div class="betting-panel-simple">
-            <div class="bet-amount">
-                <span>Сумма ставки:</span>
-                <input type="number" id="betAmount" value="1.0" min="0.5" max="50" step="0.1">
+        <!-- Панель ставок -->
+        <div class="betting-panel">
+            <div class="bet-input-group">
+                <input type="number" id="betAmount" value="1.0" min="0.1" max="50" step="0.1">
+                <span class="ton-symbol">TON</span>
             </div>
             
-            <div class="bet-controls-simple">
-                <button class="bet-button-simple" id="placeBetButton" onclick="placeBet()">Поставить</button>
-                <button class="cashout-button-simple" id="cashoutButton" onclick="cashout()" disabled>Забрать</button>
+            <div class="quick-bets">
+                <button class="quick-bet-btn" onclick="setQuickBet(0.5)">0.5</button>
+                <button class="quick-bet-btn" onclick="setQuickBet(1)">1</button>
+                <button class="quick-bet-btn" onclick="setQuickBet(2)">2</button>
+                <button class="quick-bet-btn" onclick="setQuickBet(5)">5</button>
             </div>
             
-            <div class="user-stats-simple">
-                <div class="stat-item">
+            <div class="action-buttons">
+                <button class="bet-btn" id="placeBetButton" onclick="placeBet()">Поставить</button>
+                <button class="cashout-btn" id="cashoutButton" onclick="cashout()" disabled>Забрать</button>
+            </div>
+            
+            <div class="user-stats">
+                <div class="stat">
                     <span>Ставка:</span>
-                    <strong id="userBet">0 TON</strong>
+                    <span id="userBet">0 TON</span>
                 </div>
-                <div class="stat-item">
+                <div class="stat">
                     <span>Выигрыш:</span>
-                    <strong id="potentialWin">0 TON</strong>
+                    <span id="potentialWin">0 TON</span>
                 </div>
             </div>
         </div>
 
-        <!-- Быстрые ставки как на второй фотографии -->
-        <div class="quick-bets">
-            <div class="quick-bet" onclick="setQuickBet(0.5)">0.5</div>
-            <div class="quick-bet" onclick="setQuickBet(1)">1</div>
-            <div class="quick-bet" onclick="setQuickBet(2)">2</div>
-            <div class="quick-bet" onclick="setQuickBet(5)">5</div>
-            <div class="quick-bet" onclick="setQuickBet(10)">10</div>
-        </div>
-
-        <div class="players-list-simple">
-            <h3>Игроки: <span id="playersCount">0</span></h3>
-            <div id="playersList" class="players-list-content"></div>
-        </div>
-
-        <div class="history-container-simple">
-            <h3>История</h3>
-            <div class="history-items-simple" id="historyItems"></div>
+        <!-- Список игроков -->
+        <div class="players-panel">
+            <h3>Игроки (<span id="playersCount">0</span>)</h3>
+            <div id="playersList" class="players-list"></div>
         </div>
     </div>
 

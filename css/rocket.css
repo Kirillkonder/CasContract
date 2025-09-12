@@ -1,57 +1,111 @@
-/* rocket.css - обновленная версия */
+/* rocket.css - компактный современный дизайн */
 .rocket-container {
-    padding: 10px;
-    max-width: 500px;
+    padding: 12px;
+    max-width: 100%;
     margin: 0 auto;
     background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 100%);
     min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.rocket-header {
+/* Верхняя панель */
+.top-panel {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
-    padding: 12px;
-    background: rgba(25, 30, 42, 0.95);
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 16px;
+    background: rgba(25, 30, 42, 0.9);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.rocket-header h1 {
-    font-size: 20px;
-    color: #f0f0f0;
-    margin: 0;
+.balance-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.balance {
-    background: linear-gradient(135deg, #667eea, #5a6fd8);
-    padding: 8px 12px;
-    border-radius: 12px;
-    color: white;
+.balance-amount {
+    font-size: 18px;
     font-weight: bold;
-    font-size: 14px;
+    color: #fff;
+}
+
+.ton-label {
+    font-size: 12px;
+    color: #a0a0a0;
 }
 
 .demo-badge {
     background: #fdcb6e;
     color: #1a1a1a;
-    padding: 2px 6px;
+    padding: 3px 8px;
     border-radius: 6px;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: bold;
-    margin-left: 5px;
+}
+
+.game-timer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #fff;
+}
+
+#statusText {
+    font-weight: 500;
+}
+
+#countdown {
+    font-weight: bold;
+    color: #00b894;
+}
+
+/* История над полем */
+.history-top {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding: 0 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.history-item {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    min-width: 40px;
+    text-align: center;
+}
+
+.history-win {
+    background: rgba(0, 184, 148, 0.2);
+    color: #00b894;
+    border: 1px solid rgba(0, 184, 148, 0.3);
+}
+
+.history-loss {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.3);
 }
 
 /* Игровое поле */
+.game-field {
+    margin-bottom: 20px;
+}
+
 .rocket-canvas {
     position: relative;
-    height: 200px;
+    height: 280px;
     background: linear-gradient(180deg, #0a0e14 0%, #131722 100%);
-    border-radius: 15px;
-    margin-bottom: 15px;
+    border-radius: 20px;
     overflow: hidden;
-    border: 1px solid rgba(102, 126, 234, 0.3);
+    border: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .grid-lines {
@@ -61,41 +115,9 @@
     right: 0;
     bottom: 0;
     background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 20px 20px;
-}
-
-/* Множители по траектории */
-.multiplier-markers {
-    position: absolute;
-    top: 10px;
-    left: 0;
-    right: 0;
-    height: 100%;
-}
-
-.multiplier-marker {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(102, 126, 234, 0.3);
-    border-radius: 4px;
-    color: #00b894;
-    font-size: 10px;
-    font-weight: bold;
-    padding: 2px 4px;
-}
-
-/* Траектория полета */
-.flight-trajectory {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 25px 25px;
 }
 
 .trajectory-line {
@@ -106,224 +128,209 @@
     height: 2px;
     background: linear-gradient(to right, 
         transparent 0%,
-        rgba(102, 126, 234, 0.5) 20%,
-        rgba(102, 126, 234, 0.5) 80%,
+        rgba(102, 126, 234, 0.4) 20%,
+        rgba(102, 126, 234, 0.4) 80%,
         transparent 100%);
     transform: translateY(-50%);
 }
 
-/* Контейнер ракеты */
-.rocket-container {
+.multiplier-markers {
     position: absolute;
+    top: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.marker {
+    position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    transition: left 0.1s linear;
-    z-index: 30;
-}
-
-.rocket {
-    position: relative;
-    width: 30px;
-    height: 60px;
-}
-
-.rocket-body {
-    position: relative;
-    width: 15px;
-    height: 45px;
-    background: linear-gradient(45deg, #e0e0e0, #ffffff);
-    border-radius: 4px 4px 2px 2px;
-    margin: 0 auto;
-}
-
-.rocket-nose {
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 7px solid transparent;
-    border-right: 7px solid transparent;
-    border-bottom: 10px solid #ff6b6b;
-}
-
-.rocket-window {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 6px;
-    height: 6px;
-    background: #74b9ff;
-    border-radius: 50%;
-}
-
-.rocket-fins {
-    position: absolute;
-    bottom: -3px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 12px;
-}
-
-.fin {
-    width: 4px;
-    height: 12px;
-    background: #ff6b6b;
-    border-radius: 1px;
-}
-
-.fin-left { transform: rotate(-45deg); }
-.fin-right { transform: rotate(45deg); }
-
-/* Огонь ракеты */
-.rocket-fire {
-    position: absolute;
-    bottom: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 12px;
-    height: 20px;
-}
-
-.fire-main {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 12px;
-    height: 15px;
-    background: linear-gradient(to top, #ff7675 0%, #e17055 30%, #fdcb6e 100%);
-    border-radius: 50% 50% 0 0;
-    filter: blur(2px);
-}
-
-/* Отображение множителя */
-.multiplier-display {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    font-size: 24px;
-    font-weight: bold;
-    color: #00b894;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 5px 10px;
-    border-radius: 8px;
-}
-
-/* Упрощенная панель ставок */
-.betting-panel-simple {
-    background: rgba(25, 30, 42, 0.95);
-    padding: 15px;
-    border-radius: 15px;
-    margin-bottom: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.bet-amount {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.bet-amount input {
-    width: 80px;
-    padding: 8px;
-    background: rgba(35, 40, 52, 0.8);
+    background: rgba(0, 0, 0, 0.7);
     border: 1px solid rgba(102, 126, 234, 0.3);
     border-radius: 8px;
-    color: white;
+    color: #00b894;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 6px;
+    min-width: 30px;
     text-align: center;
 }
 
-.bet-controls-simple {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
+/* Ракета */
+.rocket {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 30;
+    transition: all 0.1s ease-out;
 }
 
-.bet-button-simple, .cashout-button-simple {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
+.rocket-icon {
+    font-size: 32px;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+.current-multiplier {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 20px;
     font-weight: bold;
-    cursor: pointer;
+    color: #00b894;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 6px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 184, 148, 0.3);
 }
 
-.bet-button-simple {
-    background: #00b894;
+/* Панель ставок */
+.betting-panel {
+    background: rgba(25, 30, 42, 0.9);
+    padding: 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.bet-input-group {
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.bet-input-group input {
+    width: 100%;
+    padding: 14px 45px 14px 14px;
+    background: rgba(35, 40, 52, 0.8);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.ton-symbol {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0a0a0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.quick-bets {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.quick-bet-btn {
+    padding: 10px;
+    background: rgba(35, 40, 52, 0.8);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quick-bet-btn:hover {
+    background: rgba(102, 126, 234, 0.3);
+    transform: translateY(-1px);
+}
+
+.quick-bet-btn:active {
+    transform: translateY(0);
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.bet-btn, .cashout-btn {
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bet-btn {
+    background: linear-gradient(135deg, #00b894, #008066);
     color: white;
 }
 
-.cashout-button-simple {
-    background: #fdcb6e;
+.bet-btn:disabled {
+    background: #636e72;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.cashout-btn {
+    background: linear-gradient(135deg, #fdcb6e, #e6a336);
     color: #1a1a1a;
 }
 
-.cashout-button-simple:disabled {
+.cashout-btn:disabled {
     background: #636e72;
     cursor: not-allowed;
+    transform: none;
 }
 
-.user-stats-simple {
+.bet-btn:not(:disabled):hover,
+.cashout-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.user-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.stat {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: rgba(35, 40, 52, 0.6);
+    border-radius: 10px;
+    font-size: 13px;
+    color: #a0a0a0;
 }
 
-.stat-item {
-    font-size: 12px;
-    color: #b2bec3;
+.stat span:last-child {
+    font-weight: 600;
+    color: #fff;
 }
 
-.stat-item strong {
-    display: block;
-    color: #00b894;
+/* Панель игроков */
+.players-panel {
+    background: rgba(25, 30, 42, 0.9);
+    padding: 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.players-panel h3 {
     font-size: 14px;
+    color: #fff;
+    margin-bottom: 12px;
+    font-weight: 600;
 }
 
-/* Быстрые ставки */
-.quick-bets {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 15px;
-    justify-content: center;
-}
-
-.quick-bet {
-    padding: 8px 12px;
-    background: rgba(35, 40, 52, 0.8);
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    border: 1px solid rgba(102, 126, 234, 0.3);
-}
-
-.quick-bet:hover {
-    background: rgba(102, 126, 234, 0.3);
-}
-
-/* Упрощенные списки */
-.players-list-simple, .history-container-simple {
-    background: rgba(25, 30, 42, 0.95);
-    padding: 12px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.players-list-simple h3, .history-container-simple h3 {
-    font-size: 14px;
-    margin-bottom: 8px;
-    color: #f0f0f0;
-}
-
-.players-list-content {
+.players-list {
     max-height: 120px;
     overflow-y: auto;
 }
@@ -331,53 +338,71 @@
 .player-item {
     display: flex;
     justify-content: space-between;
-    padding: 5px 0;
-    font-size: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    align-items: center;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .player-item:last-child {
     border-bottom: none;
 }
 
-.history-items-simple {
-    display: flex;
-    gap: 5px;
-    flex-wrap: wrap;
+.player-name {
+    color: #fff;
+    font-weight: 500;
 }
 
-.history-item {
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: bold;
+.player-bet {
+    font-weight: 600;
 }
 
-.history-win {
-    background: rgba(0, 184, 148, 0.2);
-    color: #00b894;
+/* Анимации */
+@keyframes rocketFly {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-5px); }
 }
 
-.history-loss {
-    background: rgba(255, 107, 107, 0.2);
-    color: #ff6b6b;
+.rocket-flying .rocket-icon {
+    animation: rocketFly 0.5s ease-in-out infinite alternate;
 }
 
-/* Статус игры */
-.game-status {
-    background: rgba(25, 30, 42, 0.95);
-    padding: 12px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 14px;
+/* Адаптивность */
+@media (max-width: 380px) {
+    .rocket-canvas {
+        height: 240px;
+    }
+    
+    .rocket-icon {
+        font-size: 28px;
+    }
+    
+    .current-multiplier {
+        font-size: 18px;
+        padding: 5px 10px;
+    }
+    
+    .bet-btn, .cashout-btn {
+        padding: 14px;
+        font-size: 14px;
+    }
 }
 
-.status-waiting { background: rgba(45, 52, 54, 0.8); }
-.status-counting { background: rgba(9, 132, 227, 0.8); }
-.status-flying { background: rgba(0, 184, 148, 0.8); }
-.status-crashed { background: rgba(214, 48, 49, 0.8); }
+/* Стилизация скроллбара */
+.players-list::-webkit-scrollbar {
+    width: 4px;
+}
 
-#statusText { font-weight: bold; }
-#countdown { font-weight: bold; margin-left: 5px; }
+.players-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+}
+
+.players-list::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.4);
+    border-radius: 2px;
+}
+
+.players-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.6);
+}
