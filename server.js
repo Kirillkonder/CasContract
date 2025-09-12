@@ -424,7 +424,7 @@ app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
     const totalRocketGames = rocketGames.count();
 
     res.json({
-      bank_balance: bank.total_balance,
+      bank_balance: bank ? bank.total_balance : 0,
       total_users: totalUsers,
       total_transactions: totalTransactions,
       total_mines_games: totalMinesGames,

@@ -161,48 +161,44 @@ class TonCasinoApp {
         }
     }
 
-    async toggleMode() {
-        try {
-            const response = await fetch('/api/user/toggle-mode', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    telegramId: this.tg.initDataUnsafe.user.id
-                })
-            });
+    async  toggleMode() {
+    try {
+        const response = await fetch('/api/user/toggle-mode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                telegramId: this.tg.initDataUnsafe.user.id
+            })
+        });
 
-            if (response.ok) {
-                const result = await response.json();
+        if (response.ok) {
+            const result = await response.json();
+            
+            if (result.success) {
+                this.demoMode = result.demo_mode;
                 
-                if (result.success) {
-                    this.demoMode = result.demo_mode;
-                    this.userData.balance = result.balance;
-                    this.userData.demo_balance = result.demo_balance;
-                    this.userData.main_balance = result.main_balance;
-                    
-                    this.updateUI();
-                    this.updateModeUI();
-                    
-                    this.tg.showPopup({
-                        title: this.demoMode ? "🔧 Тестовый режим" : "🌐 Реальный режим",
-                        message: this.demoMode ? 
-                            "Переключено на тестовые TON. Баланс: " + result.demo_balance + " TON" : 
-                            "Переключено на реальные TON. Баланс: " + result.main_balance + " TON",
-                        buttons: [{ type: "ok" }]
-                    });
-                    
-                    await this.loadTransactionHistory();
-                }
+                // Обновляем данные пользователя
+                await this.loadUserData();
+                this.updateUI();
+                
+                this.tg.showPopup({
+                    title: this.demoMode ? "🔧 Тестовый режим" : "🌐 Реальный режим",
+                    message: this.demoMode ? 
+                        "Переключено на тестовые TON" : 
+                        "Переключено на реальные TON",
+                    buttons: [{ type: "ok" }]
+                });
             }
-        } catch (error) {
-            console.error('Toggle mode error:', error);
-            this.tg.showPopup({
-                title: "❌ Ошибка",
-                message: "Не удалось переключить режим",
-                buttons: [{ type: "ok" }]
-            });
         }
+    } catch (error) {
+        console.error('Toggle mode error:', error);
+        this.tg.showPopup({
+            title: "❌ Ошибка",
+            message: "Не удалось переключить режим",
+            buttons: [{ type: "ok" }]
+        });
     }
+}
 
     async openAdminPanel() {
         document.getElementById('admin-modal').style.display = 'block';
