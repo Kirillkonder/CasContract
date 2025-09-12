@@ -423,6 +423,7 @@ app.post('/api/admin/login', async (req, res) => {
 });
 
 // API: Получить данные админки
+// API: Получить данные админки
 app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
   const telegramId = parseInt(req.params.telegramId);
 
@@ -433,8 +434,8 @@ app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
   try {
     const bank = getCasinoBank();
     const totalUsers = users.count();
-    const totalTransactions = transactions.count();
-    const totalMinesGames = minesGames.count();
+    const totalTransactions = transactions.count({ demo_mode: false }); // Только реальные транзакции
+    const totalMinesGames = minesGames.count({ demo_mode: false });
     const totalRocketGames = rocketGames.count();
 
     res.json({
@@ -670,12 +671,37 @@ app.post('/api/deposit/create', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Для демо-режима сразу зачисляем средства
+    if (user.demo_mode) {
+      users.update({
+        ...user,
+        demo_balance: user.demo_balance + parseFloat(amount)
+      });
+      
+      // Записываем транзакцию
+      transactions.insert({
+        user_id: user.$loki,
+        amount: parseFloat(amount),
+        type: 'deposit',
+        status: 'completed',
+        demo_mode: true,
+        created_at: new Date()
+      });
+      
+      return res.json({
+        success: true,
+        demo_mode: true,
+        new_balance: user.demo_balance + parseFloat(amount)
+      });
+    }
+
+    // Для реального режима создаем инвойс
     const invoice = await cryptoPayRequest('createInvoice', {
       asset: 'TON',
       amount: amount.toString(),
       description: `Deposit for user ${telegramId}`,
       paid_btn_name: 'return',
-      paid_btn_url: 'https://t.me/your_bot',
+      paid_btn_url: `https://t.me/${process.env.BOT_USERNAME || 'your_bot'}`,
       payload: JSON.stringify({
         telegramId: telegramId,
         type: 'deposit'
@@ -686,7 +712,7 @@ app.post('/api/deposit/create', async (req, res) => {
     if (invoice.ok && invoice.result) {
       transactions.insert({
         user_id: user.$loki,
-        amount: amount,
+        amount: parseFloat(amount),
         type: 'deposit',
         status: 'pending',
         invoice_id: invoice.result.invoice_id,
@@ -697,7 +723,8 @@ app.post('/api/deposit/create', async (req, res) => {
       res.json({
         success: true,
         invoice_url: invoice.result.pay_url,
-        invoice_id: invoice.result.invoice_id
+        invoice_id: invoice.result.invoice_id,
+        demo_mode: false
       });
     } else {
       res.status(500).json({ error: 'Failed to create invoice' });

@@ -51,9 +51,28 @@ class TonCasinoApp {
             this.updateUI();
         } else {
             console.error('Failed to load user data:', response.status);
+            // Создаем пользователя если не существует
+            if (response.status === 404) {
+                await this.createUser();
+            }
         }
     } catch (error) {
         console.error('Error loading user data:', error);
+    }
+}
+
+async createUser() {
+    try {
+        const response = await fetch(`/api/user/${this.tg.initDataUnsafe.user.id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+            await this.loadUserData();
+        }
+    } catch (error) {
+        console.error('Error creating user:', error);
     }
 }
 
@@ -159,7 +178,7 @@ class TonCasinoApp {
 
     async toggleMode() {
     try {
-        const response = await fetch('/api/user/toggle-demo', { // Изменили endpoint
+        const response = await fetch('/api/user/toggle-demo', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -172,9 +191,9 @@ class TonCasinoApp {
             
             if (result.success) {
                 this.demoMode = result.demo_mode;
+                this.userData.demo_mode = result.demo_mode;
                 
-                // Обновляем данные пользователя
-                await this.loadUserData();
+                // Обновляем UI
                 this.updateUI();
                 
                 this.tg.showPopup({
@@ -184,13 +203,20 @@ class TonCasinoApp {
                         "Переключено на реальные TON",
                     buttons: [{ type: "ok" }]
                 });
+                
+                // Перезагружаем данные пользователя
+                await this.loadUserData();
+            } else {
+                throw new Error(result.error || 'Unknown error');
             }
+        } else {
+            throw new Error('Server error');
         }
     } catch (error) {
         console.error('Toggle mode error:', error);
         this.tg.showPopup({
             title: "❌ Ошибка",
-            message: "Не удалось переключить режим",
+            message: "Не удалось переключить режим: " + error.message,
             buttons: [{ type: "ok" }]
         });
     }
@@ -264,17 +290,49 @@ class TonCasinoApp {
     }
 
     try {
-        const response = await fetch('/api/deposit/create', { // Изменили endpoint
+        const response = await fetch('/api/deposit/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 telegramId: this.tg.initDataUnsafe.user.id,
-                amount: amount,
-                demoMode: this.demoMode
+                amount: amount
             })
         });
 
-        // Остальной код остается таким же...
+        if (response.ok) {
+            const result = await response.json();
+            
+            if (result.success) {
+                if (result.demo_mode) {
+                    // Демо-режим - сразу обновляем баланс
+                    this.tg.showPopup({
+                        title: "✅ Успешно",
+                        message: `Демо-баланс пополнен на ${amount} TON!`,
+                        buttons: [{ type: "ok" }]
+                    });
+                    await this.loadUserData();
+                    await this.loadTransactionHistory();
+                } else {
+                    // Режим - открываем инвойс
+                    this.tg.openInvoice(result.invoice_url, (status) => {
+                        if (status === 'paid') {
+                            this.tg.showPopup({
+                                title: "✅ Успешно",
+                                message: 'Депозит успешно зачислен!',
+                                buttons: [{ type: "ok" }]
+                            });
+                            this.loadUserData();
+                            this.loadTransactionHistory();
+                        }
+                    });
+                }
+                
+                closeDepositModal();
+            }
+        } else {
+            const error = await response.json();
+            alert('Ошибка: ' + (error.error || 'Неизвестная ошибка'));
+        }
     } catch (error) {
         console.error('Deposit error:', error);
         alert('Ошибка при создании депозита');
