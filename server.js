@@ -1094,6 +1094,15 @@ app.post('/api/rocket/bet', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
+        // ПРОВЕРКА: Уже есть ставка от этого пользователя
+        const existingBet = rocketGame.players.find(p => 
+            p.userId == telegramId && !p.isBot
+        );
+        
+        if (existingBet) {
+            return res.status(400).json({ error: 'Вы уже сделали ставку в этом раунде' });
+        }
+
         const balance = demoMode ? user.demo_balance : user.main_balance;
         
         if (balance < betAmount) {
