@@ -105,8 +105,20 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeGame();
     connectWebSocket();
     loadSettings();
-    createMultiplierMarkers(); // Добавляем создание маркеров
+    createMultiplierMarkers();
+    
+    // Инициализация ракеты
+    const rocketContainer = document.getElementById('rocketContainer');
+    if (rocketContainer) {
+        rocketContainer.style.display = 'none';
+    }
+    
+    const explosion = document.getElementById('explosion');
+    if (explosion) {
+        explosion.style.display = 'none';
+    }
 });
+
 
 function goBack() {
     window.location.href = 'index.html';
