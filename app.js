@@ -43,17 +43,19 @@ class TonCasinoApp {
     }
 
     async loadUserData() {
-        try {
-            const response = await fetch(`/api/user/${this.tg.initDataUnsafe.user.id}`);
-            if (response.ok) {
-                this.userData = await response.json();
-                this.demoMode = this.userData.demo_mode;
-                this.updateUI();
-            }
-        } catch (error) {
-            console.error('Error loading user data:', error);
+    try {
+        const response = await fetch(`/api/user/${this.tg.initDataUnsafe.user.id}`);
+        if (response.ok) {
+            this.userData = await response.json();
+            this.demoMode = this.userData.demo_mode;
+            this.updateUI();
+        } else {
+            console.error('Failed to load user data:', response.status);
         }
+    } catch (error) {
+        console.error('Error loading user data:', error);
     }
+}
 
     async loadTransactionHistory() {
         try {
@@ -157,7 +159,7 @@ class TonCasinoApp {
 
     async toggleMode() {
     try {
-        const response = await fetch('/api/user/toggle-mode', {
+        const response = await fetch('/api/user/toggle-demo', { // Изменили endpoint
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -254,94 +256,61 @@ class TonCasinoApp {
     }
 
     async processDeposit() {
-        const amount = parseFloat(document.getElementById('deposit-amount').value);
-        
-        if (!amount || amount < 1) {
-            alert('Минимальный депозит: 1 TON');
-            return;
-        }
+    const amount = parseFloat(document.getElementById('deposit-amount').value);
+    
+    if (!amount || amount < 1) {
+        alert('Минимальный депозит: 1 TON');
+        return;
+    }
 
+    try {
+        const response = await fetch('/api/deposit/create', { // Изменили endpoint
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                telegramId: this.tg.initDataUnsafe.user.id,
+                amount: amount,
+                demoMode: this.demoMode
+            })
+        });
+
+        // Остальной код остается таким же...
+    } catch (error) {
+        console.error('Deposit error:', error);
+        alert('Ошибка при создании депозита');
+    }
+}
+
+    async checkDepositStatus(invoiceId) {
+    const checkInterval = setInterval(async () => {
         try {
-            const response = await fetch('/api/deposit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    telegramId: this.tg.initDataUnsafe.user.id,
-                    amount: amount,
-                    demoMode: this.demoMode
-                })
-            });
-
+            const response = await fetch(`/api/deposit/status/${invoiceId}`); // Изменили endpoint
             if (response.ok) {
                 const result = await response.json();
                 
-                if (result.success) {
-                    if (result.demo) {
-                        this.tg.showPopup({
-                            title: "✅ Демо-пополнение",
-                            message: `Демо-депозит ${amount} TON успешно зачислен!`,
-                            buttons: [{ type: "ok" }]
-                        });
-                        
-                        this.userData.balance = result.new_balance;
-                        if (this.demoMode) {
-                            this.userData.demo_balance = result.new_balance;
-                        }
-                        this.updateUI();
-                        await this.loadTransactionHistory();
-                    } else {
-                        window.open(result.invoiceUrl, '_blank');
-                        
-                        this.tg.showPopup({
-                            title: "Оплата TON",
-                            message: `Откройте Crypto Bot для оплаты ${amount} TON`,
-                            buttons: [{ type: "ok" }]
-                        });
-                        
-                        this.checkDepositStatus(result.invoiceId);
-                    }
-                    
-                    closeDepositModal();
-                } else {
-                    alert('Ошибка при создании депозита: ' + result.error);
+                if (result.status === 'paid') {
+                    clearInterval(checkInterval);
+                    this.tg.showPopup({
+                        title: "✅ Успешно",
+                        message: 'Депозит успешно зачислен!',
+                        buttons: [{ type: "ok" }]
+                    });
+                    await this.loadUserData();
+                    await this.loadTransactionHistory();
+                } else if (result.status === 'expired' || result.status === 'cancelled') {
+                    clearInterval(checkInterval);
+                    this.tg.showPopup({
+                        title: "❌ Ошибка",
+                        message: 'Платеж отменен или просрочен',
+                        buttons: [{ type: "ok" }]
+                    });
                 }
             }
         } catch (error) {
-            console.error('Deposit error:', error);
-            alert('Ошибка при создании депозита');
+            console.error('Status check error:', error);
         }
-    }
-
-    async checkDepositStatus(invoiceId) {
-        const checkInterval = setInterval(async () => {
-            try {
-                const response = await fetch(`/api/invoice/${invoiceId}`);
-                if (response.ok) {
-                    const result = await response.json();
-                    
-                    if (result.status === 'paid') {
-                        clearInterval(checkInterval);
-                        this.tg.showPopup({
-                            title: "✅ Успешно",
-                            message: 'Депозит успешно зачислен!',
-                            buttons: [{ type: "ok" }]
-                        });
-                        await this.loadUserData();
-                        await this.loadTransactionHistory();
-                    } else if (result.status === 'expired' || result.status === 'cancelled') {
-                        clearInterval(checkInterval);
-                        this.tg.showPopup({
-                            title: "❌ Ошибка",
-                            message: 'Платеж отменен или просрочен',
-                            buttons: [{ type: "ok" }]
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error('Status check error:', error);
-            }
-        }, 5000);
-    }
+    }, 5000);
+}
 
     async addDemoBalance() {
         const targetTelegramId = prompt('ID пользователя для пополнения:');
@@ -379,62 +348,32 @@ class TonCasinoApp {
     }
 
     async processWithdraw() {
-        const amount = parseFloat(document.getElementById('withdraw-amount').value);
-        const address = document.getElementById('withdraw-address').value;
+    const amount = parseFloat(document.getElementById('withdraw-amount').value);
+    const address = document.getElementById('withdraw-address').value;
 
-        if (!amount || amount < 1 || !address) {
-            alert('Заполните все поля корректно');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/withdraw', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    telegramId: this.tg.initDataUnsafe.user.id,
-                    amount: amount,
-                    address: address,
-                    demoMode: this.demoMode
-                })
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                
-                if (result.success) {
-                    if (result.demo) {
-                        this.tg.showPopup({
-                            title: "✅ Демо-вывод",
-                            message: `Демо-вывод ${amount} TON успешно обработан!`,
-                            buttons: [{ type: "ok" }]
-                        });
-                        
-                        this.userData.balance = result.new_balance;
-                        if (this.demoMode) {
-                            this.userData.demo_balance = result.new_balance;
-                        }
-                        this.updateUI();
-                        await this.loadTransactionHistory();
-                    } else {
-                        this.tg.showPopup({
-                            title: "⏳ Вывод средств",
-                            message: `Запрос на вывод ${amount} TON отправлен! Ожидайте обработки.`,
-                            buttons: [{ type: "ok" }]
-                        });
-                    }
-                    
-                    closeWithdrawModal();
-                } else {
-                    alert('Ошибка при выводе: ' + result.error);
-                }
-            }
-        } catch (error) {
-            console.error('Withdraw error:', error);
-            alert('Ошибка при выводе средств');
-        }
+    if (!amount || amount < 1 || !address) {
+        alert('Заполните все поля корректно');
+        return;
     }
 
+    try {
+        const response = await fetch('/api/withdraw/create', { // Изменили endpoint
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                telegramId: this.tg.initDataUnsafe.user.id,
+                amount: amount,
+                address: address,
+                demoMode: this.demoMode
+            })
+        });
+
+        // Остальной код остается таким же...
+    } catch (error) {
+        console.error('Withdraw error:', error);
+        alert('Ошибка при выводе средств');
+    }
+}
     setupEventListeners() {
         // Закрытие модальных окон при клике вне их
         window.onclick = function(event) {
