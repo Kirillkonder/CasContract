@@ -1,460 +1,347 @@
-* {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
-            color: #fff;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 15px;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-        
-        .back-button {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        
-        .back-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .balance-container {
-            text-align: right;
-        }
-        
-        .balance-label {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-bottom: 5px;
-        }
-        
-        .balance-amount {
-            font-size: 18px;
-            font-weight: bold;
-            color: #00ff88;
-        }
-        
-        .demo-badge {
-            background: #ff6b6b;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 10px;
-            margin-top: 5px;
-            display: inline-block;
-        }
-        
-        .rocket-canvas {
-            position: relative;
-            height: 400px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
-            margin-bottom: 20px;
-            overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .trajectory-line {
-            position: absolute;
-            left: 50%;
-            top: 80px;
-            bottom: 80px;
-            width: 2px;
-            background: linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent);
-            transform: translateX(-50%);
-        }
-        
-        .trajectory-dot {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        
-        .trajectory-dot::after {
-            content: attr(data-multiplier) 'x';
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        .rocket {
-            position: absolute;
-            left: 50%;
-            bottom: 80px;
-            font-size: 32px;
-            transform: translateX(-50%);
-            z-index: 10;
-            animation: rocketFloat 2s ease-in-out infinite;
-        }
-        
-        .trail {
-            position: absolute;
-            left: 50%;
-            bottom: 80px;
-            width: 4px;
-            background: linear-gradient(to top, #ff6b6b, #ff8e53, transparent);
-            height: 0;
-            transform: translateX(-50%);
-            z-index: 5;
-        }
-        
-        .multiplier-display {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            color: #00ff88;
-            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-        }
-        
-        .explosion {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, #ff6b6b 0%, #ff8e53 30%, transparent 70%);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            animation: explosion 0.5s ease-out forwards;
-        }
-        
-        .game-status {
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .status-waiting { background: rgba(255, 255, 255, 0.05); }
-        .status-counting { background: rgba(255, 193, 7, 0.1); }
-        .status-flying { background: rgba(0, 255, 136, 0.1); }
-        .status-crashed { background: rgba(255, 107, 107, 0.1); }
-        
-        .betting-controls {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .bet-input {
-            width: 100%;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-size: 16px;
-            margin-bottom: 15px;
-        }
-        
-        .bet-input:focus {
-            outline: 2px solid #00ff88;
-        }
-        
-        .bet-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .bet-button {
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .place-bet {
-            background: linear-gradient(135deg, #00ff88, #00cc6a);
-            color: #000;
-        }
-        
-        .place-bet:disabled {
-            background: rgba(255, 255, 255, 0.2);
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .cashout {
-            background: linear-gradient(135deg, #ff6b6b, #ff4757);
-            color: white;
-        }
-        
-        .cashout:disabled {
-            background: rgba(255, 255, 255, 0.2);
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .user-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .stat-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-bottom: 5px;
-        }
-        
-        .stat-value {
-            font-size: 16px;
-            font-weight: bold;
-        }
-        
-        .auto-settings {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .auto-setting {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .auto-setting:last-child {
-            margin-bottom: 0;
-        }
-        
-        .auto-setting label {
-            font-size: 14px;
-        }
-        
-        .auto-setting input[type="number"] {
-            width: 60px;
-            padding: 5px;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            border-radius: 5px;
-            color: white;
-            text-align: center;
-        }
-        
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.2);
-            transition: .4s;
-            border-radius: 24px;
-        }
-        
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .toggle-slider {
-            background-color: #00ff88;
-        }
-        
-        input:checked + .toggle-slider:before {
-            transform: translateX(26px);
-        }
-        
-        .players-panel {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .panel-title {
-            font-size: 16px;
-            font-weight: bold;
-        }
-        
-        .players-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        .player-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .player-item:last-child {
-            border-bottom: none;
-        }
-        
-        .player-name {
-            font-size: 14px;
-        }
-        
-        .player-bet {
-            font-size: 14px;
-            font-weight: bold;
-        }
-        
-        .history-panel {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 15px;
-        }
-        
-        .history-items {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 10px 0;
-        }
-        
-        .history-item {
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            min-width: 60px;
-            text-align: center;
-        }
-        
-        .history-win {
-            background: rgba(0, 255, 136, 0.2);
-            color: #00ff88;
-        }
-        
-        .history-loss {
-            background: rgba(255, 107, 107, 0.2);
-            color: #ff6b6b;
-        }
-        
-        @keyframes rocketFloat {
-            0%, 100% { transform: translateX(-50%) translateY(0px); }
-            50% { transform: translateX(-50%) translateY(-5px); }
-        }
-        
-        @keyframes rocketFly {
-            0%, 100% { transform: translateX(-50%) translateY(0px) rotate(0deg); }
-            25% { transform: translateX(-50%) translateY(-2px) rotate(-1deg); }
-            75% { transform: translateX(-50%) translateY(-2px) rotate(1deg); }
-        }
-        
-        @keyframes trailGlow {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 1; }
-        }
-        
-        @keyframes explosion {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
-        }
-        
-        @keyframes particleMove {
-            to {
-                transform: translate(
-                    var(--translate-x, 0), 
-                    var(--translate-y, 0)
-                );
-                opacity: 0;
-            }
-        }
-        
-        /* Адаптивность для мобильных устройств */
-        @media (max-width: 480px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .header {
-                padding: 10px;
-            }
-            
-            .rocket-canvas {
-                height: 300px;
-            }
-            
-            .bet-buttons {
-                grid-template-columns: 1fr;
-            }
-            
-            .user-stats {
-                grid-template-columns: 1fr;
-            }
-        }
+/* Контейнер игры */
+.rocket-container {
+    padding: 15px;
+    max-width: 500px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 100%);
+    min-height: 100vh;
+}
+
+/* Хедер игры */
+.rocket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rocket-header h1 {
+    font-size: 24px;
+    color: #f0f0f0;
+    margin: 0;
+}
+
+.balance {
+    background: linear-gradient(135deg, #667eea, #5a6fd8);
+    padding: 10px 15px;
+    border-radius: 15px;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.demo-badge {
+    background: #fdcb6e;
+    color: #1a1a1a;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Игровое поле */
+.rocket-canvas {
+    position: relative;
+    height: 400px;
+    background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
+    border-radius: 20px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Отображение множителя */
+.multiplier-display {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 36px;
+    font-weight: bold;
+    color: #00b894;
+    text-shadow: 0 0 15px rgba(0, 184, 148, 0.7);
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 20px;
+    border-radius: 15px;
+    border: 2px solid rgba(0, 184, 148, 0.3);
+}
+
+/* Ракета */
+.rocket {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 48px;
+    transition: bottom 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 30;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+    animation: rocketFloat 2s ease-in-out infinite;
+}
+
+@keyframes rocketFloat {
+    0%, 100% { transform: translateX(-50%) translateY(0px) rotate(0deg); }
+    50% { transform: translateX(-50%) translateY(-5px) rotate(1deg); }
+}
+
+/* Шлейф ракеты */
+.trail {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    background: linear-gradient(to top, 
+        rgba(255, 118, 117, 0.8) 0%,
+        rgba(255, 118, 117, 0.6) 20%,
+        rgba(116, 185, 255, 0.4) 40%,
+        rgba(116, 185, 255, 0.2) 60%,
+        transparent 100%);
+    height: 0px;
+    z-index: 10;
+    border-radius: 3px 3px 0 0;
+}
+
+/* Линия траектории */
+.trajectory-line {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    background: linear-gradient(to top, 
+        rgba(102, 126, 234, 0.4) 0%,
+        rgba(102, 126, 234, 0.2) 50%,
+        transparent 100%);
+    height: 320px;
+    z-index: 5;
+}
+
+/* Точки на траектории */
+.trajectory-dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(102, 126, 234, 0.8);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    z-index: 6;
+}
+
+/* Взрыв */
+.explosion {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, 
+        #ff7675 0%, 
+        #e17055 30%, 
+        #d63031 60%, 
+        transparent 70%);
+    border-radius: 50%;
+    animation: explode 0.8s ease-out;
+    z-index: 40;
+    opacity: 0;
+}
+
+@keyframes explode {
+    0% { 
+        transform: translate(-50%, -50%) scale(0); 
+        opacity: 1; 
+    }
+    50% { 
+        transform: translate(-50%, -50%) scale(1.2); 
+        opacity: 0.8; 
+    }
+    100% { 
+        transform: translate(-50%, -50%) scale(2); 
+        opacity: 0; 
+    }
+}
+
+/* Статус игры */
+.game-status {
+    background: rgba(25, 30, 42, 0.95);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-waiting { 
+    background: linear-gradient(135deg, #2d3436, #636e72);
+    color: #dfe6e9;
+}
+
+.status-counting { 
+    background: linear-gradient(135deg, #0984e3, #74b9ff);
+    color: white;
+}
+
+.status-flying { 
+    background: linear-gradient(135deg, #00b894, #55efc4);
+    color: white;
+}
+
+.status-crashed { 
+    background: linear-gradient(135deg, #d63031, #ff7675);
+    color: white;
+}
+
+#statusText {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+#countdown {
+    font-size: 20px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+/* Панель ставок */
+.betting-panel {
+    background: rgba(25, 30, 42, 0.95);
+    padding: 20px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.bet-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.bet-input {
+    flex: 1;
+    padding: 15px;
+    background: rgba(35, 40, 52, 0.8);
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    text-align: center;
+}
+
+.bet-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.bet-button {
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #00b894, #55efc4);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.bet-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4);
+}
+
+.bet-button:disabled {
+    background: #636e72;
+    cursor: not-allowed;
+}
+
+.cashout-button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #fd79a8, #ff7675);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+}
+
+.cashout-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(253, 121, 168, 0.4);
+}
+
+.cashout-button:disabled {
+    background: #636e72;
+    cursor: not-allowed;
+}
+
+.user-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    background: rgba(35, 40, 52, 0.6);
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-item span {
+    display: block;
+    font-size: 14px;
+    color: #a0a0a0;
+    margin-bottom: 5px;
+}
+
+.stat-item strong {
+    font-size: 16px;
+    color: #f0f0f0;
+}
+
+/* Анимация полета ракеты */
+@keyframes rocketFly {
+    0% {
+        transform: translateX(-50%) translateY(0) rotate(0deg);
+    }
+    25% {
+        transform: translateX(-50%) translateY(-2px) rotate(-1deg);
+    }
+    50% {
+        transform: translateX(-50%) translateY(0) rotate(0deg);
+    }
+    75% {
+        transform: translateX(-50%) translateY(2px) rotate(1deg);
+    }
+    100% {
+        transform: translateX(-50%) translateY(0) rotate(0deg);
+    }
+}
+
+.rocket-flying {
+    animation: rocketFly 0.5s ease-in-out infinite;
+}
+
+/* Анимация шлейфа */
+@keyframes trailGlow {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+.trail-animated {
+    animation: trailGlow 0.3s ease-in-out infinite;
+}
