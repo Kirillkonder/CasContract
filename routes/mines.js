@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getCollections, calculateMultiplier } = require('../server');
+const { getCollections, calculateMultiplier } = require('../utils/db');
 
 router.post('/start-game', async (req, res) => {
     const { telegramId, betAmount, minesCount, demoMode } = req.body;

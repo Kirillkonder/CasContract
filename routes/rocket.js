@@ -5,7 +5,7 @@ const {
     getRocketGame, 
     setRocketGame, 
     broadcastRocketUpdate 
-} = require('../server');
+} = require('../utils/db');
 
 router.post('/place-bet', async (req, res) => {
     const { telegramId, betAmount, demoMode } = req.body;

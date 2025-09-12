@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getCollections, cryptoPayRequest } = require('../server');
+const { getCollections, cryptoPayRequest } = require('../utils/db');
 
 router.post('/create', async (req, res) => {
     const { telegramId } = req.body;

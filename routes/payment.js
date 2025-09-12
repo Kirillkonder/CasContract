@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getCollections, cryptoPayRequest } = require('../server');
+const { getCollections, cryptoPayRequest } = require('../utils/db');
 
 router.post('/create-invoice', async (req, res) => {
     const { telegramId, amount, demoMode } = req.body;
