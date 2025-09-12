@@ -40,6 +40,33 @@ app.use('/api/mines', minesRoutes);
 app.use('/api/rocket', rocketRoutes);
 app.use('/api', paymentRoutes);
 
+// Добавить этот маршрут после других роутов
+app.post('/api/user/toggle-mode', async (req, res) => {
+    const { telegramId } = req.body;
+    const { users } = getCollections();
+
+    try {
+        const user = users.findOne({ telegram_id: parseInt(telegramId) });
+        
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        users.update({
+            ...user,
+            demo_mode: !user.demo_mode
+        });
+
+        res.json({ 
+            success: true, 
+            demo_mode: !user.demo_mode 
+        });
+    } catch (error) {
+        console.error('Toggle mode error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 // WebSocket сервер для ракетки
 const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

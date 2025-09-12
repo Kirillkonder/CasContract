@@ -53,12 +53,12 @@ router.get('/balance/:telegramId', async (req, res) => {
     }
 });
 
-router.post('/toggle-demo/:telegramId', async (req, res) => {
-    const telegramId = parseInt(req.params.telegramId);
+router.post('/toggle-mode', async (req, res) => {
+    const { telegramId } = req.body;
     const { users } = getCollections();
 
     try {
-        const user = users.findOne({ telegram_id: telegramId });
+        const user = users.findOne({ telegram_id: parseInt(telegramId) });
         
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -74,7 +74,7 @@ router.post('/toggle-demo/:telegramId', async (req, res) => {
             demo_mode: !user.demo_mode 
         });
     } catch (error) {
-        console.error('Toggle demo error:', error);
+        console.error('Toggle mode error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
