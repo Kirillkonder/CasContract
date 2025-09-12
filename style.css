@@ -664,3 +664,35 @@ input[type="text"]:focus {
 .back-button:hover {
     background: rgba(255, 255, 255, 0.2);
 }
+
+
+/* Rocket specific styles */
+.rocket-container {
+    background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.back-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Анимации для ракетки */
+@keyframes rocketFly {
+    0% { transform: translateX(-50%) translateY(0); }
+    100% { transform: translateX(-50%) translateY(-100px); }
+}
+
+.rocket-flying {
+    animation: rocketFly 0.5s ease-in-out infinite alternate;
+}

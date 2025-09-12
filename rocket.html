@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocket - Casino Gift Contract</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .rocket-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .rocket-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(25, 30, 42, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .rocket-canvas {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .rocket {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 40px;
+            transition: bottom 0.1s linear;
+            z-index: 10;
+        }
+        
+        .multiplier-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            font-weight: bold;
+            color: #00b894;
+            text-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
+            z-index: 10;
+        }
+        
+        .betting-panel {
+            background: rgba(25, 30, 42, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .bet-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .bet-input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(35, 40, 52, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .bet-button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea, #5a6fd8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .bet-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .cashout-button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #00b894, #008066);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+            width: 100%;
+        }
+        
+        .cashout-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .players-list {
+            background: rgba(25, 30, 42, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .player-item:last-child {
+            border-bottom: none;
+        }
+        
+        .player-name {
+            color: #f0f0f0;
+        }
+        
+        .player-bet {
+            color: #00b894;
+            font-weight: bold;
+        }
+        
+        .game-status {
+            text-align: center;
+            padding: 10px;
+            background: rgba(25, 30, 42, 0.95);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .status-waiting {
+            color: #fdcb6e;
+        }
+        
+        .status-counting {
+            color: #74b9ff;
+        }
+        
+        .status-flying {
+            color: #00b894;
+        }
+        
+        .status-crashed {
+            color: #ff6b6b;
+        }
+        
+        .history-container {
+            margin-top: 20px;
+        }
+        
+        .history-items {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .history-item {
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .history-win {
+            background: rgba(0, 184, 148, 0.2);
+            color: #00b894;
+        }
+        
+        .history-loss {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+        
+        .explosion {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,0,0,0.8) 0%, rgba(255,0,0,0) 70%);
+            animation: explode 1s ease-out;
+            z-index: 5;
+        }
+        
+        @keyframes explode {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        
+        .trail {
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            background: linear-gradient(to top, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%);
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-button" onclick="goBack()">← Назад</button>
+        
+        <div class="rocket-header">
+            <h1>🚀 Rocket Game</h1>
+            <div class="balance">
+                Баланс: <span id="balance">0</span> TON
+                <span id="demo-badge" class="demo-badge">TESTNET</span>
+            </div>
+        </div>
+
+        <div class="game-status" id="gameStatus">
+            <span id="statusText">Ожидание начала игры...</span>
+            <span id="countdown"></span>
+        </div>
+
+        <div class="rocket-canvas" id="rocketCanvas">
+            <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
+            <div class="rocket" id="rocket">🚀</div>
+            <div class="trail" id="rocketTrail"></div>
+        </div>
+
+        <div class="betting-panel">
+            <div class="bet-controls">
+                <input type="number" class="bet-input" id="betAmount" min="0.5" max="50" step="0.1" value="1.0" placeholder="Сумма ставки">
+                <button class="bet-button" id="placeBetButton" onclick="placeBet()">Поставить</button>
+            </div>
+            
+            <button class="cashout-button" id="cashoutButton" onclick="cashout()" disabled>Забрать выигрыш</button>
+            
+            <div style="margin-top: 15px; text-align: center;">
+                <div>Ваша ставка: <span id="userBet">0</span> TON</div>
+                <div>Потенциальный выигрыш: <span id="potentialWin">0</span> TON</div>
+            </div>
+        </div>
+
+        <div class="players-list">
+            <h3>Игроки в этом раунде (<span id="playersCount">0</span>)</h3>
+            <div id="playersList"></div>
+        </div>
+
+        <div class="history-container">
+            <h3>История игр</h3>
+            <div class="history-items" id="historyItems"></div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let currentUser = null;
+        let isDemoMode = false;
+        let userBet = 0;
+        let userCashedOut = false;
+        let rocketPosition = 50;
+        let rocketAnimation = null;
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGame();
+            connectWebSocket();
+        });
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        function initializeGame() {
+            const tg = window.Telegram.WebApp;
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                currentUser = {
+                    id: tg.initDataUnsafe.user.id,
+                    username: tg.initDataUnsafe.user.username || `User_${tg.initDataUnsafe.user.id}`,
+                    firstName: tg.initDataUnsafe.user.first_name,
+                    lastName: tg.initDataUnsafe.user.last_name
+                };
+                loadUserData();
+            }
+        }
+
+        async function loadUserData() {
+            try {
+                const response = await fetch(`/api/user/${currentUser.id}`);
+                if (response.ok) {
+                    const userData = await response.json();
+                    document.getElementById('balance').textContent = userData.balance.toFixed(2);
+                    isDemoMode = userData.demo_mode;
+                    document.getElementById('demo-badge').textContent = isDemoMode ? 'TESTNET' : 'MAINNET';
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/rocket-ws`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function() {
+                console.log('Connected to Rocket game server');
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'rocket_update') {
+                    updateGameState(data.game);
+                }
+            };
+            
+            ws.onclose = function() {
+                console.log('Disconnected from Rocket game server');
+                // Попытка переподключения через 5 секунд
+                setTimeout(connectWebSocket, 5000);
+            };
+            
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        function updateGameState(gameState) {
+            // Обновляем статус игры
+            const statusElement = document.getElementById('statusText');
+            const countdownElement = document.getElementById('countdown');
+            const statusClass = `status-${gameState.status}`;
+            
+            document.getElementById('gameStatus').className = `game-status ${statusClass}`;
+            
+            switch(gameState.status) {
+                case 'waiting':
+                    statusElement.textContent = 'Ожидание начала игры...';
+                    countdownElement.textContent = '';
+                    resetBettingUI();
+                    break;
+                    
+                case 'counting':
+                    const timeLeft = Math.ceil((10000 - (Date.now() - gameState.startTime)) / 1000);
+                    statusElement.textContent = 'Прием ставок: ';
+                    countdownElement.textContent = `${timeLeft}с`;
+                    updateBettingUI();
+                    break;
+                    
+                case 'flying':
+                    statusElement.textContent = 'Ракета взлетает!';
+                    countdownElement.textContent = '';
+                    updateRocketPosition(gameState.multiplier);
+                    break;
+                    
+                case 'crashed':
+                    statusElement.textContent = `Ракета взорвалась на ${gameState.crashPoint.toFixed(2)}x!`;
+                    countdownElement.textContent = '';
+                    showExplosion();
+                    break;
+            }
+            
+            // Обновляем множитель
+            document.getElementById('multiplierDisplay').textContent = gameState.multiplier.toFixed(2) + 'x';
+            
+            // Обновляем список игроков
+            updatePlayersList(gameState.players);
+            
+            // Обновляем историю
+            updateHistory(gameState.history);
+            
+            // Обновляем потенциальный выигрыш
+            if (userBet > 0 && !userCashedOut && gameState.status === 'flying') {
+                const potentialWin = userBet * gameState.multiplier;
+                document.getElementById('potentialWin').textContent = potentialWin.toFixed(2);
+            }
+        }
+
+        function updateRocketPosition(multiplier) {
+            const rocketElement = document.getElementById('rocket');
+            const trailElement = document.getElementById('rocketTrail');
+            
+            // Вычисляем новую позицию ракеты (от 50px до 250px)
+            const newPosition = 50 + (multiplier * 2);
+            rocketElement.style.bottom = `${newPosition}px`;
+            
+            // Обновляем след ракеты
+            trailElement.style.height = `${newPosition - 90}px`;
+        }
+
+        function showExplosion() {
+            const canvas = document.getElementById('rocketCanvas');
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            canvas.appendChild(explosion);
+            
+            setTimeout(() => {
+                canvas.removeChild(explosion);
+            }, 1000);
+        }
+
+        function updatePlayersList(players) {
+            const playersList = document.getElementById('playersList');
+            const playersCount = document.getElementById('playersCount');
+            
+            playersList.innerHTML = '';
+            playersCount.textContent = players.length;
+            
+            players.forEach(player => {
+                const playerItem = document.createElement('div');
+                playerItem.className = 'player-item';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'player-name';
+                nameSpan.textContent = player.name;
+                
+                const betSpan = document.createElement('span');
+                betSpan.className = 'player-bet';
+                
+                if (player.cashedOut) {
+                    betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+                    betSpan.style.color = '#00b894';
+                } else if (player.isBot) {
+                    betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+                } else {
+                    betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+                }
+                
+                playerItem.appendChild(nameSpan);
+                playerItem.appendChild(betSpan);
+                playersList.appendChild(playerItem);
+            });
+        }
+
+        function updateHistory(history) {
+            const historyContainer = document.getElementById('historyItems');
+            historyContainer.innerHTML = '';
+            
+            history.slice(0, 10).forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = `history-item ${item.multiplier >= 2 ? 'history-win' : 'history-loss'}`;
+                historyItem.textContent = `${item.multiplier.toFixed(2)}x`;
+                historyContainer.appendChild(historyItem);
+            });
+        }
+
+        async function placeBet() {
+            const betAmount = parseFloat(document.getElementById('betAmount').value);
+            
+            if (betAmount < 0.5 || betAmount > 50) {
+                alert('Ставка должна быть от 0.5 до 50 TON');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/rocket/bet', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegramId: currentUser.id,
+                        betAmount: betAmount,
+                        demoMode: isDemoMode
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(error.error || 'Ошибка при размещении ставки');
+                    return;
+                }
+                
+                const result = await response.json();
+                if (result.success) {
+                    userBet = betAmount;
+                    userCashedOut = false;
+                    updateBettingUI();
+                    document.getElementById('userBet').textContent = betAmount.toFixed(2);
+                    document.getElementById('balance').textContent = result.current_balance.toFixed(2);
+                }
+            } catch (error) {
+                console.error('Error placing bet:', error);
+                alert('Ошибка при размещении ставки');
+            }
+        }
+
+        async function cashout() {
+            try {
+                const response = await fetch('/api/rocket/cashout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegramId: currentUser.id
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(error.error || 'Ошибка при выводе средств');
+                    return;
+                }
+                
+                const result = await response.json();
+                if (result.success) {
+                    userCashedOut = true;
+                    updateBettingUI();
+                    document.getElementById('balance').textContent = result.current_balance.toFixed(2);
+                    alert(`Вы успешно вывели ${result.win_amount.toFixed(2)} TON на ${result.multiplier.toFixed(2)}x!`);
+                }
+            } catch (error) {
+                console.error('Error cashing out:', error);
+                alert('Ошибка при выводе средств');
+            }
+        }
+
+        function updateBettingUI() {
+            const betButton = document.getElementById('placeBetButton');
+            const cashoutButton = document.getElementById('cashoutButton');
+            
+            if (rocketGame && rocketGame.status === 'counting') {
+                betButton.disabled = userBet > 0;
+                cashoutButton.disabled = true;
+            } else if (rocketGame && rocketGame.status === 'flying') {
+                betButton.disabled = true;
+                cashoutButton.disabled = userCashedOut || userBet === 0;
+            } else {
+                betButton.disabled = false;
+                cashoutButton.disabled = true;
+            }
+        }
+
+        function resetBettingUI() {
+            userBet = 0;
+            userCashedOut = false;
+            document.getElementById('userBet').textContent = '0';
+            document.getElementById('potentialWin').textContent = '0';
+            updateBettingUI();
+        }
+
+        // Глобальная переменная для доступа из WebSocket
+        let rocketGame = {
+            status: 'waiting',
+            multiplier: 1.00
+        };
+    </script>
+</body>
+</html>
