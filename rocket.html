@@ -27,13 +27,21 @@
 
         <div class="rocket-canvas" id="rocketCanvas">
             <div class="grid-lines"></div>
-            <div class="multiplier-markers"></div>
-            <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
+            
+            <!-- Множители по траектории -->
+            <div class="multiplier-markers">
+                <div class="multiplier-marker" style="left: 10%;">1.5x</div>
+                <div class="multiplier-marker" style="left: 20%;">2x</div>
+                <div class="multiplier-marker" style="left: 35%;">3x</div>
+                <div class="multiplier-marker" style="left: 50%;">5x</div>
+                <div class="multiplier-marker" style="left: 65%;">10x</div>
+                <div class="multiplier-marker" style="left: 80%;">20x</div>
+                <div class="multiplier-marker" style="left: 90%;">50x</div>
+            </div>
             
             <!-- Траектория полета -->
-            <div class="flight-trajectory" id="flightTrajectory">
+            <div class="flight-trajectory">
                 <div class="trajectory-line"></div>
-                <div class="trajectory-multipliers" id="trajectoryMultipliers"></div>
             </div>
             
             <!-- Контейнер ракеты -->
@@ -64,69 +72,60 @@
                 <div class="explosion-particle"></div>
                 <div class="explosion-particle"></div>
             </div>
+
+            <!-- Отображение текущего множителя -->
+            <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
         </div>
 
-        <div class="betting-panel">
-            <div class="bet-controls">
-                <input type="number" class="bet-input" id="betAmount" min="0.5" max="50" step="0.1" value="1.0" placeholder="Сумма ставки">
-                <button class="bet-button" id="placeBetButton" onclick="placeBet()">Поставить</button>
+        <!-- Панель ставок как на второй фотографии -->
+        <div class="betting-panel-simple">
+            <div class="bet-amount">
+                <span>Сумма ставки:</span>
+                <input type="number" id="betAmount" value="1.0" min="0.5" max="50" step="0.1">
             </div>
             
-            <button class="cashout-button" id="cashoutButton" onclick="cashout()" disabled>Забрать выигрыш</button>
+            <div class="bet-controls-simple">
+                <button class="bet-button-simple" id="placeBetButton" onclick="placeBet()">Поставить</button>
+                <button class="cashout-button-simple" id="cashoutButton" onclick="cashout()" disabled>Забрать</button>
+            </div>
             
-            <div class="user-stats">
+            <div class="user-stats-simple">
                 <div class="stat-item">
-                    <span>Ваша ставка</span>
+                    <span>Ставка:</span>
                     <strong id="userBet">0 TON</strong>
                 </div>
                 <div class="stat-item">
-                    <span>Потенциальный выигрыш</span>
+                    <span>Выигрыш:</span>
                     <strong id="potentialWin">0 TON</strong>
                 </div>
             </div>
         </div>
 
-        <div class="auto-settings">
-            <h3>Авто-настройки</h3>
-            
-            <div class="auto-setting-item">
-                <span>Автоставка</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="autoBetToggle" onchange="toggleAutoBet()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            
-            <div class="auto-setting-item">
-                <span>Сумма автоставки (TON)</span>
-                <input type="number" class="auto-input" id="autoBetAmount" value="1.0" min="0.5" max="50" step="0.1" onchange="updateAutoBetAmount()">
-            </div>
-            
-            <div class="auto-setting-item">
-                <span>Автовывод</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="autoCashoutToggle" onchange="toggleAutoCashout()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            
-            <div class="auto-setting-item">
-                <span>Множитель автовывода</span>
-                <input type="number" class="auto-input" id="autoCashoutMultiplier" value="2.0" min="1.1" max="100" step="0.1" onchange="updateAutoCashoutMultiplier()">
-            </div>
+        <!-- Быстрые ставки как на второй фотографии -->
+        <div class="quick-bets">
+            <div class="quick-bet" onclick="setQuickBet(0.5)">0.5</div>
+            <div class="quick-bet" onclick="setQuickBet(1)">1</div>
+            <div class="quick-bet" onclick="setQuickBet(2)">2</div>
+            <div class="quick-bet" onclick="setQuickBet(5)">5</div>
+            <div class="quick-bet" onclick="setQuickBet(10)">10</div>
         </div>
 
-        <div class="players-list">
-            <h3>Игроки в этом раунде (<span id="playersCount">0</span>)</h3>
-            <div id="playersList"></div>
+        <div class="players-list-simple">
+            <h3>Игроки: <span id="playersCount">0</span></h3>
+            <div id="playersList" class="players-list-content"></div>
         </div>
 
-        <div class="history-container">
-            <h3>История игр</h3>
-            <div class="history-items" id="historyItems"></div>
+        <div class="history-container-simple">
+            <h3>История</h3>
+            <div class="history-items-simple" id="historyItems"></div>
         </div>
     </div>
 
     <script src="/js/rocket.js"></script>
+    <script>
+        function setQuickBet(amount) {
+            document.getElementById('betAmount').value = amount;
+        }
+    </script>
 </body>
 </html>
