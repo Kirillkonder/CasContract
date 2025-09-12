@@ -131,17 +131,17 @@ function initDatabase() {
 // Функция для работы с Crypto Pay API
 async function cryptoPayRequest(method, data = {}, demoMode = false) {
   try {
-    const CRYPTO_PAY_API = demoMode ? 
+    const cryptoPayApi = demoMode ? 
       'https://testnet-pay.crypt.bot/api' : 
       'https://pay.crypt.bot/api';
       
-    const CRYPTO_PAY_TOKEN = demoMode ?
+    const cryptoPayToken = demoMode ?
       process.env.CRYPTO_PAY_TESTNET_TOKEN :
       process.env.CRYPTO_PAY_MAINNET_TOKEN;
 
-    const response = await axios.post(`${CRYPTO_PAY_API}/${method}`, data, {
+    const response = await axios.post(`${cryptoPayApi}/${method}`, data, {
       headers: {
-        'Crypto-Pay-API-Token': CRYPTO_PAY_TOKEN,
+        'Crypto-Pay-API-Token': cryptoPayToken,
         'Content-Type': 'application/json'
       },
       timeout: 10000
@@ -152,7 +152,7 @@ async function cryptoPayRequest(method, data = {}, demoMode = false) {
     console.error('Crypto Pay API error:', error.response?.data || error.message);
     // Добавляем больше информации об ошибке
     console.error('Error details:', {
-      url: `${CRYPTO_PAY_API}/${method}`,
+      url: `${method}`,
       data: data,
       demoMode: demoMode
     });
@@ -704,17 +704,17 @@ app.post('/api/deposit/create', async (req, res) => {
 
     // Для реального режима создаем инвойс
     const invoice = await cryptoPayRequest('createInvoice', {
-      asset: 'TON',
-      amount: amount.toString(),
-      description: `Deposit for user ${telegramId}`,
-      paid_btn_name: 'return',
-      paid_btn_url: `https://t.me/${process.env.BOT_USERNAME || 'your_bot'}`,
-      payload: JSON.stringify({
-        telegramId: parseInt(telegramId),
-        type: 'deposit'
-      }),
-      allow_comments: false
-    }, false);
+    asset: 'TON',
+    amount: amount.toString(),
+    description: `Deposit for user ${telegramId}`,
+    paid_btn_name: 'viewItem',
+    paid_btn_url: `https://t.me/${process.env.BOT_USERNAME || 'your_bot'}`,
+    payload: JSON.stringify({
+      telegramId: parseInt(telegramId),
+      type: 'deposit'
+    }),
+    allow_comments: false
+  }, false);
 
     if (invoice.ok && invoice.result) {
       transactions.insert({
