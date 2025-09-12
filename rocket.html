@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Rocket Game</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="rocket.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/rocket.css">
 </head>
 <body>
     <div class="container">
@@ -48,6 +49,36 @@
             </div>
         </div>
 
+        <div class="auto-settings">
+            <h3>Авто-настройки</h3>
+            
+            <div class="auto-setting-item">
+                <span>Автоставка</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="autoBetToggle" onchange="toggleAutoBet()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div class="auto-setting-item">
+                <span>Сумма автоставки (TON)</span>
+                <input type="number" class="auto-input" id="autoBetAmount" value="1.0" min="0.5" max="50" step="0.1" onchange="updateAutoBetAmount()">
+            </div>
+            
+            <div class="auto-setting-item">
+                <span>Автовывод</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="autoCashoutToggle" onchange="toggleAutoCashout()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div class="auto-setting-item">
+                <span>Множитель автовывода</span>
+                <input type="number" class="auto-input" id="autoCashoutMultiplier" value="2.0" min="1.1" max="100" step="0.1" onchange="updateAutoCashoutMultiplier()">
+            </div>
+        </div>
+
         <div class="players-list">
             <h3>Игроки в этом раунде (<span id="playersCount">0</span>)</h3>
             <div id="playersList"></div>
@@ -59,6 +90,6 @@
         </div>
     </div>
 
-    <script src="rocket.js"></script>
+    <script src="/js/rocket.js"></script>
 </body>
 </html>
