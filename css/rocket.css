@@ -46,7 +46,7 @@
     left: 10%;
     width: 40px;
     height: 80px;
-    background: url('rocket.png') no-repeat center center;
+    background: url('Rocket.png') no-repeat center center;
     background-size: contain;
     transform: rotate(45deg);
     transition: all 0.1s linear;
@@ -114,7 +114,7 @@
     transform: translate(-50%, -50%);
     width: 200px;
     height: 200px;
-    background: url('fire.png') no-repeat center center;
+    background: url('Fire.png') no-repeat center center;
     background-size: contain;
     animation: explode 1s ease-out forwards;
     z-index: 15;
