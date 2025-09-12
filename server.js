@@ -14,6 +14,7 @@ const {
   setRocketGame,
   getRocketBots,
   generateCrashPoint,
+  setWebSocketServer,
   broadcastRocketUpdate
 } = require('./utils/db');
 
@@ -46,20 +47,8 @@ const server = app.listen(PORT, () => {
 
 const wss = new WebSocket.Server({ server });
 
-// Функция для broadcast обновлений ракетки
-function broadcastRocketUpdate() {
-    const rocketGame = getRocketGame();
-    const data = JSON.stringify({
-        type: 'rocket_update',
-        game: rocketGame
-    });
-
-    wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(data);
-        }
-    });
-}
+// Устанавливаем WebSocket сервер в utils
+setWebSocketServer(wss);
 
 // Rocket Game Functions
 function startRocketGame() {

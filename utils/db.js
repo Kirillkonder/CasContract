@@ -1,6 +1,7 @@
 const Loki = require('lokijs');
 const path = require('path');
 const axios = require('axios');
+const WebSocket = require('ws');
 
 // Для Render сохраняем базу данных в памяти
 const dbPath = process.env.NODE_ENV === 'production' ? 
@@ -9,6 +10,7 @@ const dbPath = process.env.NODE_ENV === 'production' ?
 
 let db;
 let users, transactions, casinoBank, adminLogs, minesGames, rocketGames, rocketBets;
+let wss; // WebSocket server
 
 // Глобальные переменные для игры Ракетка
 let rocketGame = {
@@ -26,6 +28,25 @@ const rocketBots = [
   { name: "Bot_2", minBet: 5, maxBet: 20, risk: "high" },
   { name: "Bot_3", minBet: 0.5, maxBet: 5, risk: "low" }
 ];
+
+function setWebSocketServer(server) {
+  wss = server;
+}
+
+function broadcastRocketUpdate() {
+  if (!wss) return;
+  
+  const data = JSON.stringify({
+      type: 'rocket_update',
+      game: rocketGame
+  });
+
+  wss.clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+          client.send(data);
+      }
+  });
+}
 
 function initDatabase() {
     return new Promise((resolve) => {
@@ -206,5 +227,6 @@ module.exports = {
   getRocketGame,
   setRocketGame,
   getRocketBots,
-  rocketGame // экспортируем для прямого доступа если нужно
+  setWebSocketServer,
+  broadcastRocketUpdate
 };

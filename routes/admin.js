@@ -6,7 +6,7 @@ const {
     logAdminAction, 
     getCasinoBank, 
     updateCasinoBank 
-} require('../utils/db');
+} = require('../utils/db');
 
 router.post('/login', async (req, res) => {
     const { telegramId, password } = req.body;
