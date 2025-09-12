@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const cron = require('node-cron');
 const WebSocket = require('ws');
 
+// Заменить импорты в server.js
 const {
   initDatabase,
   getCollections,
@@ -15,7 +16,11 @@ const {
   getRocketBots,
   generateCrashPoint,
   setWebSocketServer,
-  broadcastRocketUpdate
+  broadcastRocketUpdate,
+  calculateMultiplier,
+  generateMinesGame,
+  updateCasinoBank,
+  getCasinoBank
 } = require('./utils/db');
 
 const app = express();
@@ -34,11 +39,7 @@ const rocketRoutes = require('./routes/rocket');
 const paymentRoutes = require('./routes/payment');
 
 // Использование роутов
-app.use('/api/admin', adminRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/mines', minesRoutes);
-app.use('/api/rocket', rocketRoutes);
-app.use('/api', paymentRoutes);
+app.use('/api', require('./routes'));
 
 // Добавить этот маршрут после других роутов
 app.post('/api/user/toggle-mode', async (req, res) => {

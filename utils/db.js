@@ -202,6 +202,28 @@ function generateCrashPoint() {
   }
 }
 
+function generateMinesGame(minesCount) {
+  const totalCells = 25;
+  const mines = [];
+  
+  while (mines.length < minesCount) {
+    const randomCell = Math.floor(Math.random() * totalCells);
+    if (!mines.includes(randomCell)) {
+      mines.push(randomCell);
+    }
+  }
+  
+  return {
+    mines,
+    minesCount,
+    revealedCells: [],
+    gameOver: false,
+    win: false,
+    currentMultiplier: 1,
+    betAmount: 0
+  };
+}
+
 function getRocketGame() {
   return rocketGame;
 }
@@ -228,5 +250,6 @@ module.exports = {
   setRocketGame,
   getRocketBots,
   setWebSocketServer,
-  broadcastRocketUpdate
+  broadcastRocketUpdate,
+  generateMinesGame
 };

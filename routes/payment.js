@@ -13,7 +13,26 @@ router.post('/create-invoice', async (req, res) => {
         }
 
         if (demoMode) {
-            return res.json({ success: false, error: 'Cannot deposit in demo mode' });
+            // Для демо-режима сразу начисляем баланс
+            users.update({
+                ...user,
+                demo_balance: user.demo_balance + amount
+            });
+            
+            transactions.insert({
+                user_id: user.$loki,
+                amount: amount,
+                type: 'deposit',
+                status: 'completed',
+                demo_mode: true,
+                created_at: new Date()
+            });
+            
+            return res.json({
+                success: true,
+                demo_mode: true,
+                message: 'Demo deposit successful'
+            });
         }
 
         const invoice = await cryptoPayRequest('createInvoice', {
