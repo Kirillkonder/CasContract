@@ -1,373 +1,347 @@
-body {
-            margin: 0;
-            padding: 0;
-            background: #0f1219;
-            font-family: 'Arial', sans-serif;
-            color: white;
-        }
-        
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 15px;
-            background: #1a1e29;
-            color: white;
-            font-family: 'Arial', sans-serif;
-        }
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 15px;
+    background: #1a1e29;
+    color: white;
+    font-family: 'Arial', sans-serif;
+}
 
-        .back-button {
-            background: #2d3436;
-            border: none;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-bottom: 15px;
-        }
+.back-button {
+    background: #2d3436;
+    border: none;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
 
-        .rocket-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            background: #2d3436;
-            padding: 10px 15px;
-            border-radius: 10px;
-        }
+.rocket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    background: #2d3436;
+    padding: 10px 15px;
+    border-radius: 10px;
+}
 
-        .rocket-header h1 {
-            margin: 0;
-            font-size: 20px;
-        }
+.rocket-header h1 {
+    margin: 0;
+    font-size: 20px;
+}
 
-        .balance {
-            display: flex;
-            align-items: center;
-            background: #636e72;
-            padding: 5px 10px;
-            border-radius: 8px;
-        }
+.balance {
+    display: flex;
+    align-items: center;
+    background: #636e72;
+    padding: 5px 10px;
+    border-radius: 8px;
+}
 
-        .demo-badge {
-            background: #e17055;
-            padding: 2px 8px;
-            border-radius: 5px;
-            font-size: 10px;
-            margin-left: 5px;
-        }
+.demo-badge {
+    background: #e17055;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 10px;
+    margin-left: 5px;
+}
 
-        .game-status {
-            background: #2d3436;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
+.game-status {
+    background: #2d3436;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+}
 
-        .status-waiting { background: #2d3436; }
-        .status-counting { background: #0984e3; }
-        .status-flying { background: #00b894; }
-        .status-crashed { background: #d63031; }
+.status-waiting { background: #2d3436; }
+.status-counting { background: #0984e3; }
+.status-flying { background: #00b894; }
+.status-crashed { background: #d63031; }
 
-        .rocket-canvas {
-            position: relative;
-            height: 350px; /* Увеличил высоту поля */
-            background: #0f1219;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            overflow: hidden;
-            border: 2px solid #3498db;
-        }
+.rocket-canvas {
+    position: relative;
+    height: 300px;
+    background: #0f1219;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    border: 2px solid #3498db;
+}
 
-        .stars-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(white 1px, transparent 2px),
-                radial-gradient(white 1px, transparent 1px);
-            background-size: 50px 50px, 30px 30px;
-            background-position: 0 0, 25px 25px;
-            opacity: 0.3;
-        }
+.stars-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(white 1px, transparent 2px),
+        radial-gradient(white 1px, transparent 1px);
+    background-size: 50px 50px, 30px 30px;
+    background-position: 0 0, 25px 25px;
+    opacity: 0.3;
+}
 
-        .multiplier-display {
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            color: white;
-            text-shadow: 0 0 5px rgba(0,0,0,0.7);
-            z-index: 5;
-        }
+.multiplier-display {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 5px rgba(0,0,0,0.7);
+    z-index: 5;
+}
 
-        .rocket {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            transition: bottom 0.5s linear;
-        }
+.rocket {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    transition: bottom 0.5s linear;
+}
 
-        .rocket-image {
-            width: 60px; /* Увеличил размер ракеты */
-            height: 120px; /* Увеличил размер ракеты */
-            display: block;
-        }
+.rocket-image {
+    width: 40px;
+    height: 80px;
+    display: block;
+}
 
-        .rocket-flame {
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px; /* Увеличил размер пламени */
-            height: 40px; /* Увеличил размер пламени */
-            background: radial-gradient(ellipse at center, #ff9900 0%, #ff5500 50%, transparent 70%);
-            animation: flame 0.5s infinite alternate;
-        }
+.rocket-flame {
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 30px;
+    background: radial-gradient(ellipse at center, #ff9900 0%, #ff5500 50%, transparent 70%);
+    animation: flame 0.5s infinite alternate;
+}
 
-        @keyframes flame {
-            0% { height: 35px; opacity: 0.8; }
-            100% { height: 45px; opacity: 1; }
-        }
+@keyframes flame {
+    0% { height: 25px; opacity: 0.8; }
+    100% { height: 35px; opacity: 1; }
+}
 
-        .trail {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 6px; /* Увеличил ширину следа */
-            background: linear-gradient(to top, #ff7675, #74b9ff, transparent);
-            height: 0px;
-            z-index: 5;
-        }
+.trail {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    background: linear-gradient(to top, #ff7675, #74b9ff, transparent);
+    height: 0px;
+    z-index: 5;
+}
 
-        /* Новый стиль для анимации "КРАХ" */
-        .crash-animation {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 48px;
-            font-weight: bold;
-            color: #ff4757;
-            text-shadow: 0 0 10px rgba(255, 71, 87, 0.7);
-            animation: crashPulse 1s infinite;
-            z-index: 20;
-            display: none;
-        }
+.explosion {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, #ff7675, #e17055, transparent 70%);
+    border-radius: 50%;
+    animation: explode 0.5s ease-out;
+    z-index: 20;
+}
 
-        @keyframes crashPulse {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
+@keyframes explode {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+}
 
-        /* Стили для цифрового таймера */
-        .countdown-timer {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: 'Courier New', monospace;
-            font-size: 64px;
-            font-weight: bold;
-            color: #ffffff;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
-            z-index: 15;
-            display: none;
-        }
+.betting-panel {
+    background: #2d3436;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+}
 
-        .betting-panel {
-            background: #2d3436;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-        }
+.bet-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
 
-        .bet-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
+.bet-input {
+    flex: 1;
+    padding: 12px;
+    background: #636e72;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    text-align: center;
+    font-size: 16px;
+}
 
-        .bet-input {
-            flex: 1;
-            padding: 12px;
-            background: #636e72;
-            border: none;
-            border-radius: 10px;
-            color: white;
-            text-align: center;
-            font-size: 16px;
-        }
+.bet-button {
+    padding: 12px 20px;
+    background: #00b894;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-        .bet-button {
-            padding: 12px 20px;
-            background: #00b894;
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
+.bet-button:disabled {
+    background: #636e72;
+    cursor: not-allowed;
+}
 
-        .bet-button:disabled {
-            background: #636e72;
-            cursor: not-allowed;
-        }
+.cashout-button {
+    width: 100%;
+    padding: 12px;
+    background: #fd79a8;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-        .cashout-button {
-            width: 100%;
-            padding: 12px;
-            background: #fd79a8;
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
+.cashout-button:disabled {
+    background: #636e72;
+    cursor: not-allowed;
+}
 
-        .cashout-button:disabled {
-            background: #636e72;
-            cursor: not-allowed;
-        }
+.auto-settings {
+    background: #2d3436;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+}
 
-        .auto-settings {
-            background: #2d3436;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-        }
+.auto-settings h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
 
-        .auto-settings h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-        }
+.auto-setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px;
+    background: #636e72;
+    border-radius: 8px;
+}
 
-        .auto-setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 8px;
-            background: #636e72;
-            border-radius: 8px;
-        }
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
 
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
 
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
 
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
 
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
+input:checked + .toggle-slider {
+    background-color: #00b894;
+}
 
-        input:checked + .toggle-slider {
-            background-color: #00b894;
-        }
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
 
-        input:checked + .toggle-slider:before {
-            transform: translateX(26px);
-        }
+.auto-input {
+    width: 60px;
+    padding: 5px;
+    background: #2d3436;
+    border: 1px solid #636e72;
+    border-radius: 5px;
+    color: white;
+    text-align: center;
+}
 
-        .auto-input {
-            width: 60px;
-            padding: 5px;
-            background: #2d3436;
-            border: 1px solid #636e72;
-            border-radius: 5px;
-            color: white;
-            text-align: center;
-        }
+.players-list {
+    background: #2d3436;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+}
 
-        .players-list {
-            background: #2d3436;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-        }
+.players-list h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
 
-        .players-list h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    border-bottom: 1px solid #636e72;
+}
 
-        .player-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid #636e72;
-        }
+.player-item:last-child {
+    border-bottom: none;
+}
 
-        .player-item:last-child {
-            border-bottom: none;
-        }
+.player-name {
+    color: #dfe6e9;
+}
 
-        .player-name {
-            color: #dfe6e9;
-        }
+.player-bet {
+    font-weight: bold;
+}
 
-        .player-bet {
-            font-weight: bold;
-        }
+.history-container {
+    background: #2d3436;
+    padding: 15px;
+    border-radius: 15px;
+}
 
-        .history-container {
-            background: #2d3436;
-            padding: 15px;
-            border-radius: 15px;
-        }
+.history-container h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
 
-        .history-container h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
+.history-items {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
 
-        .history-items {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
+.history-item {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+}
 
-        .history-item {
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-        }
-
-        .history-win { background: #00b894; }
-        .history-loss { background: #d63031; }
+.history-win { background: #00b894; }
+.history-loss { background: #d63031; }
