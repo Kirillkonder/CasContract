@@ -19,27 +19,20 @@ class TonCasinoApp {
     }
 
     async checkAdminStatus() {
-        try {
-            const response = await fetch('/api/admin/check', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    telegramId: this.tg.initDataUnsafe.user.id
-                })
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                this.isAdmin = result.isAdmin;
-                
-                if (this.isAdmin) {
-                    this.showAdminButton();
-                }
+    try {
+        const response = await fetch(`/api/user/${this.tg.initDataUnsafe.user.id}`);
+        if (response.ok) {
+            const userData = await response.json();
+            this.isAdmin = userData.is_admin;
+            
+            if (this.isAdmin) {
+                this.showAdminButton();
             }
-        } catch (error) {
-            console.error('Admin check error:', error);
         }
+    } catch (error) {
+        console.error('Admin check error:', error);
     }
+}
 
 
     showAdminButton() {
