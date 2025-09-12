@@ -14,10 +14,10 @@ const PORT = process.env.PORT || 3000;
 const ROCKET_CONFIG = {
     MIN_BET: 0.5,
     MAX_BET: 50,
-    BET_TIME: 15000, // 15 секунд на ставки
+    BET_TIME: 10000, // 10 секунд на ставки (один таймер)
     MAX_MULTIPLIER: 100,
-    CRASH_PROBABILITY: 0.05, // Вероятность краха на каждом шаге
-    SPEED_INCREASE: 0.1 // Увеличение скорости с каждым шагом
+    CRASH_PROBABILITY: 0.05,
+    SPEED_INCREASE: 0.1
 };
 
 
@@ -250,19 +250,14 @@ function startRocketGame() {
 
     rocketGame.status = 'counting';
     rocketGame.multiplier = 1.00;
-    rocketGame.crashPoint = 1 + Math.random() * 99; // Простой рандомный крах
+    rocketGame.crashPoint = generateCrashPoint();
     rocketGame.startTime = Date.now();
-    rocketGame.endBetTime = Date.now() + 10000; // 10 секунд на ставки
+    rocketGame.endBetTime = Date.now() + ROCKET_CONFIG.BET_TIME;
     rocketGame.players = [];
 
     broadcastRocketUpdate();
 
-    // 10 секунд на ставки
-    setTimeout(() => {
-        rocketGame.status = 'flying';
-        broadcastRocketUpdate();
-        startRocketFlight();
-    }, 10000);
+   
 }
 
 function startRocketFlight() {
@@ -439,28 +434,34 @@ function broadcastRocketUpdate() {
 }
 
 // WebSocket обработчик
+w// WebSocket обработчик
 wss.on('connection', function connection(ws) {
     console.log('Rocket game client connected');
     
     // Отправляем текущее состояние игры при подключении
     ws.send(JSON.stringify({
         type: 'rocket_update',
-        game: {
-            status: rocketGame.status,
-            multiplier: rocketGame.multiplier,
-            crashPoint: rocketGame.crashPoint,
-            players: rocketGame.players,
-            history: rocketGame.history,
-            endBetTime: rocketGame.endBetTime,
-            startTime: rocketGame.startTime
-        }
+        game: rocketGame
     }));
+
+    ws.on('message', function(message) {
+        try {
+            const data = JSON.parse(message);
+            
+            if (data.type === 'start_flight' && rocketGame.status === 'counting') {
+                rocketGame.status = 'flying';
+                broadcastRocketUpdate();
+                startRocketFlight();
+            }
+        } catch (error) {
+            console.error('WebSocket message error:', error);
+        }
+    });
 
     ws.on('close', () => {
         console.log('Rocket game client disconnected');
     });
 });
-
 
 // API: Аутентификация админа
 app.post('/api/admin/login', async (req, res) => {

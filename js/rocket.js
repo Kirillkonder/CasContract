@@ -145,16 +145,44 @@ function updateGameState(gameState) {
 
 let betTimerInterval = null;
 
+
 function startBetTimer(endTime) {
     clearBetTimer();
     
+    // Показываем большой таймер по центру
+    const canvas = document.getElementById('rocketCanvas');
+    const bigTimer = document.createElement('div');
+    bigTimer.className = 'big-timer';
+    bigTimer.id = 'bigTimer';
+    canvas.appendChild(bigTimer);
+    
     function updateBetTimer() {
         const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+        
+        // Обновляем большой таймер
+        const bigTimerElement = document.getElementById('bigTimer');
+        if (bigTimerElement) {
+            bigTimerElement.textContent = timeLeft;
+        }
+        
+        // Обновляем текст в статусе
         document.getElementById('betTimer').textContent = `${timeLeft}с`;
         
         if (timeLeft <= 0) {
             clearBetTimer();
             updateBettingUI();
+            
+            // Убираем большой таймер
+            if (document.getElementById('bigTimer')) {
+                canvas.removeChild(document.getElementById('bigTimer'));
+            }
+            
+            // Сообщаем серверу, что время ставок закончилось
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'start_flight'
+                }));
+            }
         }
     }
     
@@ -166,6 +194,12 @@ function clearBetTimer() {
     if (betTimerInterval) {
         clearInterval(betTimerInterval);
         betTimerInterval = null;
+    }
+    
+    // Убираем большой таймер
+    const bigTimer = document.getElementById('bigTimer');
+    if (bigTimer) {
+        bigTimer.remove();
     }
 }
 
