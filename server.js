@@ -236,13 +236,14 @@ function generateCrashPoint() {
 }
 
 function startRocketGame() {
-  if (rocketGame.status !== 'waiting') return;
+    if (rocketGame.status !== 'waiting') return;
 
-  rocketGame.status = 'counting';
-  rocketGame.multiplier = 1.00;
-  rocketGame.crashPoint = generateCrashPoint();
-  rocketGame.startTime = Date.now();
-  rocketGame.players = [];
+    rocketGame.status = 'counting';
+    rocketGame.multiplier = 1.00;
+    rocketGame.crashPoint = generateCrashPoint();
+    rocketGame.startTime = Date.now(); // Записываем время начала
+    rocketGame.endBetTime = Date.now() + 10000; // Время окончания ставок
+    rocketGame.players = [];
 
   // Добавляем ставки ботов
   rocketBots.forEach(bot => {
@@ -381,16 +382,16 @@ function processRocketGameEnd() {
 }
 
 function broadcastRocketUpdate() {
-  const data = JSON.stringify({
-    type: 'rocket_update',
-    game: rocketGame
-  });
+    const data = JSON.stringify({
+        type: 'rocket_update',
+        game: rocketGame
+    });
 
-  wss.clients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(data);
-    }
-  });
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(data);
+        }
+    });
 }
 
 // WebSocket обработчик
@@ -1103,6 +1104,11 @@ app.post('/api/rocket/bet', async (req, res) => {
             return res.status(400).json({ error: 'Вы уже сделали ставку в этом раунде' });
         }
 
+        // ПРОВЕРКА: Время для ставок истекло
+        if (rocketGame.status !== 'counting' || Date.now() > rocketGame.endBetTime) {
+            return res.status(400).json({ error: 'Время для ставок закончилось' });
+        }
+
         const balance = demoMode ? user.demo_balance : user.main_balance;
         
         if (balance < betAmount) {
@@ -1147,7 +1153,7 @@ app.post('/api/rocket/bet', async (req, res) => {
             success: true,
             new_balance: demoMode ? user.demo_balance - betAmount : user.main_balance - betAmount
         });
-    } catch (error) {
+     } catch (error) {
         console.error('Rocket bet error:', error);
         res.status(500).json({ error: 'Server error' });
     }
