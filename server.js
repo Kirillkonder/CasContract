@@ -250,39 +250,48 @@ function startRocketGame() {
 
     rocketGame.status = 'counting';
     rocketGame.multiplier = 1.00;
-    rocketGame.crashPoint = generateCrashPoint();
+    rocketGame.crashPoint = 1 + Math.random() * 99; // Простой рандомный крах
     rocketGame.startTime = Date.now();
-    rocketGame.endBetTime = Date.now() + ROCKET_CONFIG.BET_TIME; // Используем конфиг
+    rocketGame.endBetTime = Date.now() + 10000; // 10 секунд на ставки
     rocketGame.players = [];
-
-    // Добавляем ставки ботов с проверкой лимитов
-    rocketBots.forEach(bot => {
-        const betAmount = Math.max(ROCKET_CONFIG.MIN_BET, 
-            Math.min(ROCKET_CONFIG.MAX_BET, 
-            bot.minBet + Math.random() * (bot.maxBet - bot.minBet)));
-        
-        const autoCashout = bot.risk === 'low' ? 2 + Math.random() * 3 : 
-                           bot.risk === 'medium' ? 5 + Math.random() * 10 : 
-                           10 + Math.random() * 30;
-        
-        rocketGame.players.push({
-            name: bot.name,
-            betAmount: parseFloat(betAmount.toFixed(2)),
-            autoCashout: parseFloat(autoCashout.toFixed(2)),
-            isBot: true,
-            cashedOut: false,
-            winAmount: 0
-        });
-    });
 
     broadcastRocketUpdate();
 
-    // Время на ставки из конфига
+    // 10 секунд на ставки
     setTimeout(() => {
         rocketGame.status = 'flying';
         broadcastRocketUpdate();
         startRocketFlight();
-    }, ROCKET_CONFIG.BET_TIME);
+    }, 10000);
+}
+
+function startRocketFlight() {
+    const flightInterval = setInterval(() => {
+        if (rocketGame.status !== 'flying') {
+            clearInterval(flightInterval);
+            return;
+        }
+
+        // Просто увеличиваем множитель
+        rocketGame.multiplier += 0.01;
+
+        // Проверяем крах
+        if (rocketGame.multiplier >= rocketGame.crashPoint) {
+            rocketGame.status = 'crashed';
+            clearInterval(flightInterval);
+            
+            // Ждем 10 секунд перед новым раундом
+            setTimeout(() => {
+                rocketGame.status = 'waiting';
+                rocketGame.multiplier = 1.00;
+                rocketGame.players = [];
+                broadcastRocketUpdate();
+                startRocketGame();
+            }, 10000);
+        }
+
+        broadcastRocketUpdate();
+    }, 100);
 }
 
 

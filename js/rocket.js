@@ -74,12 +74,10 @@ function connectWebSocket() {
 }
 
 function updateGameState(gameState) {
-    // Обновляем глобальную переменную игры
     rocketGame = gameState;
     
-    // Обновляем статус игры
     const statusElement = document.getElementById('statusText');
-    const countdownElement = document.getElementById('countdown');
+    const betTimerElement = document.getElementById('betTimer');
     const statusClass = `status-${gameState.status}`;
     
     document.getElementById('gameStatus').className = `game-status ${statusClass}`;
@@ -87,36 +85,32 @@ function updateGameState(gameState) {
     switch(gameState.status) {
         case 'waiting':
             statusElement.textContent = 'Ожидание начала игры...';
-            countdownElement.textContent = '';
-            clearCountdown();
+            betTimerElement.textContent = '';
+            clearBetTimer();
             resetBettingUI();
             break;
             
         case 'counting':
             statusElement.textContent = 'Прием ставок: ';
-            startCountdown(gameState.endBetTime);
+            startBetTimer(gameState.endBetTime);
             updateBettingUI();
             break;
             
         case 'flying':
             statusElement.textContent = 'Ракета взлетает!';
-            countdownElement.textContent = '';
-            clearCountdown();
-            updateRocketPosition(gameState.multiplier);
+            betTimerElement.textContent = '';
+            clearBetTimer();
             break;
             
         case 'crashed':
             statusElement.textContent = `Ракета взорвалась на ${gameState.crashPoint.toFixed(2)}x!`;
-            countdownElement.textContent = '';
-            clearCountdown();
-            showExplosion();
+            betTimerElement.textContent = '';
+            clearBetTimer();
             showCrashTimer();
             break;
     }
     
-    // Обновляем множитель
     document.getElementById('multiplierDisplay').textContent = gameState.multiplier.toFixed(2) + 'x';
-    
     // Находим нашего игрока
     userPlayer = gameState.players.find(p => p.userId == currentUser.id && !p.isBot);
     
@@ -145,27 +139,33 @@ function updateGameState(gameState) {
     updateBettingUI();
 }
 
-function startCountdown(endTime) {
-    clearCountdown();
+
+
+
+
+let betTimerInterval = null;
+
+function startBetTimer(endTime) {
+    clearBetTimer();
     
-    function updateCountdown() {
+    function updateBetTimer() {
         const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
-        document.getElementById('countdown').textContent = `${timeLeft}с`;
+        document.getElementById('betTimer').textContent = `${timeLeft}с`;
         
         if (timeLeft <= 0) {
-            clearCountdown();
+            clearBetTimer();
             updateBettingUI();
         }
     }
     
-    updateCountdown();
-    countdownInterval = setInterval(updateCountdown, 1000);
+    updateBetTimer();
+    betTimerInterval = setInterval(updateBetTimer, 1000);
 }
 
-function clearCountdown() {
-    if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
+function clearBetTimer() {
+    if (betTimerInterval) {
+        clearInterval(betTimerInterval);
+        betTimerInterval = null;
     }
 }
 
