@@ -225,52 +225,64 @@
 }
 
 
-        async function startGame() {
-            const betAmount = parseFloat(document.getElementById('betAmount').value);
-            const minesCount = parseInt(document.getElementById('minesCount').value);
-            
-            if (betAmount < 0.1 || betAmount > 10) {
-                alert('Ставка должна быть от 0.1 до 10 TON');
-                return;
-            }
+    async function startGame() {
+    const betAmount = parseFloat(document.getElementById('betAmount').value);
+    const minesCount = parseInt(document.getElementById('minesCount').value);
+    
+    if (betAmount < 0.1 || betAmount > 10) {
+        alert('Ставка должна быть от 0.1 до 10 TON');
+        return;
+    }
 
-            try {
-                const tg = window.Telegram.WebApp;
-                const telegramId = tg.initDataUnsafe.user.id;
+    try {
+        const tg = window.Telegram.WebApp;
+        const telegramId = tg.initDataUnsafe.user.id;
 
-                const response = await fetch('/api/mines/start', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        telegramId: telegramId,
-                        betAmount: betAmount,
-                        minesCount: minesCount,
-                        demoMode: isDemoMode
-                    })
-                });
+        // ИСПРАВЛЕННЫЙ ENDPOINT - убрал лишний слэш
+        const response = await fetch('/api/mines/start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                telegramId: telegramId,
+                betAmount: betAmount,
+                minesCount: minesCount,
+                demoMode: isDemoMode
+            })
+        });
 
-                if (!response.ok) {
-                    const error = await response.json();
-                    alert(error.error || 'Ошибка начала игры');
-                    return;
-                }
-
-                const result = await response.json();
-                if (result.success) {
-                    currentGame = result.gameState;
-                    currentGame.gameId = result.gameId;
-                    setupGameUI();
-                    updateBalance();
-                } else {
-                    alert('Ошибка начала игры');
-                }
-            } catch (error) {
-                console.error('Error starting game:', error);
-                alert('Ошибка начала игры');
-            }
+        if (!response.ok) {
+            const error = await response.json();
+            alert(error.error || 'Ошибка начала игры');
+            return;
         }
+
+        const result = await response.json();
+        if (result.success) {
+            // Обновляем баланс после успешной ставки
+            await updateBalance();
+            
+            // Создаем объект игры на клиенте
+            currentGame = {
+                gameId: result.game_id,
+                betAmount: betAmount,
+                minesCount: minesCount,
+                revealedCells: [],
+                gameOver: false,
+                currentMultiplier: 1.00,
+                demoMode: isDemoMode
+            };
+            
+            setupGameUI();
+        } else {
+            alert('Ошибка начала игры');
+        }
+    } catch (error) {
+        console.error('Error starting game:', error);
+        alert('Ошибка начала игры: ' + error.message);
+    }
+}
 
         function setupGameUI() {
             document.getElementById('gameInfo').style.display = 'flex';
@@ -297,46 +309,47 @@
             }
         }
 
-        async function revealCell(cellIndex) {
-            if (!currentGame || currentGame.gameOver) return;
+    async function revealCell(cellIndex) {
+        if (!currentGame || currentGame.gameOver) return;
 
-            try {
-                const response = await fetch('/api/mines/reveal', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        gameId: currentGame.gameId,
-                        cellIndex: cellIndex,
-                        telegramId: window.Telegram.WebApp.initDataUnsafe.user.id
-                    })
-                });
+        try {
+            // ИСПРАВЛЕННЫЙ ENDPOINT
+            const response = await fetch('/api/mines/open', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    gameId: currentGame.gameId,
+                    cellIndex: cellIndex,
+                    telegramId: window.Telegram.WebApp.initDataUnsafe.user.id
+                })
+            });
 
-                if (!response.ok) {
-                    const error = await response.json();
-                    alert(error.error || 'Ошибка открытия ячейки');
-                    return;
-                }
-
-                const result = await response.json();
-                
-                if (result.mineHit) {
-                    // Попали на мину
-                    updateCellUI(cellIndex, true);
-                    endGame(false);
-                } else {
-                    // Ячейка безопасна
-                    currentGame.revealedCells.push(cellIndex);
-                    currentGame.currentMultiplier = result.currentMultiplier;
-                    updateCellUI(cellIndex, false);
-                    updateMultiplier();
-                }
-            } catch (error) {
-                console.error('Error revealing cell:', error);
-                alert('Ошибка открытия ячейки');
+            if (!response.ok) {
+                const error = await response.json();
+                alert(error.error || 'Ошибка открытия ячейки');
+                return;
             }
+
+            const result = await response.json();
+            
+            if (result.mine_hit) {
+                // Попали на мину
+                updateCellUI(cellIndex, true);
+                endGame(false);
+            } else {
+                // Ячейка безопасна
+                currentGame.revealedCells.push(cellIndex);
+                currentGame.currentMultiplier = result.multiplier;
+                updateCellUI(cellIndex, false);
+                updateMultiplier();
+            }
+        } catch (error) {
+            console.error('Error revealing cell:', error);
+            alert('Ошибка открытия ячейки');
         }
+    }
 
         function updateCellUI(cellIndex, isMine) {
             const cell = document.querySelector(`.mine-cell[data-index="${cellIndex}"]`);
@@ -362,36 +375,38 @@
         }
 
         async function cashout() {
-            if (!currentGame || currentGame.gameOver) return;
+                if (!currentGame || currentGame.gameOver) return;
 
-            try {
-                const response = await fetch('/api/mines/cashout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        gameId: currentGame.gameId,
-                        telegramId: window.Telegram.WebApp.initDataUnsafe.user.id
-                    })
-                });
+                try {
+                    // ИСПРАВЛЕННЫЙ ENDPOINT
+                    const response = await fetch('/api/mines/cashout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            gameId: currentGame.gameId,
+                            telegramId: window.Telegram.WebApp.initDataUnsafe.user.id
+                        })
+                    });
 
-                if (!response.ok) {
-                    const error = await response.json();
-                    alert(error.error || 'Ошибка вывода средств');
-                    return;
+                    if (!response.ok) {
+                        const error = await response.json();
+                        alert(error.error || 'Ошибка вывода средств');
+                        return;
+                    }
+
+                    const result = await response.json();
+                    if (result.success) {
+                        endGame(true, result.win_amount);
+                        await updateBalance();
+                    }
+                } catch (error) {
+                    console.error('Error cashing out:', error);
+                    alert('Ошибка вывода средств');
                 }
-
-                const result = await response.json();
-                if (result.success) {
-                    endGame(true, result.winAmount);
-                    updateBalance();
-                }
-            } catch (error) {
-                console.error('Error cashing out:', error);
-                alert('Ошибка вывода средств');
             }
-        }
+
 
         function endGame(isWin, winAmount = 0) {
             document.getElementById('cashoutBtn').disabled = true;
