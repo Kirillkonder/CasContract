@@ -156,38 +156,35 @@ class TonCasinoApp {
     }
 
     async toggleMode() {
-    try {
-        const response = await fetch('/api/user/toggle-mode', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                telegramId: this.tg.initDataUnsafe.user.id
-            })
-        });
-
-        const result = await response.json();
-        
-        if (result.success) {
-            this.demoMode = result.demo_mode;
-            await this.loadUserData();
-            
-            this.tg.showPopup({
-                title: this.demoMode ? "🔧 Тестовый режим" : "🌐 Реальный режим",
-                message: this.demoMode ? 
-                    "Переключено на тестовые TON" : 
-                    "Переключено на реальные TON",
-                buttons: [{ type: "ok" }]
+        try {
+            const response = await fetch('/api/user/toggle-demo-mode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    telegramId: this.tg.initDataUnsafe.user.id
+                })
             });
+
+            const result = await response.json();
             
-            await this.loadTransactionHistory();
-        } else {
-            alert('Ошибка при переключении режима');
+            if (result.success) {
+                this.demoMode = result.demo_mode;
+                await this.loadUserData();
+                
+                this.tg.showPopup({
+                    title: this.demoMode ? "🔧 Тестовый режим" : "🌐 Реальный режим",
+                    message: this.demoMode ? 
+                        "Переключено на тестовые TON" : 
+                        "Переключено на реальные TON",
+                    buttons: [{ type: "ok" }]
+                });
+                
+                await this.loadTransactionHistory();
+            }
+        } catch (error) {
+            console.error('Toggle mode error:', error);
         }
-    } catch (error) {
-        console.error('Toggle mode error:', error);
-        alert('Ошибка при переключении режима');
     }
-}
 
     async openAdminPanel() {
         document.getElementById('admin-modal').style.display = 'block';
