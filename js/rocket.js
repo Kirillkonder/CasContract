@@ -168,29 +168,72 @@
         }
     }
 
-    function updateRocketPosition(multiplier) {
-        const rocketElement = document.getElementById('rocket');
-        const trailElement = document.getElementById('rocketTrail');
-        
-        // Вычисляем новую позицию ракеты (от 50px до 250px)
-        const newPosition = 50 + (multiplier * 2);
-        rocketElement.style.bottom = `${newPosition}px`;
-        
-        // Обновляем след ракеты
-        trailElement.style.height = `${newPosition - 90}px`;
+   function updateRocketPosition(multiplier) {
+    const rocketElement = document.getElementById('rocket');
+    const trailElement = document.getElementById('rocketTrail');
+    
+    // Вычисляем новую позицию ракеты (от 50px до 250px)
+    const newPosition = 50 + (multiplier * 2);
+    rocketElement.style.bottom = `${newPosition}px`;
+    
+    // Обновляем след ракеты
+    trailElement.style.height = `${newPosition - 90}px`;
+    
+    // Создаем частицы следа
+    if (multiplier > 1.1 && Math.random() > 0.7) {
+        createParticle();
     }
+}
+
+    function createParticle() {
+    const canvas = document.getElementById('rocketCanvas');
+    const rocket = document.getElementById('rocket');
+    
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    
+    const rocketRect = rocket.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    
+    const leftPosition = (rocketRect.left + rocketRect.width / 2) - canvasRect.left - 1.5;
+    const bottomPosition = rocketRect.bottom - canvasRect.top - 10;
+    
+    particle.style.left = `${leftPosition}px`;
+    particle.style.bottom = `${bottomPosition}px`;
+    
+    canvas.appendChild(particle);
+    
+    // Удаляем частицу после анимации
+    setTimeout(() => {
+        if (particle.parentNode) {
+            canvas.removeChild(particle);
+        }
+    }, 1000);
+}
 
     function showExplosion() {
-        const canvas = document.getElementById('rocketCanvas');
-        const explosion = document.createElement('div');
-        explosion.className = 'explosion';
-        canvas.appendChild(explosion);
-        
-        setTimeout(() => {
+    const canvas = document.getElementById('rocketCanvas');
+    const explosion = document.createElement('div');
+    explosion.className = 'explosion';
+    canvas.appendChild(explosion);
+    
+    // Скрываем ракету при взрыве
+    const rocket = document.getElementById('rocket');
+    rocket.style.opacity = '0';
+    
+    setTimeout(() => {
+        if (explosion.parentNode) {
             canvas.removeChild(explosion);
-        }, 1000);
-    }
-
+        }
+        // Восстанавливаем видимость ракеты
+        rocket.style.opacity = '1';
+        rocket.style.bottom = '50px';
+        
+        // Сбрасываем след
+        const trail = document.getElementById('rocketTrail');
+        trail.style.height = '0px';
+    }, 1000);
+}
     function updatePlayersList(players) {
         const playersList = document.getElementById('playersList');
         const playersCount = document.getElementById('playersCount');
