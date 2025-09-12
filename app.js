@@ -20,20 +20,21 @@ class TonCasinoApp {
 
     async checkAdminStatus() {
         try {
-            const response = await fetch('/api/admin/login', {
+            const response = await fetch('/api/admin/check', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    telegramId: this.tg.initDataUnsafe.user.id,
-                    password: '1234'
+                    telegramId: this.tg.initDataUnsafe.user.id
                 })
             });
 
-            const result = await response.json();
-            this.isAdmin = result.isAdmin;
-            
-            if (this.isAdmin) {
-                this.showAdminButton();
+            if (response.ok) {
+                const result = await response.json();
+                this.isAdmin = result.isAdmin;
+                
+                if (this.isAdmin) {
+                    this.showAdminButton();
+                }
             }
         } catch (error) {
             console.error('Admin check error:', error);
@@ -50,9 +51,11 @@ class TonCasinoApp {
     async loadUserData() {
         try {
             const response = await fetch(`/api/user/${this.tg.initDataUnsafe.user.id}`);
-            this.userData = await response.json();
-            this.demoMode = this.userData.demo_mode;
-            this.updateUI();
+            if (response.ok) {
+                this.userData = await response.json();
+                this.demoMode = this.userData.demo_mode;
+                this.updateUI();
+            }
         } catch (error) {
             console.error('Error loading user data:', error);
         }
@@ -61,8 +64,10 @@ class TonCasinoApp {
     async loadTransactionHistory() {
         try {
             const response = await fetch(`/api/transactions/${this.tg.initDataUnsafe.user.id}`);
-            const data = await response.json();
-            this.updateTransactionHistory(data.transactions);
+            if (response.ok) {
+                const data = await response.json();
+                this.updateTransactionHistory(data.transactions);
+            }
         } catch (error) {
             console.error('Error loading transactions:', error);
         }
@@ -73,29 +78,30 @@ class TonCasinoApp {
         if (transactionsContainer) {
             transactionsContainer.innerHTML = '';
             
-            transactions.forEach(transaction => {
-                // Показываем только завершенные транзакции
-                if (transaction.status === 'completed') {
-                    const transactionElement = document.createElement('div');
-                    transactionElement.className = 'transaction-item';
-                    
-                    const amountClass = transaction.amount > 0 ? 'transaction-positive' : 'transaction-negative';
-                    const sign = transaction.amount > 0 ? '+' : '';
-                    const modeBadge = transaction.demo_mode ? ' (TEST)' : ' (REAL)';
-                    
-                    transactionElement.innerHTML = `
-                        <div class="transaction-info">
-                            <div>${transaction.type.toUpperCase()}${modeBadge}</div>
-                            <div class="transaction-date">${new Date(transaction.created_at).toLocaleDateString()}</div>
-                        </div>
-                        <div class="transaction-amount ${amountClass}">
-                            ${sign}${transaction.amount} TON
-                        </div>
-                    `;
-                    
-                    transactionsContainer.appendChild(transactionElement);
-                }
-            });
+            if (transactions && transactions.length > 0) {
+                transactions.forEach(transaction => {
+                    if (transaction.status === 'completed') {
+                        const transactionElement = document.createElement('div');
+                        transactionElement.className = 'transaction-item';
+                        
+                        const amountClass = transaction.amount > 0 ? 'transaction-positive' : 'transaction-negative';
+                        const sign = transaction.amount > 0 ? '+' : '';
+                        const modeBadge = transaction.demo_mode ? ' (TEST)' : ' (REAL)';
+                        
+                        transactionElement.innerHTML = `
+                            <div class="transaction-info">
+                                <div>${transaction.type.toUpperCase()}${modeBadge}</div>
+                                <div class="transaction-date">${new Date(transaction.created_at).toLocaleDateString()}</div>
+                            </div>
+                            <div class="transaction-amount ${amountClass}">
+                                ${sign}${transaction.amount} TON
+                            </div>
+                        `;
+                        
+                        transactionsContainer.appendChild(transactionElement);
+                    }
+                });
+            }
 
             if (transactionsContainer.children.length === 0) {
                 transactionsContainer.innerHTML = '<div class="no-transactions">Нет операций</div>';
@@ -131,7 +137,7 @@ class TonCasinoApp {
                 modeButton.textContent = this.demoMode ? 
                     '🔄 Перейти к реальным TON' : 
                     '🔄 Перейти к тестовым TON';
-                modeButton.className = this.demoMode ? 'btn btn-testnet' : 'btn btn-mainnet';
+                modeButton.className = this.demoMode ? 'btn btn-mode btn-testnet' : 'btn btn-mode btn-mainnet';
             }
             
             if (depositModeInfo) {
@@ -157,7 +163,7 @@ class TonCasinoApp {
 
     async toggleMode() {
         try {
-            const response = await fetch('/api/toggle-mode', {
+            const response = await fetch('/api/user/toggle-mode', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -165,29 +171,36 @@ class TonCasinoApp {
                 })
             });
 
-            const result = await response.json();
-            
-            if (result.success) {
-                this.demoMode = result.demo_mode;
-                this.userData.balance = result.balance;
-                this.userData.demo_balance = result.demo_balance;
-                this.userData.main_balance = result.main_balance;
+            if (response.ok) {
+                const result = await response.json();
                 
-                this.updateUI();
-                this.updateModeUI();
-                
-                this.tg.showPopup({
-                    title: this.demoMode ? "🔧 Тестовый режим" : "🌐 Реальный режим",
-                    message: this.demoMode ? 
-                        "Переключено на тестовые TON. Баланс: " + result.demo_balance + " TON" : 
-                        "Переключено на реальные TON. Баланс: " + result.main_balance + " TON",
-                    buttons: [{ type: "ok" }]
-                });
-                
-                await this.loadTransactionHistory();
+                if (result.success) {
+                    this.demoMode = result.demo_mode;
+                    this.userData.balance = result.balance;
+                    this.userData.demo_balance = result.demo_balance;
+                    this.userData.main_balance = result.main_balance;
+                    
+                    this.updateUI();
+                    this.updateModeUI();
+                    
+                    this.tg.showPopup({
+                        title: this.demoMode ? "🔧 Тестовый режим" : "🌐 Реальный режим",
+                        message: this.demoMode ? 
+                            "Переключено на тестовые TON. Баланс: " + result.demo_balance + " TON" : 
+                            "Переключено на реальные TON. Баланс: " + result.main_balance + " TON",
+                        buttons: [{ type: "ok" }]
+                    });
+                    
+                    await this.loadTransactionHistory();
+                }
             }
         } catch (error) {
             console.error('Toggle mode error:', error);
+            this.tg.showPopup({
+                title: "❌ Ошибка",
+                message: "Не удалось переключить режим",
+                buttons: [{ type: "ok" }]
+            });
         }
     }
 
@@ -203,11 +216,13 @@ class TonCasinoApp {
     async loadAdminData() {
         try {
             const response = await fetch(`/api/admin/dashboard/${this.tg.initDataUnsafe.user.id}`);
-            const data = await response.json();
-            
-            document.getElementById('admin-bank-balance').textContent = data.bank_balance;
-            document.getElementById('admin-total-users').textContent = data.total_users;
-            document.getElementById('admin-total-transactions').textContent = data.total_transactions;
+            if (response.ok) {
+                const data = await response.json();
+                
+                document.getElementById('admin-bank-balance').textContent = data.bank_balance || 0;
+                document.getElementById('admin-total-users').textContent = data.total_users || 0;
+                document.getElementById('admin-total-transactions').textContent = data.total_transactions || 0;
+            }
         } catch (error) {
             console.error('Admin data error:', error);
             alert('Ошибка загрузки админ-панели');
@@ -223,7 +238,7 @@ class TonCasinoApp {
         }
 
         try {
-            const response = await fetch('/api/admin/withdraw-profit', {
+            const response = await fetch('/api/admin/withdraw', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -232,13 +247,15 @@ class TonCasinoApp {
                 })
             });
 
-            const result = await response.json();
-            
-            if (result.success) {
-                alert(`Успешно выведено ${amount} TON! Hash: ${result.hash}`);
-                await this.loadAdminData();
-            } else {
-                alert('Ошибка при выводе: ' + result.error);
+            if (response.ok) {
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`Успешно выведено ${amount} TON! Hash: ${result.hash}`);
+                    await this.loadAdminData();
+                } else {
+                    alert('Ошибка при выводе: ' + result.error);
+                }
             }
         } catch (error) {
             console.error('Withdraw profit error:', error);
@@ -255,7 +272,7 @@ class TonCasinoApp {
         }
 
         try {
-            const response = await fetch('/api/create-deposit', {
+            const response = await fetch('/api/deposit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -265,37 +282,39 @@ class TonCasinoApp {
                 })
             });
 
-            const result = await response.json();
-            
-            if (result.success) {
-                if (result.demo) {
-                    this.tg.showPopup({
-                        title: "✅ Демо-пополнение",
-                        message: `Демо-депозит ${amount} TON успешно зачислен!`,
-                        buttons: [{ type: "ok" }]
-                    });
-                    
-                    this.userData.balance = result.new_balance;
-                    if (this.demoMode) {
-                        this.userData.demo_balance = result.new_balance;
-                    }
-                    this.updateUI();
-                    await this.loadTransactionHistory();
-                } else {
-                    window.open(result.invoiceUrl, '_blank');
-                    
-                    this.tg.showPopup({
-                        title: "Оплата TON",
-                        message: `Откройте Crypto Bot для оплаты ${amount} TON`,
-                        buttons: [{ type: "ok" }]
-                    });
-                    
-                    this.checkDepositStatus(result.invoiceId);
-                }
+            if (response.ok) {
+                const result = await response.json();
                 
-                closeDepositModal();
-            } else {
-                alert('Ошибка при создании депозита: ' + result.error);
+                if (result.success) {
+                    if (result.demo) {
+                        this.tg.showPopup({
+                            title: "✅ Демо-пополнение",
+                            message: `Демо-депозит ${amount} TON успешно зачислен!`,
+                            buttons: [{ type: "ok" }]
+                        });
+                        
+                        this.userData.balance = result.new_balance;
+                        if (this.demoMode) {
+                            this.userData.demo_balance = result.new_balance;
+                        }
+                        this.updateUI();
+                        await this.loadTransactionHistory();
+                    } else {
+                        window.open(result.invoiceUrl, '_blank');
+                        
+                        this.tg.showPopup({
+                            title: "Оплата TON",
+                            message: `Откройте Crypto Bot для оплаты ${amount} TON`,
+                            buttons: [{ type: "ok" }]
+                        });
+                        
+                        this.checkDepositStatus(result.invoiceId);
+                    }
+                    
+                    closeDepositModal();
+                } else {
+                    alert('Ошибка при создании депозита: ' + result.error);
+                }
             }
         } catch (error) {
             console.error('Deposit error:', error);
@@ -306,25 +325,27 @@ class TonCasinoApp {
     async checkDepositStatus(invoiceId) {
         const checkInterval = setInterval(async () => {
             try {
-                const response = await fetch(`/api/invoice-status/${invoiceId}`);
-                const result = await response.json();
-                
-                if (result.status === 'paid') {
-                    clearInterval(checkInterval);
-                    this.tg.showPopup({
-                        title: "✅ Успешно",
-                        message: 'Депозит успешно зачислен!',
-                        buttons: [{ type: "ok" }]
-                    });
-                    await this.loadUserData();
-                    await this.loadTransactionHistory();
-                } else if (result.status === 'expired' || result.status === 'cancelled') {
-                    clearInterval(checkInterval);
-                    this.tg.showPopup({
-                        title: "❌ Ошибка",
-                        message: 'Платеж отменен или просрочен',
-                        buttons: [{ type: "ok" }]
-                    });
+                const response = await fetch(`/api/invoice/${invoiceId}`);
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    if (result.status === 'paid') {
+                        clearInterval(checkInterval);
+                        this.tg.showPopup({
+                            title: "✅ Успешно",
+                            message: 'Депозит успешно зачислен!',
+                            buttons: [{ type: "ok" }]
+                        });
+                        await this.loadUserData();
+                        await this.loadTransactionHistory();
+                    } else if (result.status === 'expired' || result.status === 'cancelled') {
+                        clearInterval(checkInterval);
+                        this.tg.showPopup({
+                            title: "❌ Ошибка",
+                            message: 'Платеж отменен или просрочен',
+                            buttons: [{ type: "ok" }]
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('Status check error:', error);
@@ -333,37 +354,39 @@ class TonCasinoApp {
     }
 
     async addDemoBalance() {
-    const targetTelegramId = prompt('ID пользователя для пополнения:');
-    const amount = parseFloat(prompt('Сумма для пополнения (тестовые TON):'));
-    
-    if (!targetTelegramId || !amount || amount < 1) {
-        alert('Введите корректные данные');
-        return;
-    }
-
-    try {
-        const response = await fetch('/api/admin/add-demo-balance', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                telegramId: this.tg.initDataUnsafe.user.id,
-                targetTelegramId: targetTelegramId,
-                amount: amount
-            })
-        });
-
-        const result = await response.json();
+        const targetTelegramId = prompt('ID пользователя для пополнения:');
+        const amount = parseFloat(prompt('Сумма для пополнения (тестовые TON):'));
         
-        if (result.success) {
-            alert(`Успешно добавлено ${amount} тестовых TON пользователю ${targetTelegramId}`);
-        } else {
-            alert('Ошибка: ' + result.error);
+        if (!targetTelegramId || !amount || amount < 1) {
+            alert('Введите корректные данные');
+            return;
         }
-    } catch (error) {
-        console.error('Add demo balance error:', error);
-        alert('Ошибка при пополнении баланса');
+
+        try {
+            const response = await fetch('/api/admin/add-balance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    telegramId: this.tg.initDataUnsafe.user.id,
+                    targetTelegramId: targetTelegramId,
+                    amount: amount
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`Успешно добавлено ${amount} тестовых TON пользователю ${targetTelegramId}`);
+                } else {
+                    alert('Ошибка: ' + result.error);
+                }
+            }
+        } catch (error) {
+            console.error('Add demo balance error:', error);
+            alert('Ошибка при пополнении баланса');
+        }
     }
-}
 
     async processWithdraw() {
         const amount = parseFloat(document.getElementById('withdraw-amount').value);
@@ -375,7 +398,7 @@ class TonCasinoApp {
         }
 
         try {
-            const response = await fetch('/api/create-withdraw', {
+            const response = await fetch('/api/withdraw', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -386,33 +409,35 @@ class TonCasinoApp {
                 })
             });
 
-            const result = await response.json();
-            
-            if (result.success) {
-                if (result.demo) {
-                    this.tg.showPopup({
-                        title: "✅ Демо-вывод",
-                        message: `Демо-вывод ${amount} TON успешно обработан!`,
-                        buttons: [{ type: "ok" }]
-                    });
-                    
-                    this.userData.balance = result.new_balance;
-                    if (this.demoMode) {
-                        this.userData.demo_balance = result.new_balance;
-                    }
-                    this.updateUI();
-                    await this.loadTransactionHistory();
-                } else {
-                    this.tg.showPopup({
-                        title: "⏳ Вывод средств",
-                        message: `Запрос на вывод ${amount} TON отправлен! Ожидайте обработки.`,
-                        buttons: [{ type: "ok" }]
-                    });
-                }
+            if (response.ok) {
+                const result = await response.json();
                 
-                closeWithdrawModal();
-            } else {
-                alert('Ошибка при выводе: ' + result.error);
+                if (result.success) {
+                    if (result.demo) {
+                        this.tg.showPopup({
+                            title: "✅ Демо-вывод",
+                            message: `Демо-вывод ${amount} TON успешно обработан!`,
+                            buttons: [{ type: "ok" }]
+                        });
+                        
+                        this.userData.balance = result.new_balance;
+                        if (this.demoMode) {
+                            this.userData.demo_balance = result.new_balance;
+                        }
+                        this.updateUI();
+                        await this.loadTransactionHistory();
+                    } else {
+                        this.tg.showPopup({
+                            title: "⏳ Вывод средств",
+                            message: `Запрос на вывод ${amount} TON отправлен! Ожидайте обработки.`,
+                            buttons: [{ type: "ok" }]
+                        });
+                    }
+                    
+                    closeWithdrawModal();
+                } else {
+                    alert('Ошибка при выводе: ' + result.error);
+                }
             }
         } catch (error) {
             console.error('Withdraw error:', error);
