@@ -460,76 +460,77 @@
         }
 
         async function placeBet() {
-            const betAmount = parseFloat(document.getElementById('betAmount').value);
-            
-            if (betAmount < 0.5 || betAmount > 50) {
-                alert('Ставка должна быть от 0.5 до 50 TON');
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/rocket/bet', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        telegramId: currentUser.id,
-                        betAmount: betAmount,
-                        demoMode: isDemoMode
-                    })
-                });
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    alert(error.error || 'Ошибка при размещении ставки');
-                    return;
-                }
-                
-                const result = await response.json();
-                if (result.success) {
-                    userBet = betAmount;
-                    userCashedOut = false;
-                    updateBettingUI();
-                    document.getElementById('userBet').textContent = betAmount.toFixed(2);
-                    document.getElementById('balance').textContent = result.current_balance.toFixed(2);
-                }
-            } catch (error) {
-                console.error('Error placing bet:', error);
-                alert('Ошибка при размещении ставки');
-            }
+    const betAmount = parseFloat(document.getElementById('betAmount').value);
+    
+    if (betAmount < 0.5 || betAmount > 50) {
+        alert('Ставка должна быть от 0.5 до 50 TON');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/rocket/bet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                telegramId: currentUser.id,
+                betAmount: betAmount,
+                demoMode: isDemoMode // ✅ Передаем режим
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            alert(error.error || 'Ошибка при размещении ставки');
+            return;
         }
+        
+        const result = await response.json();
+        if (result.success) {
+            userBet = betAmount;
+            userCashedOut = false;
+            updateBettingUI();
+            document.getElementById('userBet').textContent = betAmount.toFixed(2);
+            document.getElementById('balance').textContent = result.current_balance.toFixed(2); // ✅ Обновляем баланс
+        }
+    } catch (error) {
+        console.error('Error placing bet:', error);
+        alert('Ошибка при размещении ставки');
+    }
+}
+
 
         async function cashout() {
-            try {
-                const response = await fetch('/api/rocket/cashout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        telegramId: currentUser.id
-                    })
-                });
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    alert(error.error || 'Ошибка при выводе средств');
-                    return;
-                }
-                
-                const result = await response.json();
-                if (result.success) {
-                    userCashedOut = true;
-                    updateBettingUI();
-                    document.getElementById('balance').textContent = result.current_balance.toFixed(2);
-                    alert(`Вы успешно вывели ${result.win_amount.toFixed(2)} TON на ${result.multiplier.toFixed(2)}x!`);
-                }
-            } catch (error) {
-                console.error('Error cashing out:', error);
-                alert('Ошибка при выводе средств');
-            }
+    try {
+        const response = await fetch('/api/rocket/cashout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                telegramId: currentUser.id
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            alert(error.error || 'Ошибка при выводе средств');
+            return;
         }
+        
+        const result = await response.json();
+        if (result.success) {
+            userCashedOut = true;
+            updateBettingUI();
+            document.getElementById('balance').textContent = result.current_balance.toFixed(2); // ✅ Обновляем баланс
+            alert(`Вы успешно вывели ${result.win_amount.toFixed(2)} TON на ${result.multiplier.toFixed(2)}x!`);
+        }
+    } catch (error) {
+        console.error('Error cashing out:', error);
+        alert('Ошибка при выводе средств');
+    }
+}
 
         function updateBettingUI() {
             const betButton = document.getElementById('placeBetButton');
