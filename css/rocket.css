@@ -1,196 +1,286 @@
-.rocket-container {
-            padding: 15px;
-            max-width: 500px;
-            margin: 0 auto;
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        .game-header {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
         }
         
         .back-button {
-            background: #2d3436;
+            background: rgba(255, 255, 255, 0.1);
             border: none;
             color: white;
-            padding: 8px 15px;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        
-        .balance-display {
-            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
             padding: 10px 15px;
             border-radius: 10px;
-            color: white;
-            text-align: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .balance-container {
+            text-align: right;
+        }
+        
+        .balance-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .balance-amount {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ff88;
         }
         
         .demo-badge {
-            background: #e17055;
-            padding: 2px 8px;
-            border-radius: 5px;
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
             font-size: 10px;
-            margin-left: 5px;
+            margin-top: 5px;
+            display: inline-block;
         }
         
-        .game-canvas {
+        .rocket-canvas {
             position: relative;
-            height: 300px;
-            background: linear-gradient(180deg, #1e272e, #2d3436);
-            border-radius: 15px;
-            margin-bottom: 15px;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            margin-bottom: 20px;
             overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .trajectory-line {
+            position: absolute;
+            left: 50%;
+            top: 80px;
+            bottom: 80px;
+            width: 2px;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent);
+            transform: translateX(-50%);
+        }
+        
+        .trajectory-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .trajectory-dot::after {
+            content: attr(data-multiplier) 'x';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         .rocket {
             position: absolute;
-            bottom: 50px;
             left: 50%;
+            bottom: 80px;
+            font-size: 32px;
             transform: translateX(-50%);
-            width: 40px;
-            height: 60px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 60"><path d="M20 0 L40 40 L20 60 L0 40 Z" fill="%23dfe6e9"/><circle cx="20" cy="20" r="5" fill="%23ff7675"/><circle cx="20" cy="40" r="5" fill="%2374b9ff"/></svg>');
-            background-size: contain;
-            background-repeat: no-repeat;
-            transition: bottom 0.5s linear;
             z-index: 10;
+            animation: rocketFloat 2s ease-in-out infinite;
         }
         
-        .rocket-trail {
+        .trail {
             position: absolute;
-            bottom: 50px;
+            left: 50%;
+            bottom: 80px;
+            width: 4px;
+            background: linear-gradient(to top, #ff6b6b, #ff8e53, transparent);
+            height: 0;
+            transform: translateX(-50%);
+            z-index: 5;
+        }
+        
+        .multiplier-display {
+            position: absolute;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 4px;
-            background: linear-gradient(to top, #ff7675, #74b9ff, transparent);
-            height: 0px;
-            z-index: 5;
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
         }
         
         .explosion {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
             width: 100px;
             height: 100px;
-            background: radial-gradient(circle, #ff7675, #e17055, transparent 70%);
+            background: radial-gradient(circle, #ff6b6b 0%, #ff8e53 30%, transparent 70%);
             border-radius: 50%;
-            animation: explode 0.5s ease-out;
-            z-index: 20;
-        }
-        
-        @keyframes explode {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+            transform: translate(-50%, -50%);
+            animation: explosion 0.5s ease-out forwards;
         }
         
         .game-status {
-            background: #2d3436;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin-bottom: 20px;
             text-align: center;
         }
         
-        .status-waiting { background: #2d3436; }
-        .status-counting { background: #0984e3; }
-        .status-flying { background: #00b894; }
-        .status-crashed { background: #d63031; }
+        .status-waiting { background: rgba(255, 255, 255, 0.05); }
+        .status-counting { background: rgba(255, 193, 7, 0.1); }
+        .status-flying { background: rgba(0, 255, 136, 0.1); }
+        .status-crashed { background: rgba(255, 107, 107, 0.1); }
         
-        .multiplier-display {
-            font-size: 24px;
-            font-weight: bold;
-            color: white;
-        }
-        
-        .betting-panel {
-            background: #2d3436;
-            padding: 15px;
+        .betting-controls {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
             border-radius: 15px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         .bet-input {
             width: 100%;
-            padding: 12px;
-            background: #636e72;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
             border: none;
             border-radius: 10px;
             color: white;
-            margin-bottom: 10px;
-            text-align: center;
             font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .bet-input:focus {
+            outline: 2px solid #00ff88;
         }
         
         .bet-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         
         .bet-button {
-            padding: 12px;
+            padding: 15px;
             border: none;
             border-radius: 10px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
         }
         
         .place-bet {
-            background: #00b894;
-            color: white;
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000;
         }
         
         .place-bet:disabled {
-            background: #636e72;
-            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
         }
         
         .cashout {
-            background: #fd79a8;
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
             color: white;
         }
         
         .cashout:disabled {
-            background: #636e72;
-            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
         }
         
         .user-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .stat-item {
-            background: #636e72;
-            padding: 8px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .auto-settings {
-            background: #2d3436;
-            padding: 15px;
-            border-radius: 15px;
             margin-bottom: 15px;
         }
         
-        .auto-setting-item {
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .auto-settings {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .auto-setting {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
-            padding: 8px;
-            background: #636e72;
-            border-radius: 8px;
+        }
+        
+        .auto-setting:last-child {
+            margin-bottom: 0;
+        }
+        
+        .auto-setting label {
+            font-size: 14px;
+        }
+        
+        .auto-setting input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            text-align: center;
         }
         
         .toggle-switch {
@@ -213,7 +303,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ccc;
+            background-color: rgba(255, 255, 255, 0.2);
             transition: .4s;
             border-radius: 24px;
         }
@@ -221,75 +311,150 @@
         .toggle-slider:before {
             position: absolute;
             content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
             background-color: white;
             transition: .4s;
             border-radius: 50%;
         }
         
         input:checked + .toggle-slider {
-            background-color: #00b894;
+            background-color: #00ff88;
         }
         
         input:checked + .toggle-slider:before {
             transform: translateX(26px);
         }
         
-        .auto-input {
-            width: 60px;
-            padding: 5px;
-            background: #2d3436;
-            border: 1px solid #636e72;
-            border-radius: 5px;
-            color: white;
-            text-align: center;
-        }
-        
         .players-panel {
-            background: #2d3436;
+            background: rgba(255, 255, 255, 0.05);
             padding: 15px;
             border-radius: 15px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
-        .players-header {
+        .panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .panel-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .players-list {
+            max-height: 200px;
+            overflow-y: auto;
         }
         
         .player-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid #636e72;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .player-item:last-child {
             border-bottom: none;
         }
         
+        .player-name {
+            font-size: 14px;
+        }
+        
+        .player-bet {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
         .history-panel {
-            background: #2d3436;
+            background: rgba(255, 255, 255, 0.05);
             padding: 15px;
             border-radius: 15px;
         }
         
         .history-items {
             display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 10px 0;
         }
         
         .history-item {
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: center;
         }
         
-        .history-win { background: #00b894; }
-        .history-loss { background: #d63031; }
+        .history-win {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+        
+        .history-loss {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+        
+        @keyframes rocketFloat {
+            0%, 100% { transform: translateX(-50%) translateY(0px); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+        
+        @keyframes rocketFly {
+            0%, 100% { transform: translateX(-50%) translateY(0px) rotate(0deg); }
+            25% { transform: translateX(-50%) translateY(-2px) rotate(-1deg); }
+            75% { transform: translateX(-50%) translateY(-2px) rotate(1deg); }
+        }
+        
+        @keyframes trailGlow {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes explosion {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+        }
+        
+        @keyframes particleMove {
+            to {
+                transform: translate(
+                    var(--translate-x, 0), 
+                    var(--translate-y, 0)
+                );
+                opacity: 0;
+            }
+        }
+        
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 10px;
+            }
+            
+            .rocket-canvas {
+                height: 300px;
+            }
+            
+            .bet-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .user-stats {
+                grid-template-columns: 1fr;
+            }
+        }

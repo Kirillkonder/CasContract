@@ -2,90 +2,102 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rocket Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocket Game - Crypto Rocket</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/rocket.css">
 </head>
 <body>
     <div class="container">
-        <button class="back-button" onclick="goBack()">← Назад</button>
-        
-        <div class="rocket-header">
-            <h1>🚀 Rocket Game</h1>
-            <div class="balance">
-                Баланс: <span id="balance">0</span> TON
-                <span id="demo-badge" class="demo-badge">TESTNET</span>
+        <div class="header">
+            <button class="back-button" onclick="goBack()">← Назад</button>
+            <div class="balance-container">
+                <div class="balance-label">Баланс</div>
+                <div class="balance-amount" id="balance">0.00 TON</div>
+                <div class="demo-badge" id="demo-badge">TESTNET</div>
             </div>
         </div>
-
-        <div class="game-status" id="gameStatus">
-            <span id="statusText">Ожидание начала игры...</span>
-            <span id="countdown"></span>
-        </div>
-
+        
         <div class="rocket-canvas" id="rocketCanvas">
+            <div class="trajectory-line"></div>
             <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
             <div class="rocket" id="rocket">🚀</div>
             <div class="trail" id="rocketTrail"></div>
         </div>
-
-        <div class="betting-panel">
-            <div class="bet-controls">
-                <input type="number" class="bet-input" id="betAmount" min="0.5" max="50" step="0.1" value="1.0" placeholder="Сумма ставки">
-                <button class="bet-button" id="placeBetButton" onclick="placeBet()">Поставить</button>
+        
+        <div class="game-status status-waiting" id="gameStatus">
+            <div id="statusText">Ожидание начала игры...</div>
+            <div id="countdown"></div>
+        </div>
+        
+        <div class="betting-controls">
+            <input type="number" id="betAmount" class="bet-input" placeholder="Сумма ставки (0.5-50 TON)" min="0.5" max="50" step="0.1" value="1.0">
+            
+            <div class="bet-buttons">
+                <button id="placeBetButton" class="bet-button place-bet" onclick="placeBet()">Поставить</button>
+                <button id="cashoutButton" class="bet-button cashout" onclick="cashout()">Забрать</button>
             </div>
             
-            <button class="cashout-button" id="cashoutButton" onclick="cashout()" disabled>Забрать выигрыш</button>
-            
-            <div style="margin-top: 15px; text-align: center;">
-                <div>Ваша ставка: <span id="userBet">0</span> TON</div>
-                <div>Потенциальный выигрыш: <span id="potentialWin">0</span> TON</div>
+            <div class="user-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Ваша ставка</div>
+                    <div class="stat-value" id="userBet">0.00</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Потенциальный выигрыш</div>
+                    <div class="stat-value" id="potentialWin">0.00</div>
+                </div>
             </div>
         </div>
-
+        
         <div class="auto-settings">
-            <h3>Авто-настройки</h3>
-            
-            <div class="auto-setting-item">
-                <span>Автоставка</span>
+            <div class="auto-setting">
+                <label>Автоставка</label>
                 <label class="toggle-switch">
                     <input type="checkbox" id="autoBetToggle" onchange="toggleAutoBet()">
                     <span class="toggle-slider"></span>
                 </label>
             </div>
             
-            <div class="auto-setting-item">
-                <span>Сумма автоставки (TON)</span>
-                <input type="number" class="auto-input" id="autoBetAmount" value="1.0" min="0.5" max="50" step="0.1" onchange="updateAutoBetAmount()">
+            <div class="auto-setting">
+                <label>Сумма автоставки</label>
+                <input type="number" id="autoBetAmount" min="0.5" max="50" step="0.1" value="1.0" onchange="updateAutoBetAmount()">
             </div>
             
-            <div class="auto-setting-item">
-                <span>Автовывод</span>
+            <div class="auto-setting">
+                <label>Автовывод</label>
                 <label class="toggle-switch">
                     <input type="checkbox" id="autoCashoutToggle" onchange="toggleAutoCashout()">
                     <span class="toggle-slider"></span>
                 </label>
             </div>
             
-            <div class="auto-setting-item">
-                <span>Множитель автовывода</span>
-                <input type="number" class="auto-input" id="autoCashoutMultiplier" value="2.0" min="1.1" max="100" step="0.1" onchange="updateAutoCashoutMultiplier()">
+            <div class="auto-setting">
+                <label>Множитель автовывода</label>
+                <input type="number" id="autoCashoutMultiplier" min="1.1" max="100" step="0.1" value="2.0" onchange="updateAutoCashoutMultiplier()">
             </div>
         </div>
-
-        <div class="players-list">
-            <h3>Игроки в этом раунде (<span id="playersCount">0</span>)</h3>
-            <div id="playersList"></div>
+        
+        <div class="players-panel">
+            <div class="panel-header">
+                <div class="panel-title">Игроки (<span id="playersCount">0</span>)</div>
+            </div>
+            <div class="players-list" id="playersList">
+                <!-- Список игроков будет добавляться динамически -->
+            </div>
         </div>
-
-        <div class="history-container">
-            <h3>История игр</h3>
-            <div class="history-items" id="historyItems"></div>
+        
+        <div class="history-panel">
+            <div class="panel-header">
+                <div class="panel-title">История</div>
+            </div>
+            <div class="history-items" id="historyItems">
+                <!-- История будет добавляться динамически -->
+            </div>
         </div>
     </div>
 
-    <script src="/js/rocket.js"></script>
+    <script src="js/rocket.js"></script>
 </body>
 </html>
