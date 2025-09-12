@@ -41,6 +41,7 @@ class TonCasinoApp {
         }
     }
 
+
     showAdminButton() {
         const adminBtn = document.getElementById('admin-button');
         if (adminBtn) {
@@ -161,7 +162,7 @@ class TonCasinoApp {
         }
     }
 
-    async  toggleMode() {
+    async toggleMode() {
     try {
         const response = await fetch('/api/user/toggle-mode', {
             method: 'POST',
@@ -199,7 +200,6 @@ class TonCasinoApp {
         });
     }
 }
-
     async openAdminPanel() {
         document.getElementById('admin-modal').style.display = 'block';
         await this.loadAdminData();
@@ -210,20 +210,21 @@ class TonCasinoApp {
     }
 
     async loadAdminData() {
-        try {
-            const response = await fetch(`/api/admin/dashboard/${this.tg.initDataUnsafe.user.id}`);
-            if (response.ok) {
-                const data = await response.json();
-                
-                document.getElementById('admin-bank-balance').textContent = data.bank_balance || 0;
-                document.getElementById('admin-total-users').textContent = data.total_users || 0;
-                document.getElementById('admin-total-transactions').textContent = data.total_transactions || 0;
-            }
-        } catch (error) {
-            console.error('Admin data error:', error);
-            alert('Ошибка загрузки админ-панели');
+    try {
+        const response = await fetch(`/api/admin/dashboard/${this.tg.initDataUnsafe.user.id}`);
+        if (response.ok) {
+            const data = await response.json();
+            
+            document.getElementById('admin-bank-balance').textContent = data.bank_balance || 0;
+            document.getElementById('admin-total-users').textContent = data.total_users || 0;
+            document.getElementById('admin-total-transactions').textContent = data.total_transactions || 0;
         }
+    } catch (error) {
+        console.error('Admin data error:', error);
+        alert('Ошибка загрузки админ-панели');
     }
+}
+
 
     async withdrawProfit() {
         const amount = parseFloat(prompt('Сколько TON вывести?'));

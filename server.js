@@ -1130,7 +1130,6 @@ app.post('/api/user/toggle-mode', async (req, res) => {
         }
 
         const newDemoMode = !user.demo_mode;
-        const currentBalance = newDemoMode ? user.demo_balance : user.main_balance;
         
         users.update({
             ...user,
@@ -1140,9 +1139,7 @@ app.post('/api/user/toggle-mode', async (req, res) => {
         res.json({ 
             success: true, 
             demo_mode: newDemoMode,
-            balance: currentBalance,
-            demo_balance: user.demo_balance,
-            main_balance: user.main_balance
+            balance: newDemoMode ? user.demo_balance : user.main_balance
         });
     } catch (error) {
         console.error('Toggle mode error:', error);
@@ -1434,6 +1431,30 @@ app.post('/api/admin/withdraw', async (req, res) => {
     } catch (error) {
         console.error('Withdraw profit error:', error);
         res.status(500).json({ error: 'Withdrawal error' });
+    }
+});
+
+
+app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
+    const telegramId = parseInt(req.params.telegramId);
+
+    if (telegramId !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
+        return res.status(403).json({ error: 'Access denied' });
+    }
+
+    try {
+        const bank = getCasinoBank();
+        const totalUsers = users.count();
+        const totalTransactions = transactions.count();
+
+        res.json({
+            bank_balance: bank ? bank.total_balance : 0,
+            total_users: totalUsers,
+            total_transactions: totalTransactions
+        });
+    } catch (error) {
+        console.error('Admin dashboard error:', error);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
