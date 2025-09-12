@@ -45,7 +45,7 @@
     transform: translateX(-50%);
     width: 40px;
     height: 80px;
-    background: url('https://raw.githubusercontent.com/Tiyo98/tiyo/main/Rocket.png') no-repeat center center;
+    background: url('Rocket.png') no-repeat center center;
     background-size: contain;
     transition: bottom 0.1s linear;
     z-index: 10;
@@ -207,7 +207,7 @@
     transform: translate(-50%, -50%);
     width: 200px;
     height: 200px;
-    background: url('https://raw.githubusercontent.com/Tiyo98/tiyo/main/Fire.png') no-repeat center center;
+    background: url('Fire.png') no-repeat center center;
     background-size: contain;
     animation: explode 1s ease-out forwards;
     z-index: 15;
