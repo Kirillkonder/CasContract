@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getCollections, cryptoPayRequest } = require('../utils/db');
+const { getCollections, cryptoPayRequest, updateCasinoBank } = require('../utils/db');
 
 router.post('/create-invoice', async (req, res) => {
     const { telegramId, amount, demoMode } = req.body;
@@ -35,13 +35,23 @@ router.post('/create-invoice', async (req, res) => {
             });
         }
 
+        // Для реального режима создаем инвойс через Crypto Pay
         const invoice = await cryptoPayRequest('createInvoice', {
             asset: 'TON',
-            amount: amount,
-            description: 'Casino deposit'
+            amount: amount.toString(),
+            description: `Deposit for user ${telegramId}`,
+            hidden_message: `Deposit ${amount} TON`,
+            payload: JSON.stringify({
+                telegram_id: telegramId,
+                demo_mode: demoMode,
+                amount: amount
+            }),
+            paid_btn_name: 'callback',
+            paid_btn_url: 'https://t.me/your_bot',
+            allow_comments: false
         }, demoMode);
 
-        if (invoice.ok) {
+        if (invoice.ok && invoice.result) {
             const transaction = transactions.insert({
                 user_id: user.$loki,
                 amount: amount,
@@ -58,7 +68,7 @@ router.post('/create-invoice', async (req, res) => {
                 invoice_id: invoice.result.invoice_id
             });
         } else {
-            res.json({ success: false, error: invoice.error });
+            res.status(500).json({ error: 'Failed to create invoice' });
         }
     } catch (error) {
         console.error('Create invoice error:', error);
@@ -68,7 +78,7 @@ router.post('/create-invoice', async (req, res) => {
 
 router.post('/withdraw', async (req, res) => {
     const { telegramId, amount, address, demoMode } = req.body;
-    const { users, transactions, updateCasinoBank } = getCollections();
+    const { users, transactions } = getCollections();
 
     try {
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
@@ -85,14 +95,13 @@ router.post('/withdraw', async (req, res) => {
         }
 
         const transfer = await cryptoPayRequest('transfer', {
+            user_id: telegramId,
             asset: 'TON',
-            amount: amount,
-            spend_id: `withdraw_${telegramId}_${Date.now()}`,
-            comment: 'Casino withdrawal',
-            user_id: telegramId
-        }, demoMode);
+            amount: amount.toString(),
+            spend_id: `withdrawal_${Date.now()}_${telegramId}`
+        }, false);
 
-        if (transfer.ok) {
+        if (transfer.ok && transfer.result) {
             // Обновляем баланс пользователя
             users.update({
                 ...user,
@@ -109,12 +118,18 @@ router.post('/withdraw', async (req, res) => {
                 status: 'completed',
                 demo_mode: demoMode,
                 address: address,
+                hash: transfer.result.hash,
                 created_at: new Date()
             });
 
-            res.json({ success: true });
+            res.json({
+                success: true,
+                message: 'Withdrawal completed',
+                hash: transfer.result.hash,
+                new_balance: user.main_balance - amount
+            });
         } else {
-            res.json({ success: false, error: transfer.error });
+            res.status(500).json({ error: 'Withdrawal failed' });
         }
     } catch (error) {
         console.error('Withdraw error:', error);

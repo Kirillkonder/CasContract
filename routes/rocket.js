@@ -4,12 +4,13 @@ const {
     getCollections, 
     getRocketGame, 
     setRocketGame, 
-    broadcastRocketUpdate 
+    broadcastRocketUpdate,
+    updateCasinoBank
 } = require('../utils/db');
 
-router.post('/place-bet', async (req, res) => {
-    const { telegramId, betAmount, demoMode } = req.body;
-    const { users, transactions } = getCollections();
+router.post('/bet', async (req, res) => {
+    const { telegramId, betAmount, autoCashout, demoMode } = req.body;
+    const { users, rocketBets } = getCollections();
     const rocketGame = getRocketGame();
 
     try {
@@ -18,66 +19,64 @@ router.post('/place-bet', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        if (rocketGame.status !== 'counting') {
-            return res.json({ success: false, error: 'Betting period closed' });
-        }
-
-        const balanceField = demoMode ? 'demo_balance' : 'main_balance';
-        if (user[balanceField] < betAmount) {
+        const balance = demoMode ? user.demo_balance : user.main_balance;
+        if (balance < betAmount) {
             return res.json({ success: false, error: 'Insufficient balance' });
         }
 
-        // Обновляем баланс
-        users.update({
-            ...user,
-            [balanceField]: user[balanceField] - betAmount
-        });
+        if (rocketGame.status !== 'waiting' && rocketGame.status !== 'counting') {
+            return res.json({ success: false, error: 'Betting is closed' });
+        }
 
-        // Добавляем игрока в текущую игру
-        const existingPlayerIndex = rocketGame.players.findIndex(p => 
-            p.userId === telegramId && p.demoMode === demoMode
+        // Проверяем, не поставил ли уже пользователь
+        const existingBet = rocketGame.players.find(p => 
+            !p.isBot && p.userId === telegramId.toString()
         );
 
-        if (existingPlayerIndex !== -1) {
-            rocketGame.players[existingPlayerIndex].betAmount += betAmount;
-        } else {
-            rocketGame.players.push({
-                userId: telegramId,
-                name: `User_${telegramId}`,
-                betAmount: betAmount,
-                demoMode: demoMode,
-                cashedOut: false,
-                cashoutMultiplier: null,
-                winAmount: 0
-            });
+        if (existingBet) {
+            return res.json({ success: false, error: 'You already placed a bet' });
         }
+
+        // Обновляем баланс пользователя
+        if (demoMode) {
+            users.update({
+                ...user,
+                demo_balance: user.demo_balance - betAmount
+            });
+        } else {
+            users.update({
+                ...user,
+                main_balance: user.main_balance - betAmount
+            });
+            updateCasinoBank(betAmount);
+        }
+
+        // Добавляем игрока в игру
+        rocketGame.players.push({
+            userId: telegramId.toString(),
+            name: user.name || `User${telegramId}`,
+            betAmount: betAmount,
+            autoCashout: autoCashout,
+            isBot: false,
+            demoMode: demoMode,
+            cashedOut: false,
+            cashoutMultiplier: 1.00,
+            winAmount: 0
+        });
 
         setRocketGame(rocketGame);
         broadcastRocketUpdate();
 
-        // Создаем транзакцию ставки
-        transactions.insert({
-            user_id: user.$loki,
-            amount: -betAmount,
-            type: 'rocket_bet',
-            status: 'completed',
-            demo_mode: demoMode,
-            created_at: new Date()
-        });
-
-        res.json({
-            success: true,
-            current_balance: user[balanceField] - betAmount
-        });
+        res.json({ success: true, message: 'Bet placed successfully' });
     } catch (error) {
-        console.error('Place bet error:', error);
+        console.error('Rocket bet error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
 router.post('/cashout', async (req, res) => {
-    const { telegramId, demoMode } = req.body;
-    const { users, transactions } = getCollections();
+    const { telegramId } = req.body;
+    const { users } = getCollections();
     const rocketGame = getRocketGame();
 
     try {
@@ -86,64 +85,53 @@ router.post('/cashout', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        if (rocketGame.status !== 'flying') {
-            return res.json({ success: false, error: 'Cannot cashout now' });
-        }
-
         const player = rocketGame.players.find(p => 
-            p.userId === telegramId && p.demoMode === demoMode && !p.cashedOut
+            !p.isBot && p.userId === telegramId.toString() && !p.cashedOut
         );
 
         if (!player) {
             return res.json({ success: false, error: 'No active bet found' });
         }
 
+        if (rocketGame.status !== 'flying') {
+            return res.json({ success: false, error: 'Cannot cash out now' });
+        }
+
         player.cashedOut = true;
         player.cashoutMultiplier = rocketGame.multiplier;
         player.winAmount = player.betAmount * rocketGame.multiplier;
 
-        const balanceField = demoMode ? 'demo_balance' : 'main_balance';
-        
-        // Обновляем баланс
-        users.update({
-            ...user,
-            [balanceField]: user[balanceField] + player.winAmount
-        });
+        // Начисляем выигрыш
+        if (player.demoMode) {
+            users.update({
+                ...user,
+                demo_balance: user.demo_balance + player.winAmount
+            });
+        } else {
+            users.update({
+                ...user,
+                main_balance: user.main_balance + player.winAmount
+            });
+            updateCasinoBank(-player.winAmount);
+        }
 
         setRocketGame(rocketGame);
         broadcastRocketUpdate();
 
-        // Создаем транзакцию выигрыша
-        transactions.insert({
-            user_id: user.$loki,
-            amount: player.winAmount,
-            type: 'rocket_win',
-            status: 'completed',
-            demo_mode: demoMode,
-            created_at: new Date()
-        });
-
-        res.json({
-            success: true,
+        res.json({ 
+            success: true, 
             multiplier: rocketGame.multiplier,
-            win_amount: player.winAmount,
-            current_balance: user[balanceField] + player.winAmount
+            winAmount: player.winAmount
         });
     } catch (error) {
-        console.error('Cashout error:', error);
+        console.error('Rocket cashout error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
-router.get('/game-state', async (req, res) => {
+router.get('/state', (req, res) => {
     const rocketGame = getRocketGame();
     res.json(rocketGame);
-});
-
-router.get('/history', async (req, res) => {
-    const { rocketGames } = getCollections();
-    const history = rocketGames.chain().simplesort('created_at', true).limit(20).data();
-    res.json(history);
 });
 
 module.exports = router;

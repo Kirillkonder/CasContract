@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const cron = require('node-cron');
 const WebSocket = require('ws');
 
-// Заменить импорты в server.js
+// Импортируем утилиты
 const {
   initDatabase,
   getCollections,
@@ -20,7 +20,8 @@ const {
   calculateMultiplier,
   generateMinesGame,
   updateCasinoBank,
-  getCasinoBank
+  getCasinoBank,
+  logAdminAction
 } = require('./utils/db');
 
 const app = express();
@@ -39,34 +40,11 @@ const rocketRoutes = require('./routes/rocket');
 const paymentRoutes = require('./routes/payment');
 
 // Использование роутов
-app.use('/api', require('./routes'));
-
-// Добавить этот маршрут после других роутов
-app.post('/api/user/toggle-mode', async (req, res) => {
-    const { telegramId } = req.body;
-    const { users } = getCollections();
-
-    try {
-        const user = users.findOne({ telegram_id: parseInt(telegramId) });
-        
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        users.update({
-            ...user,
-            demo_mode: !user.demo_mode
-        });
-
-        res.json({ 
-            success: true, 
-            demo_mode: !user.demo_mode 
-        });
-    } catch (error) {
-        console.error('Toggle mode error:', error);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
+app.use('/api/admin', adminRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/mines', minesRoutes);
+app.use('/api/rocket', rocketRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // WebSocket сервер для ракетки
 const server = app.listen(PORT, () => {
@@ -153,7 +131,7 @@ function startRocketFlight() {
 }
 
 function processRocketGameEnd() {
-    const { rocketGames, rocketBets, users, transactions, updateCasinoBank } = getCollections();
+    const { rocketGames, rocketBets, users, transactions } = getCollections();
     const rocketGame = getRocketGame();
     
     const gameRecord = rocketGames.insert({
@@ -168,9 +146,9 @@ function processRocketGameEnd() {
 
     // Обрабатываем выплаты для реальных игроков
     rocketGame.players.forEach(player => {
-        if (!player.isBot) {
+        if (!player.isBot && player.cashedOut) {
             const user = users.findOne({ telegram_id: parseInt(player.userId) });
-            if (user && player.cashedOut) {
+            if (user) {
                 const winAmount = player.betAmount * player.cashoutMultiplier;
                 
                 if (player.demoMode) {
@@ -253,7 +231,7 @@ wss.on('connection', function connection(ws) {
 // Крон задача для проверки инвойсов
 cron.schedule('* * * * *', async () => {
     try {
-        const { transactions, users, updateCasinoBank } = getCollections();
+        const { transactions, users } = getCollections();
 
         const pendingTransactions = transactions.find({
             status: 'pending',
