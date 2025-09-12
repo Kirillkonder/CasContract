@@ -11,6 +11,16 @@ const WebSocket = require('ws');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const ROCKET_CONFIG = {
+    MIN_BET: 0.5,
+    MAX_BET: 50,
+    BET_TIME: 15000, // 15 секунд на ставки
+    MAX_MULTIPLIER: 100,
+    CRASH_PROBABILITY: 0.05, // Вероятность краха на каждом шаге
+    SPEED_INCREASE: 0.1 // Увеличение скорости с каждым шагом
+};
+
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
@@ -221,18 +231,18 @@ function calculateMultiplier(openedCells, displayedMines) {
 
 // Rocket Game Functions
 function generateCrashPoint() {
-  const random = Math.random();
-  
-  if (random < 0.7) {
-    // 70% chance: 1x - 4x
-    return 1 + Math.random() * 3;
-  } else if (random < 0.9) {
-    // 20% chance: 5x - 20x
-    return 5 + Math.random() * 15;
-  } else {
-    // 10% chance: 21x - 100x
-    return 21 + Math.random() * 79;
-  }
+    const random = Math.random();
+    
+    if (random < 0.7) {
+        // 70% chance: 1x - 4x
+        return 1 + Math.random() * 3;
+    } else if (random < 0.9) {
+        // 20% chance: 5x - 20x
+        return 5 + Math.random() * 15;
+    } else {
+        // 10% chance: 21x - MAX_MULTIPLIER
+        return 21 + Math.random() * (ROCKET_CONFIG.MAX_MULTIPLIER - 21);
+    }
 }
 
 function startRocketGame() {
@@ -241,152 +251,169 @@ function startRocketGame() {
     rocketGame.status = 'counting';
     rocketGame.multiplier = 1.00;
     rocketGame.crashPoint = generateCrashPoint();
-    rocketGame.startTime = Date.now(); // Записываем время начала
-    rocketGame.endBetTime = Date.now() + 10000; // Время окончания ставок
+    rocketGame.startTime = Date.now();
+    rocketGame.endBetTime = Date.now() + ROCKET_CONFIG.BET_TIME; // Используем конфиг
     rocketGame.players = [];
 
-  // Добавляем ставки ботов
-  rocketBots.forEach(bot => {
-    const betAmount = bot.minBet + Math.random() * (bot.maxBet - bot.minBet);
-    const autoCashout = bot.risk === 'low' ? 2 + Math.random() * 3 : 
-                       bot.risk === 'medium' ? 5 + Math.random() * 10 : 
-                       10 + Math.random() * 30;
-    
-    rocketGame.players.push({
-      name: bot.name,
-      betAmount: parseFloat(betAmount.toFixed(2)),
-      autoCashout: parseFloat(autoCashout.toFixed(2)),
-      isBot: true,
-      cashedOut: false,
-      winAmount: 0
+    // Добавляем ставки ботов с проверкой лимитов
+    rocketBots.forEach(bot => {
+        const betAmount = Math.max(ROCKET_CONFIG.MIN_BET, 
+            Math.min(ROCKET_CONFIG.MAX_BET, 
+            bot.minBet + Math.random() * (bot.maxBet - bot.minBet)));
+        
+        const autoCashout = bot.risk === 'low' ? 2 + Math.random() * 3 : 
+                           bot.risk === 'medium' ? 5 + Math.random() * 10 : 
+                           10 + Math.random() * 30;
+        
+        rocketGame.players.push({
+            name: bot.name,
+            betAmount: parseFloat(betAmount.toFixed(2)),
+            autoCashout: parseFloat(autoCashout.toFixed(2)),
+            isBot: true,
+            cashedOut: false,
+            winAmount: 0
+        });
     });
-  });
 
-  broadcastRocketUpdate();
-
-  // 10 секунд на ставки
-  setTimeout(() => {
-    rocketGame.status = 'flying';
     broadcastRocketUpdate();
-    startRocketFlight();
-  }, 10000);
+
+    // Время на ставки из конфига
+    setTimeout(() => {
+        rocketGame.status = 'flying';
+        broadcastRocketUpdate();
+        startRocketFlight();
+    }, ROCKET_CONFIG.BET_TIME);
 }
 
-// server.js - исправленная функция startRocketFlight
+
+// server.js - новая функция startRocketFlight с использованием ROCKET_CONFIG
 function startRocketFlight() {
-  const startTime = Date.now();
-  let baseSpeed = 0.1; // Базовая скорость
-  let acceleration = 0.05; // Ускорение
-  
-  const flightInterval = setInterval(() => {
-    if (rocketGame.status !== 'flying') {
-      clearInterval(flightInterval);
-      return;
-    }
-
-    const elapsed = (Date.now() - startTime) / 1000;
+    const startTime = Date.now();
+    let currentSpeed = 100; // Начальная скорость (мс)
     
-    // Экспоненциальное увеличение множителя с ускорением
-    // Чем больше времени прошло, тем быстрее растет множитель
-    rocketGame.multiplier = 1.00 + (elapsed * baseSpeed * Math.exp(elapsed * acceleration));
+    const flightInterval = setInterval(() => {
+        if (rocketGame.status !== 'flying') {
+            clearInterval(flightInterval);
+            return;
+        }
 
-    // Проверяем автоматический вывод у ботов
-    rocketGame.players.forEach(player => {
-      if (player.isBot && !player.cashedOut && rocketGame.multiplier >= player.autoCashout) {
-        player.cashedOut = true;
-        player.winAmount = player.betAmount * rocketGame.multiplier;
-      }
-    });
+        const elapsed = (Date.now() - startTime) / 1000;
+        
+        // Экспоненциальное увеличение множителя с ускорением
+        rocketGame.multiplier = 1.00 + (elapsed * 0.1 * Math.exp(elapsed * 0.05));
+        
+        // Увеличиваем скорость (уменьшаем интервал) используя конфиг
+        currentSpeed = Math.max(10, currentSpeed - ROCKET_CONFIG.SPEED_INCREASE);
 
-    // Проверяем, достигли ли точки краша
-    if (rocketGame.multiplier >= rocketGame.crashPoint) {
-      rocketGame.status = 'crashed';
-      clearInterval(flightInterval);
-      processRocketGameEnd();
-    }
+        // Проверяем автоматический вывод у ботов
+        rocketGame.players.forEach(player => {
+            if (player.isBot && !player.cashedOut && rocketGame.multiplier >= player.autoCashout) {
+                player.cashedOut = true;
+                player.winAmount = player.betAmount * rocketGame.multiplier;
+            }
+        });
 
-    broadcastRocketUpdate();
-  }, 100); // Обновляем каждые 100ms
+        // Проверяем крах на основе вероятности из конфига
+        const crashChance = Math.random();
+        if (crashChance < ROCKET_CONFIG.CRASH_PROBABILITY * (rocketGame.multiplier / 10)) {
+            rocketGame.status = 'crashed';
+            rocketGame.crashPoint = rocketGame.multiplier;
+            clearInterval(flightInterval);
+            processRocketGameEnd();
+            return;
+        }
+
+        // Максимальный множитель из конфига
+        if (rocketGame.multiplier >= ROCKET_CONFIG.MAX_MULTIPLIER) {
+            rocketGame.status = 'crashed';
+            rocketGame.crashPoint = rocketGame.multiplier;
+            clearInterval(flightInterval);
+            processRocketGameEnd();
+            return;
+        }
+
+        broadcastRocketUpdate();
+    }, currentSpeed); // Динамически изменяемый интервал
 }
 
 
 function processRocketGameEnd() {
-  // Сохраняем игру в историю
-  const gameRecord = rocketGames.insert({
-    crashPoint: rocketGame.crashPoint,
-    maxMultiplier: rocketGame.multiplier,
-    startTime: new Date(rocketGame.startTime),
-    endTime: new Date(),
-    playerCount: rocketGame.players.length,
-    totalBets: rocketGame.players.reduce((sum, p) => sum + p.betAmount, 0),
-    totalPayouts: rocketGame.players.reduce((sum, p) => sum + (p.cashedOut ? p.winAmount : 0), 0)
-  });
+    // Сохраняем игру в историю
+    const gameRecord = rocketGames.insert({
+        crashPoint: rocketGame.crashPoint,
+        maxMultiplier: rocketGame.multiplier,
+        startTime: new Date(rocketGame.startTime),
+        endTime: new Date(),
+        playerCount: rocketGame.players.length,
+        totalBets: rocketGame.players.reduce((sum, p) => sum + p.betAmount, 0),
+        totalPayouts: rocketGame.players.reduce((sum, p) => sum + (p.cashedOut ? p.winAmount : 0), 0)
+    });
 
-  // Обрабатываем выплаты для реальных игроков
-  rocketGame.players.forEach(player => {
-    if (!player.isBot) {
-      const user = users.findOne({ telegram_id: parseInt(player.userId) });
-      if (user && player.cashedOut) {
-        const winAmount = player.betAmount * player.cashoutMultiplier;
-        
-        if (player.demoMode) {
-          users.update({
-            ...user,
-            demo_balance: user.demo_balance + winAmount
-          });
-        } else {
-          users.update({
-            ...user,
-            main_balance: user.main_balance + winAmount
-          });
-          updateCasinoBank(-winAmount);
+    // Обрабатываем выплаты для реальных игроков
+    rocketGame.players.forEach(player => {
+        if (!player.isBot && player.cashedOut) {
+            const user = users.findOne({ telegram_id: parseInt(player.userId) });
+            if (user) {
+                const winAmount = player.betAmount * player.cashoutMultiplier;
+                
+                if (player.demoMode) {
+                    users.update({
+                        ...user,
+                        demo_balance: user.demo_balance + winAmount
+                    });
+                } else {
+                    users.update({
+                        ...user,
+                        main_balance: user.main_balance + winAmount
+                    });
+                    updateCasinoBank(-winAmount);
+                }
+
+                // Записываем транзакцию
+                transactions.insert({
+                    user_id: user.$loki,
+                    amount: winAmount,
+                    type: 'rocket_win',
+                    status: 'completed',
+                    demo_mode: player.demoMode,
+                    game_id: gameRecord.$loki,
+                    created_at: new Date()
+                });
+
+                // Сохраняем ставку
+                rocketBets.insert({
+                    game_id: gameRecord.$loki,
+                    user_id: user.$loki,
+                    bet_amount: player.betAmount,
+                    cashout_multiplier: player.cashoutMultiplier,
+                    win_amount: winAmount,
+                    demo_mode: player.demoMode,
+                    created_at: new Date()
+                });
+            }
         }
+    });
 
-        // Записываем транзакцию
-        transactions.insert({
-          user_id: user.$loki,
-          amount: winAmount,
-          type: 'rocket_win',
-          status: 'completed',
-          demo_mode: player.demoMode,
-          game_id: gameRecord.$loki,
-          created_at: new Date()
-        });
+    // Добавляем в историю
+    rocketGame.history.unshift({
+        crashPoint: rocketGame.crashPoint,
+        multiplier: rocketGame.multiplier
+    });
 
-        // Сохраняем ставку
-        rocketBets.insert({
-          game_id: gameRecord.$loki,
-          user_id: user.$loki,
-          bet_amount: player.betAmount,
-          cashout_multiplier: player.cashoutMultiplier,
-          win_amount: winAmount,
-          demo_mode: player.demoMode,
-          created_at: new Date()
-        });
-      }
+    if (rocketGame.history.length > 50) {
+        rocketGame.history.pop();
     }
-  });
 
-  // Добавляем в историю
-  rocketGame.history.unshift({
-    crashPoint: rocketGame.crashPoint,
-    multiplier: rocketGame.multiplier
-  });
-
-  if (rocketGame.history.length > 50) {
-    rocketGame.history.pop();
-  }
-
-  broadcastRocketUpdate();
-
-  // Через 5 секунд начинаем новую игру
-  setTimeout(() => {
-    rocketGame.status = 'waiting';
-    rocketGame.multiplier = 1.00;
-    rocketGame.players = [];
     broadcastRocketUpdate();
-    startRocketGame();
-  }, 5000);
+
+    // Через 10 секунд начинаем новую игру (увеличено с 5 до 10 секунд)
+    setTimeout(() => {
+        rocketGame.status = 'waiting';
+        rocketGame.multiplier = 1.00;
+        rocketGame.players = [];
+        broadcastRocketUpdate();
+        startRocketGame();
+    }, 10000); // 10 секунд до нового раунда
 }
 
 function broadcastRocketUpdate() {
@@ -404,18 +431,27 @@ function broadcastRocketUpdate() {
 
 // WebSocket обработчик
 wss.on('connection', function connection(ws) {
-  console.log('Rocket game client connected');
-  
-  // Отправляем текущее состояние игры при подключении
-  ws.send(JSON.stringify({
-    type: 'rocket_update',
-    game: rocketGame
-  }));
+    console.log('Rocket game client connected');
+    
+    // Отправляем текущее состояние игры при подключении
+    ws.send(JSON.stringify({
+        type: 'rocket_update',
+        game: {
+            status: rocketGame.status,
+            multiplier: rocketGame.multiplier,
+            crashPoint: rocketGame.crashPoint,
+            players: rocketGame.players,
+            history: rocketGame.history,
+            endBetTime: rocketGame.endBetTime,
+            startTime: rocketGame.startTime
+        }
+    }));
 
-  ws.on('close', () => {
-    console.log('Rocket game client disconnected');
-  });
+    ws.on('close', () => {
+        console.log('Rocket game client disconnected');
+    });
 });
+
 
 // API: Аутентификация админа
 app.post('/api/admin/login', async (req, res) => {
@@ -1093,6 +1129,7 @@ app.post('/api/mines/cashout', async (req, res) => {
 });
 
 // API: Сделать ставку в Rocket
+// API: Сделать ставку в Rocket
 app.post('/api/rocket/bet', async (req, res) => {
     const { telegramId, betAmount, demoMode } = req.body;
 
@@ -1101,6 +1138,13 @@ app.post('/api/rocket/bet', async (req, res) => {
         
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Проверка лимитов ставок через конфиг
+        if (betAmount < ROCKET_CONFIG.MIN_BET || betAmount > ROCKET_CONFIG.MAX_BET) {
+            return res.status(400).json({ 
+                error: `Ставка должна быть от ${ROCKET_CONFIG.MIN_BET} до ${ROCKET_CONFIG.MAX_BET} TON` 
+            });
         }
 
         // ПРОВЕРКА: Уже есть ставка от этого пользователя
