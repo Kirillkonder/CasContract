@@ -434,7 +434,7 @@ function broadcastRocketUpdate() {
 }
 
 // WebSocket обработчик
-w// WebSocket обработчик
+// WebSocket обработчик
 wss.on('connection', function connection(ws) {
     console.log('Rocket game client connected');
     
