@@ -202,24 +202,28 @@
         }
 
         async function loadUserData() {
-            try {
-                // Получаем данные пользователя из Telegram WebApp
-                const tg = window.Telegram.WebApp;
-                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                    const telegramId = tg.initDataUnsafe.user.id;
-                    
-                    const response = await fetch(`/api/user/${telegramId}`);
-                    if (response.ok) {
-                        userData = await response.json();
-                        document.getElementById('balance').textContent = userData.balance;
-                        isDemoMode = userData.demo_mode;
-                        document.getElementById('demo-badge').textContent = isDemoMode ? 'TESTNET' : 'MAINNET';
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
+    try {
+        const tg = window.Telegram.WebApp;
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            const telegramId = tg.initDataUnsafe.user.id;
+            
+            // Используем правильный endpoint для получения баланса
+            const response = await fetch(`/api/user/balance/${telegramId}`);
+            if (response.ok) {
+                userData = await response.json();
+                // Исправляем здесь - используем правильное поле баланса
+                const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
+                document.getElementById('balance').textContent = balance.toFixed(2);
+                isDemoMode = userData.demo_mode;
+                document.getElementById('demo-badge').textContent = isDemoMode ? 'TESTNET' : 'MAINNET';
+                document.getElementById('demo-badge').style.background = isDemoMode ? '#ffc107' : '#007bff';
             }
         }
+    } catch (error) {
+        console.error('Error loading user data:', error);
+    }
+}
+
 
         async function startGame() {
             const betAmount = parseFloat(document.getElementById('betAmount').value);
@@ -411,19 +415,21 @@
         }
 
         async function updateBalance() {
-            try {
-                const tg = window.Telegram.WebApp;
-                const telegramId = tg.initDataUnsafe.user.id;
-                
-                const response = await fetch(`/api/user/${telegramId}`);
-                if (response.ok) {
-                    userData = await response.json();
-                    document.getElementById('balance').textContent = userData.balance;
-                }
-            } catch (error) {
-                console.error('Error updating balance:', error);
-            }
+    try {
+        const tg = window.Telegram.WebApp;
+        const telegramId = tg.initDataUnsafe.user.id;
+        
+        const response = await fetch(`/api/user/balance/${telegramId}`);
+        if (response.ok) {
+            const userData = await response.json();
+            // Исправляем здесь
+            const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
+            document.getElementById('balance').textContent = balance.toFixed(2);
         }
+    } catch (error) {
+        console.error('Error updating balance:', error);
+    }
+}
     </script>
 </body>
 </html>

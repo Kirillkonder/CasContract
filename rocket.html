@@ -297,19 +297,22 @@
             }
         }
 
-        async function loadUserData() {
-            try {
-                const response = await fetch(`/api/user/${currentUser.id}`);
-                if (response.ok) {
-                    const userData = await response.json();
-                    document.getElementById('balance').textContent = userData.balance.toFixed(2);
-                    isDemoMode = userData.demo_mode;
-                    document.getElementById('demo-badge').textContent = isDemoMode ? 'TESTNET' : 'MAINNET';
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
+        a
+    async function loadUserData() {
+        try {
+            const response = await fetch(`/api/user/balance/${currentUser.id}`);
+            if (response.ok) {
+                const userData = await response.json();
+                // Исправляем здесь - используем правильное поле баланса
+                const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
+                document.getElementById('balance').textContent = balance.toFixed(2);
+                isDemoMode = userData.demo_mode;
+                document.getElementById('demo-badge').textContent = isDemoMode ? 'TESTNET' : 'MAINNET';
             }
+        } catch (error) {
+            console.error('Error loading user data:', error);
         }
+    }
 
         function connectWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -460,77 +463,64 @@
         }
 
         async function placeBet() {
-    const betAmount = parseFloat(document.getElementById('betAmount').value);
-    
-    if (betAmount < 0.5 || betAmount > 50) {
-        alert('Ставка должна быть от 0.5 до 50 TON');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/rocket/bet', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                telegramId: currentUser.id,
-                betAmount: betAmount,
-                demoMode: isDemoMode // ✅ Передаем режим
-            })
-        });
+        const betAmount = parseFloat(document.getElementById('betAmount').value);
         
-        if (!response.ok) {
-            const error = await response.json();
-            alert(error.error || 'Ошибка при размещении ставки');
+        if (betAmount < 0.5 || betAmount > 50) {
+            alert('Ставка должна быть от 0.5 до 50 TON');
             return;
         }
         
-        const result = await response.json();
-        if (result.success) {
-            userBet = betAmount;
-            userCashedOut = false;
-            updateBettingUI();
-            document.getElementById('userBet').textContent = betAmount.toFixed(2);
-            document.getElementById('balance').textContent = result.current_balance.toFixed(2); // ✅ Обновляем баланс
+        try {
+            // Добавляем проверку isDemoMode
+            const response = await fetch('/api/rocket/bet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    telegramId: currentUser.id,
+                    betAmount: betAmount,
+                    demoMode: isDemoMode  // Добавляем эту строку
+                })
+            });
+            
+            // ... остальной код ...
+        } catch (error) {
+            console.error('Error placing bet:', error);
+            alert('Ошибка при размещении ставки');
         }
-    } catch (error) {
-        console.error('Error placing bet:', error);
-        alert('Ошибка при размещении ставки');
     }
-}
-
 
         async function cashout() {
-    try {
-        const response = await fetch('/api/rocket/cashout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                telegramId: currentUser.id
-            })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            alert(error.error || 'Ошибка при выводе средств');
-            return;
+            try {
+                const response = await fetch('/api/rocket/cashout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegramId: currentUser.id
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(error.error || 'Ошибка при выводе средств');
+                    return;
+                }
+                
+                const result = await response.json();
+                if (result.success) {
+                    userCashedOut = true;
+                    updateBettingUI();
+                    document.getElementById('balance').textContent = result.current_balance.toFixed(2);
+                    alert(`Вы успешно вывели ${result.win_amount.toFixed(2)} TON на ${result.multiplier.toFixed(2)}x!`);
+                }
+            } catch (error) {
+                console.error('Error cashing out:', error);
+                alert('Ошибка при выводе средств');
+            }
         }
-        
-        const result = await response.json();
-        if (result.success) {
-            userCashedOut = true;
-            updateBettingUI();
-            document.getElementById('balance').textContent = result.current_balance.toFixed(2); // ✅ Обновляем баланс
-            alert(`Вы успешно вывели ${result.win_amount.toFixed(2)} TON на ${result.multiplier.toFixed(2)}x!`);
-        }
-    } catch (error) {
-        console.error('Error cashing out:', error);
-        alert('Ошибка при выводе средств');
-    }
-}
 
         function updateBettingUI() {
             const betButton = document.getElementById('placeBetButton');

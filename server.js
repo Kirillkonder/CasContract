@@ -1085,7 +1085,7 @@ app.post('/api/mines/cashout', async (req, res) => {
 
 // API: Сделать ставку в Rocket
 app.post('/api/rocket/bet', async (req, res) => {
-    const { telegramId, betAmount, demoMode } = req.body; // demoMode уже есть
+    const { telegramId, betAmount, demoMode } = req.body;
 
     try {
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
@@ -1094,7 +1094,7 @@ app.post('/api/rocket/bet', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const balance = demoMode ? user.demo_balance : user.main_balance; // ✅ Правильно проверяем баланс
+        const balance = demoMode ? user.demo_balance : user.main_balance;
         
         if (balance < betAmount) {
             return res.status(400).json({ error: 'Недостаточно средств' });
@@ -1104,7 +1104,7 @@ app.post('/api/rocket/bet', async (req, res) => {
             return res.status(400).json({ error: 'Ставки не принимаются' });
         }
 
-        // Списываем ставку с правильного баланса
+        // Списываем ставку
         if (demoMode) {
             users.update({
                 ...user,
@@ -1118,12 +1118,12 @@ app.post('/api/rocket/bet', async (req, res) => {
             updateCasinoBank(betAmount);
         }
 
-        // Добавляем demoMode в данные игрока
+        // Добавляем игрока в текущую игру
         const player = {
             userId: telegramId,
             name: `User_${telegramId}`,
             betAmount: parseFloat(betAmount),
-            demoMode: demoMode, // ✅ Сохраняем режим
+            demoMode: demoMode,
             cashedOut: false,
             cashoutMultiplier: null,
             winAmount: 0,
@@ -1131,12 +1131,12 @@ app.post('/api/rocket/bet', async (req, res) => {
         };
 
         rocketGame.players.push(player);
+
         broadcastRocketUpdate();
 
         res.json({
             success: true,
-            new_balance: demoMode ? user.demo_balance - betAmount : user.main_balance - betAmount,
-            current_balance: demoMode ? user.demo_balance - betAmount : user.main_balance - betAmount // ✅ Добавляем текущий баланс
+            new_balance: demoMode ? user.demo_balance - betAmount : user.main_balance - betAmount
         });
     } catch (error) {
         console.error('Rocket bet error:', error);
@@ -1170,27 +1170,12 @@ app.post('/api/rocket/cashout', async (req, res) => {
         player.cashoutMultiplier = rocketGame.multiplier;
         player.winAmount = player.betAmount * rocketGame.multiplier;
 
-        // Начисляем выигрыш в правильный баланс
-        if (player.demoMode) {
-            users.update({
-                ...user,
-                demo_balance: user.demo_balance + player.winAmount
-            });
-        } else {
-            users.update({
-                ...user,
-                main_balance: user.main_balance + player.winAmount
-            });
-            updateCasinoBank(-player.winAmount);
-        }
-
         broadcastRocketUpdate();
 
         res.json({
             success: true,
             multiplier: rocketGame.multiplier,
-            winAmount: player.winAmount,
-            current_balance: player.demoMode ? user.demo_balance + player.winAmount : user.main_balance + player.winAmount // ✅ Добавляем баланс
+            winAmount: player.winAmount
         });
     } catch (error) {
         console.error('Rocket cashout error:', error);
