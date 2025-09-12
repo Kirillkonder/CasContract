@@ -16,8 +16,6 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('.'));
 
-
-
 // Для Render сохраняем базу данных в памяти
 const dbPath = process.env.NODE_ENV === 'production' ? 
     path.join('/tmp', 'ton-casino.db') : 
@@ -28,6 +26,9 @@ let db;
 let users, transactions, casinoBank, adminLogs, minesGames, rocketGames, rocketBets;
 
 // WebSocket сервер для ракетки
+const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
 
 const wss = new WebSocket.Server({ server });
 
@@ -53,16 +54,21 @@ function initDatabase() {
         db = new Loki(dbPath, {
             autoload: true,
             autoloadCallback: () => {
-        users = db.getCollection('users');
-        transactions = db.getCollection('transactions');
-        casinoBank = db.getCollection('casino_bank');
-        adminLogs = db.getCollection('admin_logs');
-        minesGames = db.getCollection('mines_games');
-        rocketGames = db.getCollection('rocket_games');
-        rocketBets = db.getCollection('rocket_bets');
-        
+                users = db.getCollection('users');
+                transactions = db.getCollection('transactions');
+                casinoBank = db.getCollection('casino_bank');
+                adminLogs = db.getCollection('admin_logs');
+                minesGames = db.getCollection('mines_games');
+                rocketGames = db.getCollection('rocket_games');
+                rocketBets = db.getCollection('rocket_bets');
 
-       if (users.count() === 0) {
+                if (!users) {
+                    users = db.addCollection('users', { 
+                        unique: ['telegram_id'],
+                        indices: ['telegram_id']
+                    });
+                    
+                    // Создаем администратора по умолчанию
                     users.insert({
                         telegram_id: parseInt(process.env.OWNER_TELEGRAM_ID) || 842428912,
                         main_balance: 0,
@@ -72,65 +78,54 @@ function initDatabase() {
                         is_admin: true
                     });
                 }
+                
+                if (!transactions) {
+                    transactions = db.addCollection('transactions', {
+                        indices: ['user_id', 'created_at', 'demo_mode']
+                    });
+                }
 
-        if (!users) {
-          users = db.addCollection('users', { 
-            unique: ['telegram_id'],
-            indices: ['telegram_id']
-          });
-        }
-        
-        if (!transactions) {
-          transactions = db.addCollection('transactions', {
-            indices: ['user_id', 'created_at', 'demo_mode']
-          });
-        }
+                if (!casinoBank) {
+                    casinoBank = db.addCollection('casino_bank');
+                    casinoBank.insert({
+                        total_balance: 0,
+                        owner_telegram_id: process.env.OWNER_TELEGRAM_ID || 842428912,
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    });
+                }
 
-        if (!casinoBank) {
-          casinoBank = db.addCollection('casino_bank');
-          casinoBank.insert({
-            total_balance: 0,
-            owner_telegram_id: process.env.OWNER_TELEGRAM_ID || 842428912,
-            created_at: new Date(),
-            updated_at: new Date()
-          });
-        }
+                if (!adminLogs) {
+                    adminLogs = db.addCollection('admin_logs', {
+                        indices: ['created_at']
+                    });
+                }
 
-        if (!adminLogs) {
-          adminLogs = db.addCollection('admin_logs', {
-            indices: ['created_at']
-          });
-        }
+                if (!minesGames) {
+                    minesGames = db.addCollection('mines_games', {
+                        indices: ['user_id', 'created_at', 'demo_mode']
+                    });
+                }
 
-        if (!minesGames) {
-          minesGames = db.addCollection('mines_games', {
-            indices: ['user_id', 'created_at', 'demo_mode']
-          });
-        }
+                if (!rocketGames) {
+                    rocketGames = db.addCollection('rocket_games', {
+                        indices: ['created_at', 'crashed_at']
+                    });
+                }
 
-        if (!rocketGames) {
-          rocketGames = db.addCollection('rocket_games', {
-            indices: ['created_at', 'crashed_at']
-          });
-        }
-
-        if (!rocketBets) {
-          rocketBets = db.addCollection('rocket_bets', {
-            indices: ['game_id', 'user_id', 'created_at']
-          });
-
-
-        
-        }
-        
-        
-        console.log('LokiJS database initialized');
-        resolve(true);
-      },
-      autosave: true,
-      autosaveInterval: 4000
+                if (!rocketBets) {
+                    rocketBets = db.addCollection('rocket_bets', {
+                        indices: ['game_id', 'user_id', 'created_at']
+                    });
+                }
+                
+                console.log('LokiJS database initialized');
+                resolve(true);
+            },
+            autosave: true,
+            autosaveInterval: 4000
+        });
     });
-  });
 }
 
 // Функция для работы с Crypto Pay API
@@ -493,45 +488,11 @@ app.post('/api/admin/withdraw-profit', async (req, res) => {
     }
   } catch (error) {
     console.error('Withdraw profit error:', error);
-    res.status(500).json({ error: 'Withdrawal error' });
-  }
-});
-
-app.post('/api/admin/add-demo-balance', async (req, res) => {
-  const { telegramId, targetTelegramId, amount } = req.body;
-
-  if (telegramId !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
-    return res.status(403).json({ error: 'Access denied' });
-  }
-
-  try {
-    const targetUser = users.findOne({ telegram_id: parseInt(targetTelegramId) });
-    if (!targetUser) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
-    }
-
-    users.update({
-      ...targetUser,
-      demo_balance: targetUser.demo_balance + parseFloat(amount)
-    });
-
-    logAdminAction('add_demo_balance', telegramId, {
-      target_telegram_id: targetTelegramId,
-      amount: amount
-    });
-
-    res.json({ 
-      success: true, 
-      message: 'Demo balance added successfully',
-      new_balance: targetUser.demo_balance + parseFloat(amount)
-    });
-  } catch (error) {
-    console.error('Add demo balance error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// API: Получить список пользователей
+// API: Получить пользователей
 app.get('/api/admin/users/:telegramId', async (req, res) => {
   const telegramId = parseInt(req.params.telegramId);
 
@@ -541,77 +502,46 @@ app.get('/api/admin/users/:telegramId', async (req, res) => {
 
   try {
     const allUsers = users.find();
-    const userList = allUsers.map(user => ({
+    res.json(allUsers.map(user => ({
       telegram_id: user.telegram_id,
-      username: user.username,
-      first_name: user.first_name,
-      last_name: user.last_name,
       main_balance: user.main_balance,
       demo_balance: user.demo_balance,
       demo_mode: user.demo_mode,
-      created_at: user.created_at,
-      last_active: user.last_active
-    }));
-
-    res.json({ users: userList });
+      is_admin: user.is_admin,
+      created_at: user.created_at
+    })));
   } catch (error) {
     console.error('Get users error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// API: Получить транзакции пользователя
-app.get('/api/admin/user-transactions/:telegramId/:targetTelegramId', async (req, res) => {
+// API: Получить транзакции
+app.get('/api/admin/transactions/:telegramId', async (req, res) => {
   const telegramId = parseInt(req.params.telegramId);
-  const targetTelegramId = parseInt(req.params.targetTelegramId);
 
   if (telegramId !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
     return res.status(403).json({ error: 'Access denied' });
   }
 
   try {
-    const targetUser = users.findOne({ telegram_id: targetTelegramId });
-    if (!targetUser) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
-    }
-
-    const userTransactions = transactions.find({ user_id: targetUser.$loki });
-    res.json({ transactions: userTransactions });
+    const allTransactions = transactions.find();
+    res.json(allTransactions.map(tx => ({
+      id: tx.$loki,
+      user_id: tx.user_id,
+      amount: tx.amount,
+      type: tx.type,
+      status: tx.status,
+      demo_mode: tx.demo_mode,
+      created_at: tx.created_at
+    })));
   } catch (error) {
-    console.error('Get user transactions error:', error);
+    console.error('Get transactions error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// API: Получить игры пользователя
-app.get('/api/admin/user-games/:telegramId/:targetTelegramId', async (req, res) => {
-  const telegramId = parseInt(req.params.telegramId);
-  const targetTelegramId = parseInt(req.params.targetTelegramId);
-
-  if (telegramId !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
-    return res.status(403).json({ error: 'Access denied' });
-  }
-
-  try {
-    const targetUser = users.findOne({ telegram_id: targetTelegramId });
-    if (!targetUser) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
-    }
-
-    const userMinesGames = minesGames.find({ user_id: targetUser.$loki });
-    const userRocketBets = rocketBets.find({ user_id: targetUser.$loki });
-
-    res.json({ 
-      mines_games: userMinesGames,
-      rocket_bets: userRocketBets
-    });
-  } catch (error) {
-    console.error('Get user games error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// API: Получить логи админских действий
+// API: Получить логи админки
 app.get('/api/admin/logs/:telegramId', async (req, res) => {
   const telegramId = parseInt(req.params.telegramId);
 
@@ -620,171 +550,119 @@ app.get('/api/admin/logs/:telegramId', async (req, res) => {
   }
 
   try {
-    const logs = adminLogs.find().sort((a, b) => b.created_at - a.created_at);
-    res.json({ logs: logs });
+    const logs = adminLogs.find({});
+    res.json(logs);
   } catch (error) {
     console.error('Get admin logs error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// API: Получить статистику казино
-app.get('/api/admin/stats/:telegramId', async (req, res) => {
-  const telegramId = parseInt(req.params.telegramId);
+// API: Изменить баланс пользователя
+app.post('/api/admin/update-balance', async (req, res) => {
+  const { telegramId, targetUserId, amount, balanceType } = req.body;
 
   if (telegramId !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
     return res.status(403).json({ error: 'Access denied' });
   }
 
   try {
-    const bank = getCasinoBank();
-    const totalUsers = users.count();
-    const totalTransactions = transactions.count();
-    const totalMinesGames = minesGames.count();
-    const totalRocketGames = rocketGames.count();
-
-    // Статистика по играм за последние 7 дней
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-    const recentMinesGames = minesGames.find({ 
-      created_at: { $gte: sevenDaysAgo } 
-    });
-    const recentRocketBets = rocketBets.find({ 
-      created_at: { $gte: sevenDaysAgo } 
-    });
-
-    const minesProfit = recentMinesGames.reduce((sum, game) => {
-      return sum + (game.bet_amount - (game.win_amount || 0));
-    }, 0);
-
-    const rocketProfit = recentRocketBets.reduce((sum, bet) => {
-      return sum + (bet.bet_amount - (bet.win_amount || 0));
-    }, 0);
-
-    res.json({
-      bank_balance: bank.total_balance,
-      total_users: totalUsers,
-      total_transactions: totalTransactions,
-      total_mines_games: totalMinesGames,
-      total_rocket_games: totalRocketGames,
-      recent_mines_games: recentMinesGames.length,
-      recent_rocket_bets: recentRocketBets.length,
-      recent_mines_profit: minesProfit,
-      recent_rocket_profit: rocketProfit,
-      total_recent_profit: minesProfit + rocketProfit
-    });
-  } catch (error) {
-    console.error('Admin stats error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// API: Регистрация/авторизация пользователя
-app.post('/api/user/auth', async (req, res) => {
-  const { telegramId, username, firstName, lastName } = req.body;
-
-  try {
-    let user = users.findOne({ telegram_id: parseInt(telegramId) });
-    
-    if (!user) {
-      user = users.insert({
-        telegram_id: parseInt(telegramId),
-        username: username,
-        first_name: firstName,
-        last_name: lastName,
-        main_balance: 0,
-        demo_balance: 100, // Начальный демо-баланс
-        demo_mode: true,
-        created_at: new Date(),
-        last_active: new Date()
-      });
-      
-      res.json({ 
-        success: true, 
-        user: user,
-        isNew: true 
-      });
-    } else {
-      // Обновляем последнюю активность
-      users.update({
-        ...user,
-        last_active: new Date()
-      });
-      
-      res.json({ 
-        success: true, 
-        user: user,
-        isNew: false 
-      });
-    }
-  } catch (error) {
-    console.error('User auth error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// API: Получить данные пользователя
-app.get('/api/user/:telegramId', async (req, res) => {
-    const telegramId = parseInt(req.params.telegramId);
-
-    try {
-        let user = users.findOne({ telegram_id: telegramId });
-        
-        if (!user) {
-            // Создаем нового пользователя
-            user = users.insert({
-                telegram_id: telegramId,
-                main_balance: 0,
-                demo_balance: 1000,
-                created_at: new Date(),
-                demo_mode: true,
-                is_admin: telegramId === parseInt(process.env.OWNER_TELEGRAM_ID)
-            });
-        }
-        
-        res.json({ 
-            success: true,
-            balance: user.demo_mode ? user.demo_balance : user.main_balance,
-            demo_balance: user.demo_balance,
-            main_balance: user.main_balance,
-            demo_mode: user.demo_mode,
-            is_admin: user.is_admin || false
-        });
-    } catch (error) {
-        console.error('Database error:', error);
-        res.status(500).json({ error: 'Database error' });
-    }
-});
-
-// API: Получить историю транзакций
-app.get('/api/user/transactions/:telegramId', async (req, res) => {
-  const telegramId = parseInt(req.params.telegramId);
-
-  try {
-    const user = users.findOne({ telegram_id: telegramId });
+    const user = users.findOne({ telegram_id: parseInt(targetUserId) });
     
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
-    const userTransactions = transactions.find({ user_id: user.$loki })
-      .sort((a, b) => b.created_at - a.created_at);
-    
-    res.json({ 
-      success: true, 
-      transactions: userTransactions 
+
+    if (balanceType === 'main') {
+      users.update({
+        ...user,
+        main_balance: user.main_balance + parseFloat(amount)
+      });
+    } else {
+      users.update({
+        ...user,
+        demo_balance: user.demo_balance + parseFloat(amount)
+      });
+    }
+
+    logAdminAction('update_balance', telegramId, {
+      target_user: targetUserId,
+      amount: amount,
+      balance_type: balanceType
     });
+
+    res.json({ success: true, message: 'Balance updated successfully' });
   } catch (error) {
-    console.error('Get transactions error:', error);
+    console.error('Update balance error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// API: Игра в мины
-app.post('/api/game/mines', async (req, res) => {
-  const { telegramId, minesCount, betAmount, demoMode } = req.body;
+// API: Получить пользователя
+app.get('/api/user/:telegramId', async (req, res) => {
+  const telegramId = parseInt(req.params.telegramId);
+  
+  try {
+    let user = users.findOne({ telegram_id: telegramId });
+    
+    if (!user) {
+      // Создаем нового пользователя
+      user = users.insert({
+        telegram_id: telegramId,
+        main_balance: 0,
+        demo_balance: 1000,
+        created_at: new Date(),
+        demo_mode: true,
+        is_admin: telegramId === parseInt(process.env.OWNER_TELEGRAM_ID)
+      });
+    }
+    
+    res.json({
+      telegram_id: user.telegram_id,
+      main_balance: user.main_balance,
+      demo_balance: user.demo_balance,
+      demo_mode: user.demo_mode,
+      is_admin: user.is_admin,
+      created_at: user.created_at
+    });
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
+// API: Переключить демо режим
+app.post('/api/user/toggle-demo', async (req, res) => {
+  const { telegramId } = req.body;
+  
+  try {
+    const user = users.findOne({ telegram_id: parseInt(telegramId) });
+    
+    if (user) {
+      users.update({
+        ...user,
+        demo_mode: !user.demo_mode
+      });
+      
+      res.json({
+        success: true,
+        demo_mode: !user.demo_mode,
+        main_balance: user.main_balance,
+        demo_balance: user.demo_balance
+      });
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Toggle demo error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// API: Создать депозит
+app.post('/api/deposit/create', async (req, res) => {
+  const { telegramId, amount } = req.body;
+  
   try {
     const user = users.findOne({ telegram_id: parseInt(telegramId) });
     
@@ -792,32 +670,180 @@ app.post('/api/game/mines', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const currentBalance = demoMode ? user.demo_balance : user.main_balance;
+    const invoice = await cryptoPayRequest('createInvoice', {
+      asset: 'TON',
+      amount: amount.toString(),
+      description: `Deposit for user ${telegramId}`,
+      paid_btn_name: 'return',
+      paid_btn_url: 'https://t.me/your_bot',
+      payload: JSON.stringify({
+        telegramId: telegramId,
+        type: 'deposit'
+      }),
+      allow_comments: false
+    }, false);
+
+    if (invoice.ok && invoice.result) {
+      transactions.insert({
+        user_id: user.$loki,
+        amount: amount,
+        type: 'deposit',
+        status: 'pending',
+        invoice_id: invoice.result.invoice_id,
+        demo_mode: false,
+        created_at: new Date()
+      });
+      
+      res.json({
+        success: true,
+        invoice_url: invoice.result.pay_url,
+        invoice_id: invoice.result.invoice_id
+      });
+    } else {
+      res.status(500).json({ error: 'Failed to create invoice' });
+    }
+  } catch (error) {
+    console.error('Create deposit error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// API: Создать вывод
+app.post('/api/withdraw/create', async (req, res) => {
+  const { telegramId, amount, address } = req.body;
+  
+  try {
+    const user = users.findOne({ telegram_id: parseInt(telegramId) });
     
-    if (currentBalance < betAmount) {
-      return res.status(400).json({ error: 'Insufficient balance' });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
 
-    // Создаем новую игру
-    const game = generateMinesGame(minesCount);
-    game.betAmount = betAmount;
-    
-    // Сохраняем игру в базу
-    const gameRecord = minesGames.insert({
-      user_id: user.$loki,
-      mines_count: minesCount,
-      bet_amount: betAmount,
-      mines: game.mines,
-      revealed_cells: [],
-      game_over: false,
-      win: false,
-      current_multiplier: 1,
-      demo_mode: demoMode,
-      created_at: new Date()
-    });
+    if (user.main_balance < amount) {
+      return res.status(400).json({ error: 'Недостаточно средств' });
+    }
 
-    // Списываем ставку
-    if (demoMode) {
+    const transfer = await cryptoPayRequest('transfer', {
+      user_id: telegramId,
+      asset: 'TON',
+      amount: amount.toString(),
+      spend_id: `withdraw_${telegramId}_${Date.now()}`
+    }, false);
+
+    if (transfer.ok && transfer.result) {
+      // Обновляем баланс пользователя
+      users.update({
+        ...user,
+        main_balance: user.main_balance - amount
+      });
+
+      // Записываем транзакцию
+      transactions.insert({
+        user_id: user.$loki,
+        amount: -amount,
+        type: 'withdraw',
+        status: 'completed',
+        demo_mode: false,
+        tx_hash: transfer.result.hash,
+        created_at: new Date()
+      });
+
+      // Обновляем банк казино
+      updateCasinoBank(amount);
+      
+      res.json({
+        success: true,
+        message: 'Withdrawal successful',
+        hash: transfer.result.hash,
+        new_balance: user.main_balance - amount
+      });
+    } else {
+      res.status(500).json({ error: 'Withdrawal failed' });
+    }
+  } catch (error) {
+    console.error('Create withdraw error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// API: Проверить статус депозита
+app.get('/api/deposit/status/:invoiceId', async (req, res) => {
+  const { invoiceId } = req.params;
+  
+  try {
+    const invoice = await cryptoPayRequest('getInvoices', {
+      invoice_ids: invoiceId
+    }, false);
+
+    if (invoice.ok && invoice.result && invoice.result.items.length > 0) {
+      const invoiceData = invoice.result.items[0];
+      
+      if (invoiceData.status === 'paid') {
+        // Находим транзакцию
+        const transaction = transactions.findOne({ invoice_id: invoiceId });
+        
+        if (transaction && transaction.status === 'pending') {
+          // Находим пользователя
+          const user = users.get(transaction.user_id);
+          
+          if (user) {
+            // Обновляем баланс пользователя
+            users.update({
+              ...user,
+              main_balance: user.main_balance + transaction.amount
+            });
+            
+            // Обновляем статус транзакции
+            transactions.update({
+              ...transaction,
+              status: 'completed'
+            });
+            
+            // Обновляем банк казино
+            updateCasinoBank(-transaction.amount);
+            
+            return res.json({
+              success: true,
+              status: 'paid',
+              amount: transaction.amount,
+              new_balance: user.main_balance + transaction.amount
+            });
+          }
+        }
+      }
+      
+      res.json({
+        success: true,
+        status: invoiceData.status
+      });
+    } else {
+      res.status(404).json({ error: 'Invoice not found' });
+    }
+  } catch (error) {
+    console.error('Check deposit status error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// API: Начать игру Mines
+app.post('/api/mines/start', async (req, res) => {
+  const { telegramId, betAmount, minesCount } = req.body;
+  
+  try {
+    const user = users.findOne({ telegram_id: parseInt(telegramId) });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const balance = user.demo_mode ? user.demo_balance : user.main_balance;
+    
+    if (balance < betAmount) {
+      return res.status(400).json({ error: 'Недостаточно средств' });
+    }
+
+    // Обновляем баланс
+    if (user.demo_mode) {
       users.update({
         ...user,
         demo_balance: user.demo_balance - betAmount
@@ -830,130 +856,115 @@ app.post('/api/game/mines', async (req, res) => {
       updateCasinoBank(betAmount);
     }
 
-    // Записываем транзакцию
-    transactions.insert({
+    // Создаем игру
+    const game = minesGames.insert({
       user_id: user.$loki,
-      amount: -betAmount,
-      type: 'mines_bet',
-      status: 'completed',
-      demo_mode: demoMode,
-      game_id: gameRecord.$loki,
+      bet_amount: betAmount,
+      mines_count: minesCount,
+      demo_mode: user.demo_mode,
+      game_state: generateMinesGame(minesCount),
+      status: 'active',
       created_at: new Date()
     });
 
     res.json({
       success: true,
-      game: {
-        id: gameRecord.$loki,
-        minesCount: minesCount,
-        betAmount: betAmount,
-        mines: game.mines,
-        revealedCells: [],
-        gameOver: false,
-        win: false,
-        currentMultiplier: 1
-      },
-      newBalance: demoMode ? user.demo_balance - betAmount : user.main_balance - betAmount
+      game_id: game.$loki,
+      game_state: game.game_state,
+      new_balance: user.demo_mode ? user.demo_balance - betAmount : user.main_balance - betAmount
     });
   } catch (error) {
-    console.error('Mines game error:', error);
+    console.error('Start mines game error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// API: Открыть ячейку в минах
-app.post('/api/game/mines/reveal', async (req, res) => {
+// API: Открыть ячейку в Mines
+app.post('/api/mines/open', async (req, res) => {
   const { telegramId, gameId, cellIndex } = req.body;
-
+  
   try {
     const user = users.findOne({ telegram_id: parseInt(telegramId) });
     const game = minesGames.get(gameId);
     
-    if (!user || !game || game.user_id !== user.$loki) {
-      return res.status(404).json({ error: 'Game not found' });
+    if (!user || !game) {
+      return res.status(404).json({ error: 'Game or user not found' });
     }
 
-    if (game.game_over) {
-      return res.status(400).json({ error: 'Game already finished' });
+    if (game.status !== 'active') {
+      return res.status(400).json({ error: 'Game is not active' });
     }
 
-    // Проверяем, не открыта ли уже эта ячейка
-    if (game.revealed_cells.includes(cellIndex)) {
-      return res.status(400).json({ error: 'Cell already revealed' });
-    }
-
-    // Проверяем, есть ли мина в этой ячейке
-    if (game.mines.includes(cellIndex)) {
-      // Игра проиграна
+    const gameState = game.game_state;
+    
+    // Проверяем, не мина ли это
+    if (gameState.mines.includes(cellIndex)) {
+      // Игрок проиграл
       minesGames.update({
         ...game,
-        revealed_cells: [...game.revealed_cells, cellIndex],
-        game_over: true,
-        win: false
+        status: 'lost',
+        ended_at: new Date()
       });
-
+      
       res.json({
         success: true,
-        mine: true,
-        gameOver: true,
+        game_over: true,
         win: false,
-        winAmount: 0
+        mine_hit: true,
+        cell_index: cellIndex,
+        win_amount: 0
       });
     } else {
-      // Ячейка безопасна
-      const newRevealedCells = [...game.revealed_cells, cellIndex];
-      const openedCells = newRevealedCells.length;
+      // Игрок открыл безопасную ячейку
+      gameState.revealedCells.push(cellIndex);
       
-      // Рассчитываем множитель как в 1WIN
-      const multiplier = calculateMultiplier(openedCells, game.mines_count);
+      // Рассчитываем множитель
+      const multiplier = calculateMultiplier(
+        gameState.revealedCells.length,
+        gameState.minesCount
+      );
+      
+      gameState.currentMultiplier = multiplier;
       
       minesGames.update({
         ...game,
-        revealed_cells: newRevealedCells,
-        current_multiplier: multiplier
+        game_state: gameState
       });
-
+      
       res.json({
         success: true,
-        mine: false,
-        gameOver: false,
+        game_over: false,
+        mine_hit: false,
+        cell_index: cellIndex,
         multiplier: multiplier,
-        openedCells: openedCells
+        revealed_cells: gameState.revealedCells
       });
     }
   } catch (error) {
-    console.error('Mines reveal error:', error);
+    console.error('Open mines cell error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// API: Забрать выигрыш в минах
-app.post('/api/game/mines/cashout', async (req, res) => {
+// API: Забрать выигрыш в Mines
+app.post('/api/mines/cashout', async (req, res) => {
   const { telegramId, gameId } = req.body;
-
+  
   try {
     const user = users.findOne({ telegram_id: parseInt(telegramId) });
     const game = minesGames.get(gameId);
     
-    if (!user || !game || game.user_id !== user.$loki) {
-      return res.status(404).json({ error: 'Game not found' });
+    if (!user || !game) {
+      return res.status(404).json({ error: 'Game or user not found' });
     }
 
-    if (game.game_over) {
-      return res.status(400).json({ error: 'Game already finished' });
+    if (game.status !== 'active') {
+      return res.status(400).json({ error: 'Game is not active' });
     }
 
-    const winAmount = game.bet_amount * game.current_multiplier;
+    const winAmount = game.bet_amount * game.game_state.currentMultiplier;
     
-    // Обновляем игру
-    minesGames.update({
-      ...game,
-      game_over: true,
-      win: true,
-      win_amount: winAmount
-    });
-
-    // Зачисляем выигрыш
+    // Обновляем баланс
     if (game.demo_mode) {
       users.update({
         ...user,
@@ -966,6 +977,14 @@ app.post('/api/game/mines/cashout', async (req, res) => {
       });
       updateCasinoBank(-winAmount);
     }
+
+    // Обновляем статус игры
+    minesGames.update({
+      ...game,
+      status: 'won',
+      win_amount: winAmount,
+      ended_at: new Date()
+    });
 
     // Записываем транзакцию
     transactions.insert({
@@ -980,9 +999,9 @@ app.post('/api/game/mines/cashout', async (req, res) => {
 
     res.json({
       success: true,
-      winAmount: winAmount,
-      multiplier: game.current_multiplier,
-      newBalance: game.demo_mode ? user.demo_balance + winAmount : user.main_balance + winAmount
+      win_amount: winAmount,
+      multiplier: game.game_state.currentMultiplier,
+      new_balance: game.demo_mode ? user.demo_balance + winAmount : user.main_balance + winAmount
     });
   } catch (error) {
     console.error('Mines cashout error:', error);
@@ -990,10 +1009,10 @@ app.post('/api/game/mines/cashout', async (req, res) => {
   }
 });
 
-// API: Игра в ракетку - сделать ставку
-app.post('/api/game/rocket/bet', async (req, res) => {
-  const { telegramId, betAmount, demoMode } = req.body;
-
+// API: Сделать ставку в Rocket
+app.post('/api/rocket/bet', async (req, res) => {
+  const { telegramId, betAmount } = req.body;
+  
   try {
     const user = users.findOne({ telegram_id: parseInt(telegramId) });
     
@@ -1002,26 +1021,17 @@ app.post('/api/game/rocket/bet', async (req, res) => {
     }
 
     if (rocketGame.status !== 'counting') {
-      return res.status(400).json({ error: 'Game not accepting bets' });
+      return res.status(400).json({ error: 'Game is not accepting bets' });
     }
 
-    const currentBalance = demoMode ? user.demo_balance : user.main_balance;
+    const balance = user.demo_mode ? user.demo_balance : user.main_balance;
     
-    if (currentBalance < betAmount) {
-      return res.status(400).json({ error: 'Insufficient balance' });
+    if (balance < betAmount) {
+      return res.status(400).json({ error: 'Недостаточно средств' });
     }
 
-    // Проверяем, не сделал ли уже пользователь ставку в этой игре
-    const existingBet = rocketGame.players.find(p => 
-      !p.isBot && p.userId === telegramId.toString()
-    );
-
-    if (existingBet) {
-      return res.status(400).json({ error: 'Already placed a bet in this game' });
-    }
-
-    // Списываем ставку
-    if (demoMode) {
+    // Обновляем баланс
+    if (user.demo_mode) {
       users.update({
         ...user,
         demo_balance: user.demo_balance - betAmount
@@ -1034,33 +1044,32 @@ app.post('/api/game/rocket/bet', async (req, res) => {
       updateCasinoBank(betAmount);
     }
 
-    // Записываем транзакцию
-    transactions.insert({
-      user_id: user.$loki,
-      amount: -betAmount,
-      type: 'rocket_bet',
-      status: 'completed',
-      demo_mode: demoMode,
-      created_at: new Date()
-    });
-
     // Добавляем игрока в текущую игру
-    rocketGame.players.push({
-      userId: telegramId.toString(),
-      name: user.username || `${user.first_name} ${user.last_name}`,
-      betAmount: betAmount,
-      isBot: false,
-      cashedOut: false,
-      cashoutMultiplier: null,
-      winAmount: 0,
-      demoMode: demoMode
-    });
+    const existingPlayerIndex = rocketGame.players.findIndex(p => 
+      !p.isBot && p.userId === telegramId
+    );
+
+    if (existingPlayerIndex !== -1) {
+      rocketGame.players[existingPlayerIndex].betAmount += parseFloat(betAmount);
+    } else {
+      rocketGame.players.push({
+        userId: telegramId,
+        name: `User_${telegramId}`,
+        betAmount: parseFloat(betAmount),
+        autoCashout: null,
+        isBot: false,
+        demoMode: user.demo_mode,
+        cashedOut: false,
+        cashoutMultiplier: null,
+        winAmount: 0
+      });
+    }
 
     broadcastRocketUpdate();
-
+    
     res.json({
       success: true,
-      newBalance: demoMode ? user.demo_balance - betAmount : user.main_balance - betAmount
+      new_balance: user.demo_mode ? user.demo_balance - betAmount : user.main_balance - betAmount
     });
   } catch (error) {
     console.error('Rocket bet error:', error);
@@ -1068,10 +1077,10 @@ app.post('/api/game/rocket/bet', async (req, res) => {
   }
 });
 
-// API: Игра в ракетку - вывод средств
-app.post('/api/game/rocket/cashout', async (req, res) => {
+// API: Забрать выигрыш в Rocket
+app.post('/api/rocket/cashout', async (req, res) => {
   const { telegramId } = req.body;
-
+  
   try {
     const user = users.findOne({ telegram_id: parseInt(telegramId) });
     
@@ -1080,35 +1089,27 @@ app.post('/api/game/rocket/cashout', async (req, res) => {
     }
 
     if (rocketGame.status !== 'flying') {
-      return res.status(400).json({ error: 'Game not in flight' });
+      return res.status(400).json({ error: 'Game is not in flight' });
     }
 
-    // Находим ставку пользователя
-    const playerIndex = rocketGame.players.findIndex(p => 
-      !p.isBot && p.userId === telegramId.toString()
+    const player = rocketGame.players.find(p => 
+      !p.isBot && p.userId === telegramId && !p.cashedOut
     );
 
-    if (playerIndex === -1) {
-      return res.status(400).json({ error: 'No bet found for this game' });
+    if (!player) {
+      return res.status(400).json({ error: 'No active bet found' });
     }
 
-    const player = rocketGame.players[playerIndex];
-    
-    if (player.cashedOut) {
-      return res.status(400).json({ error: 'Already cashed out' });
-    }
-
-    // Обновляем информацию о выводе
     player.cashedOut = true;
     player.cashoutMultiplier = rocketGame.multiplier;
     player.winAmount = player.betAmount * rocketGame.multiplier;
 
     broadcastRocketUpdate();
-
+    
     res.json({
       success: true,
       multiplier: rocketGame.multiplier,
-      winAmount: player.winAmount
+      win_amount: player.winAmount
     });
   } catch (error) {
     console.error('Rocket cashout error:', error);
@@ -1116,436 +1117,67 @@ app.post('/api/game/rocket/cashout', async (req, res) => {
   }
 });
 
-// API: Получить текущее состояние ракетки
-app.get('/api/game/rocket/status', async (req, res) => {
-  res.json({
-    success: true,
-    game: rocketGame
-  });
+// API: Получить историю Rocket
+app.get('/api/rocket/history', async (req, res) => {
+  try {
+    const history = rocketGames.chain().simplesort('startTime', true).limit(20).data();
+    res.json(history);
+  } catch (error) {
+    console.error('Get rocket history error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-// API: Получить историю ракетки
-app.get('/api/game/rocket/history', async (req, res) => {
-  const history = rocketGames.find()
-    .sort((a, b) => b.startTime - a.startTime)
-    .slice(0, 20);
-  
-  res.json({
-    success: true,
-    history: history
-  });
-});
+// Крон задача для проверки депозитов
+cron.schedule('*/30 * * * * *', async () => {
+  try {
+    const pendingDeposits = transactions.find({
+      type: 'deposit',
+      status: 'pending'
+    });
 
-// API: Проверка админа
-app.post('/api/admin/check', async (req, res) => {
-    const { telegramId } = req.body;
+    for (const deposit of pendingDeposits) {
+      const invoice = await cryptoPayRequest('getInvoices', {
+        invoice_ids: deposit.invoice_id
+      }, false);
 
-    try {
-        const isAdmin = parseInt(telegramId) === parseInt(process.env.OWNER_TELEGRAM_ID);
-        res.json({ success: true, isAdmin: isAdmin });
-    } catch (error) {
-        console.error('Admin check error:', error);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-// API: Переключение режима
-app.post('/api/user/toggle-mode', async (req, res) => {
-    const { telegramId } = req.body;
-
-    try {
-        let user = users.findOne({ telegram_id: parseInt(telegramId) });
+      if (invoice.ok && invoice.result && invoice.result.items.length > 0) {
+        const invoiceData = invoice.result.items[0];
         
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const newDemoMode = !user.demo_mode;
-        
-        users.update({
-            ...user,
-            demo_mode: newDemoMode
-        });
-
-        res.json({ 
-            success: true, 
-            demo_mode: newDemoMode,
-            balance: newDemoMode ? user.demo_balance : user.main_balance
-        });
-    } catch (error) {
-        console.error('Toggle mode error:', error);
-        res.status(500).json({ error: 'Toggle mode error' });
-    }
-});
-
-// API: Депозит
-app.post('/api/deposit', async (req, res) => {
-    const { telegramId, amount, demoMode } = req.body;
-    
-    if (!amount || amount < 1) {
-        return res.status(400).json({ error: 'Минимальный депозит: 1 TON' });
-    }
-
-    try {
-        const user = users.findOne({ telegram_id: parseInt(telegramId) });
-        if (!user) {
-            return res.status(404).json({ error: 'Пользователь не найден' });
-        }
-
-        if (demoMode) {
+        if (invoiceData.status === 'paid') {
+          const user = users.get(deposit.user_id);
+          
+          if (user) {
             users.update({
-                ...user,
-                demo_balance: user.demo_balance + amount
+              ...user,
+              main_balance: user.main_balance + deposit.amount
             });
-
-            transactions.insert({
-                user_id: user.$loki,
-                amount: amount,
-                type: 'deposit',
-                status: 'completed',
-                demo_mode: true,
-                created_at: new Date()
-            });
-
-            return res.json({
-                success: true,
-                demo: true,
-                message: 'Demo deposit successful',
-                new_balance: user.demo_balance + amount
-            });
-        }
-
-        // Реальный депозит через Crypto Pay
-        const invoice = await cryptoPayRequest('createInvoice', {
-            asset: 'TON',
-            amount: amount.toString(),
-            description: `Deposit for user ${telegramId}`,
-            paid_btn_name: 'viewItem',
-            paid_btn_url: `https://t.me/${process.env.BOT_USERNAME.replace('@', '')}`,
-            payload: `deposit_${telegramId}_${Date.now()}`
-        }, false);
-
-        if (invoice.ok && invoice.result) {
-            const transaction = transactions.insert({
-                user_id: user.$loki,
-                amount: amount,
-                type: 'deposit',
-                status: 'pending',
-                demo_mode: false,
-                crypto_pay_invoice_id: invoice.result.invoice_id,
-                created_at: new Date()
-            });
-
-            res.json({
-                success: true,
-                demo: false,
-                invoiceUrl: invoice.result.pay_url,
-                invoiceId: invoice.result.invoice_id,
-                transactionId: transaction.$loki
-            });
-        } else {
-            res.status(500).json({ error: 'Ошибка при создании инвойса' });
-        }
-    } catch (error) {
-        console.error('Crypto Pay error:', error);
-        res.status(500).json({ error: 'Ошибка Crypto Pay' });
-    }
-});
-
-// API: Статус инвойса
-app.get('/api/invoice/:invoiceId', async (req, res) => {
-    const invoiceId = req.params.invoiceId;
-
-    try {
-        const response = await cryptoPayRequest('getInvoices', {
-            invoice_ids: invoiceId
-        }, false);
-
-        if (response.ok && response.result && response.result.items.length > 0) {
-            const invoice = response.result.items[0];
             
-            if (invoice.status === 'paid') {
-                const transaction = transactions.findOne({ crypto_pay_invoice_id: parseInt(invoiceId) });
-                if (transaction && transaction.status === 'pending') {
-                    const user = users.get(transaction.user_id);
-                    users.update({
-                        ...user,
-                        main_balance: user.main_balance + transaction.amount
-                    });
-                    
-                    transactions.update({
-                        ...transaction,
-                        status: 'completed'
-                    });
-
-                    updateCasinoBank(transaction.amount);
-                }
-            }
-
-            res.json({ status: invoice.status });
-        } else {
-            res.status(404).json({ error: 'Инвойс не найден' });
-        }
-    } catch (error) {
-        console.error('Invoice status error:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
-    }
-});
-
-// API: Вывод средств
-app.post('/api/withdraw', async (req, res) => {
-    const { telegramId, amount, address, demoMode } = req.body;
-
-    if (!amount || amount < 1 || !address) {
-        return res.status(400).json({ error: 'Неверная сумма или адрес' });
-    }
-
-    try {
-        const user = users.findOne({ telegram_id: parseInt(telegramId) });
-        if (!user) {
-            return res.status(400).json({ error: 'Пользователь не найден' });
-        }
-
-        const currentBalance = demoMode ? user.demo_balance : user.main_balance;
-        if (currentBalance < amount) {
-            return res.status(400).json({ error: 'Недостаточно средств на балансе' });
-        }
-
-        if (demoMode) {
-            users.update({
-                ...user,
-                demo_balance: user.demo_balance - amount
+            transactions.update({
+              ...deposit,
+              status: 'completed'
             });
-
-            transactions.insert({
-                user_id: user.$loki,
-                amount: -amount,
-                type: 'withdraw',
-                status: 'completed',
-                demo_mode: true,
-                address: address,
-                created_at: new Date()
-            });
-
-            return res.json({
-                success: true,
-                demo: true,
-                message: 'Demo withdrawal successful',
-                new_balance: user.demo_balance - amount
-            });
-        }
-
-        // Реальный вывод
-        const bank = getCasinoBank();
-        if (bank.total_balance < amount) {
-            return res.status(400).json({ error: 'Недостаточно средств в банке казино' });
-        }
-
-        const transfer = await cryptoPayRequest('transfer', {
-            user_id: parseInt(telegramId),
-            asset: 'TON',
-            amount: amount.toString(),
-            spend_id: `withdraw_${telegramId}_${Date.now()}`
-        }, false);
-
-        if (transfer.ok && transfer.result) {
-            users.update({
-                ...user,
-                main_balance: user.main_balance - amount
-            });
-
-            updateCasinoBank(-amount);
-
-            transactions.insert({
-                user_id: user.$loki,
-                amount: -amount,
-                type: 'withdraw',
-                status: 'completed',
-                demo_mode: false,
-                address: address,
-                hash: transfer.result.hash,
-                created_at: new Date()
-            });
-
-            res.json({
-                success: true,
-                demo: false,
-                message: 'Withdrawal successful',
-                hash: transfer.result.hash,
-                new_balance: user.main_balance - amount
-            });
-        } else {
-            res.status(500).json({ error: 'Ошибка при выводе средств' });
-        }
-    } catch (error) {
-        console.error('Crypto Pay error:', error);
-        res.status(500).json({ error: 'Ошибка Crypto Pay' });
-    }
-});
-
-// API: Добавление демо-баланса
-app.post('/api/admin/add-balance', async (req, res) => {
-    const { telegramId, targetTelegramId, amount } = req.body;
-
-    if (telegramId !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
-        return res.status(403).json({ error: 'Access denied' });
-    }
-
-    try {
-        const targetUser = users.findOne({ telegram_id: parseInt(targetTelegramId) });
-        if (!targetUser) {
-            return res.status(404).json({ error: 'Пользователь не найден' });
-        }
-
-        users.update({
-            ...targetUser,
-            demo_balance: targetUser.demo_balance + parseFloat(amount)
-        });
-
-        transactions.insert({
-            user_id: targetUser.$loki,
-            amount: parseFloat(amount),
-            type: 'admin_deposit',
-            status: 'completed',
-            demo_mode: true,
-            created_at: new Date(),
-            admin_telegram_id: telegramId
-        });
-
-        res.json({ 
-            success: true, 
-            message: 'Demo balance added successfully',
-            new_balance: targetUser.demo_balance + parseFloat(amount)
-        });
-    } catch (error) {
-        console.error('Add demo balance error:', error);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-// API: Вывод прибыли
-app.post('/api/admin/withdraw', async (req, res) => {
-    const { telegramId, amount } = req.body;
-
-    if (telegramId !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
-        return res.status(403).json({ error: 'Access denied' });
-    }
-
-    try {
-        const bank = getCasinoBank();
-        
-        if (bank.total_balance < amount) {
-            return res.status(400).json({ error: 'Недостаточно средств в банке казино' });
-        }
-
-        const transfer = await cryptoPayRequest('transfer', {
-            user_id: telegramId,
-            asset: 'TON',
-            amount: amount.toString(),
-            spend_id: `owner_withdraw_${Date.now()}`
-        }, false);
-
-        if (transfer.ok && transfer.result) {
-            updateCasinoBank(-amount);
             
-            logAdminAction('withdraw_profit', telegramId, { amount: amount });
-            
-            res.json({
-                success: true,
-                message: 'Profit withdrawn successfully',
-                hash: transfer.result.hash,
-                new_balance: bank.total_balance - amount
-            });
-        } else {
-            res.status(500).json({ error: 'Withdrawal failed' });
+            updateCasinoBank(-deposit.amount);
+          }
         }
-    } catch (error) {
-        console.error('Withdraw profit error:', error);
-        res.status(500).json({ error: 'Withdrawal error' });
+      }
     }
-});
-
-
-app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
-    const telegramId = parseInt(req.params.telegramId);
-
-    if (telegramId !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
-        return res.status(403).json({ error: 'Access denied' });
-    }
-
-    try {
-        const bank = getCasinoBank();
-        const totalUsers = users.count();
-        const totalTransactions = transactions.count();
-
-        res.json({
-            bank_balance: bank ? bank.total_balance : 0,
-            total_users: totalUsers,
-            total_transactions: totalTransactions
-        });
-    } catch (error) {
-        console.error('Admin dashboard error:', error);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-// Обслуживание статических файлов
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin.html'));
-});
-
-app.get('/mines', (req, res) => {
-  res.sendFile(path.join(__dirname, 'mines.html'));
-});
-
-app.get('/rocket', (req, res) => {
-  res.sendFile(path.join(__dirname, 'rocket.html'));
+  } catch (error) {
+    console.error('Cron job error:', error);
+  }
 });
 
 // Запуск сервера
-const server = app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+async function startServer() {
+  await initDatabase();
+  
+  // Запускаем первую игру ракетки через 5 секунд после старта
+  setTimeout(() => {
+    startRocketGame();
+  }, 5000);
+  
+  console.log(`TON Casino Server started on port ${PORT}`);
+}
 
-
-// WebSocket сервер
-server.on('upgrade', (request, socket, head) => {
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
-  });
-});
-
-// Планировщик для очистки старых данных
-cron.schedule('0 0 * * *', () => {
-  console.log('Running daily cleanup...');
-  
-  // Удаляем транзакции старше 30 дней
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
-  const oldTransactions = transactions.find({ 
-    created_at: { $lt: thirtyDaysAgo } 
-  });
-  
-  oldTransactions.forEach(t => transactions.remove(t));
-  
-  // Удаляем игры старше 30 дней
-  const oldMinesGames = minesGames.find({ 
-    created_at: { $lt: thirtyDaysAgo } 
-  });
-  
-  oldMinesGames.forEach(g => minesGames.remove(g));
-  
-  // Удаляем ставки в ракетку старше 30 дней
-  const oldRocketBets = rocketBets.find({ 
-    created_at: { $lt: thirtyDaysAgo } 
-  });
-  
-  oldRocketBets.forEach(b => rocketBets.remove(b));
-  
-  console.log(`Cleaned up ${oldTransactions.length} transactions, ${oldMinesGames.length} mines games, ${oldRocketBets.length} rocket bets`);
-});
+startServer();
