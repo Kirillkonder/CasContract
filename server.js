@@ -150,6 +150,12 @@ async function cryptoPayRequest(method, data = {}, demoMode = false) {
     return response.data;
   } catch (error) {
     console.error('Crypto Pay API error:', error.response?.data || error.message);
+    // Добавляем больше информации об ошибке
+    console.error('Error details:', {
+      url: `${CRYPTO_PAY_API}/${method}`,
+      data: data,
+      demoMode: demoMode
+    });
     throw error;
   }
 }
@@ -673,9 +679,10 @@ app.post('/api/deposit/create', async (req, res) => {
 
     // Для демо-режима сразу зачисляем средства
     if (user.demo_mode) {
+      const newBalance = user.demo_balance + parseFloat(amount);
       users.update({
         ...user,
-        demo_balance: user.demo_balance + parseFloat(amount)
+        demo_balance: newBalance
       });
       
       // Записываем транзакцию
@@ -691,7 +698,7 @@ app.post('/api/deposit/create', async (req, res) => {
       return res.json({
         success: true,
         demo_mode: true,
-        new_balance: user.demo_balance + parseFloat(amount)
+        new_balance: newBalance
       });
     }
 
@@ -703,7 +710,7 @@ app.post('/api/deposit/create', async (req, res) => {
       paid_btn_name: 'return',
       paid_btn_url: `https://t.me/${process.env.BOT_USERNAME || 'your_bot'}`,
       payload: JSON.stringify({
-        telegramId: telegramId,
+        telegramId: parseInt(telegramId),
         type: 'deposit'
       }),
       allow_comments: false
@@ -727,14 +734,15 @@ app.post('/api/deposit/create', async (req, res) => {
         demo_mode: false
       });
     } else {
-      res.status(500).json({ error: 'Failed to create invoice' });
+      res.status(500).json({ error: 'Failed to create invoice: ' + (invoice.error?.name || 'Unknown error') });
     }
   } catch (error) {
     console.error('Create deposit error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error: ' + error.message });
   }
 });
 
+// API: Создать вывод
 // API: Создать вывод
 app.post('/api/withdraw/create', async (req, res) => {
   const { telegramId, amount, address } = req.body;
@@ -744,6 +752,11 @@ app.post('/api/withdraw/create', async (req, res) => {
     
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Проверяем, находится ли пользователь в демо-режиме
+    if (user.demo_mode) {
+      return res.status(400).json({ error: 'Cannot withdraw in demo mode' });
     }
 
     if (user.main_balance < amount) {
@@ -759,9 +772,10 @@ app.post('/api/withdraw/create', async (req, res) => {
 
     if (transfer.ok && transfer.result) {
       // Обновляем баланс пользователя
+      const newBalance = user.main_balance - amount;
       users.update({
         ...user,
-        main_balance: user.main_balance - amount
+        main_balance: newBalance
       });
 
       // Записываем транзакцию
@@ -782,14 +796,14 @@ app.post('/api/withdraw/create', async (req, res) => {
         success: true,
         message: 'Withdrawal successful',
         hash: transfer.result.hash,
-        new_balance: user.main_balance - amount
+        new_balance: newBalance
       });
     } else {
-      res.status(500).json({ error: 'Withdrawal failed' });
+      res.status(500).json({ error: 'Withdrawal failed: ' + (transfer.error?.name || 'Unknown error') });
     }
   } catch (error) {
     console.error('Create withdraw error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error: ' + error.message });
   }
 });
 

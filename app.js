@@ -42,19 +42,24 @@ class TonCasinoApp {
         }
     }
 
-    async loadUserData() {
+    async  loadUserData() {
     try {
         const response = await fetch(`/api/user/${this.tg.initDataUnsafe.user.id}`);
         if (response.ok) {
             this.userData = await response.json();
             this.demoMode = this.userData.demo_mode;
+            
+            // Обновляем UI с правильными балансами
+            const balanceElement = document.getElementById('balance');
+            if (balanceElement) {
+                balanceElement.textContent = this.demoMode ? 
+                    this.userData.demo_balance.toFixed(2) : 
+                    this.userData.main_balance.toFixed(2);
+            }
+            
             this.updateUI();
         } else {
             console.error('Failed to load user data:', response.status);
-            // Создаем пользователя если не существует
-            if (response.status === 404) {
-                await this.createUser();
-            }
         }
     } catch (error) {
         console.error('Error loading user data:', error);
@@ -176,7 +181,7 @@ async createUser() {
         }
     }
 
-    async toggleMode() {
+    async  toggleMode() {
     try {
         const response = await fetch('/api/user/toggle-demo', {
             method: 'POST',
@@ -193,8 +198,8 @@ async createUser() {
                 this.demoMode = result.demo_mode;
                 this.userData.demo_mode = result.demo_mode;
                 
-                // Обновляем UI
-                this.updateUI();
+                // Загружаем обновленные данные пользователя
+                await this.loadUserData();
                 
                 this.tg.showPopup({
                     title: this.demoMode ? "🔧 Тестовый режим" : "🌐 Реальный режим",
@@ -203,9 +208,6 @@ async createUser() {
                         "Переключено на реальные TON",
                     buttons: [{ type: "ok" }]
                 });
-                
-                // Перезагружаем данные пользователя
-                await this.loadUserData();
             } else {
                 throw new Error(result.error || 'Unknown error');
             }
