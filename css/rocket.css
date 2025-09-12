@@ -2,6 +2,7 @@
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
+    font-family: Arial, sans-serif;
 }
 
 .rocket-header {
@@ -11,11 +12,12 @@
     background: rgba(25, 30, 42, 0.95);
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    color: white;
 }
 
 .rocket-canvas {
     width: 100%;
-    height: 300px;
+    height: 400px;
     background: linear-gradient(180deg, #0a0e17 0%, #131725 100%);
     border-radius: 15px;
     margin-bottom: 20px;
@@ -23,7 +25,7 @@
     overflow: hidden;
 }
 
-/* Новый фон с синими линиями */
+/* Фон с сеткой */
 .rocket-canvas::before {
     content: '';
     position: absolute;
@@ -32,23 +34,52 @@
     right: 0;
     bottom: 0;
     background: 
-        linear-gradient(90deg, transparent 99%, rgba(0, 136, 255, 0.1) 100%) 0 0 / 20px 100%,
-        linear-gradient(transparent 99%, rgba(0, 136, 255, 0.1) 100%) 0 0 / 100% 20px,
-        radial-gradient(circle at 50% 50%, rgba(0, 89, 255, 0.1) 0%, transparent 50%);
+        linear-gradient(90deg, transparent 99%, rgba(0, 136, 255, 0.1) 100%) 0 0 / 20px 20px,
+        linear-gradient(transparent 99%, rgba(0, 136, 255, 0.1) 100%) 0 0 / 20px 20px;
     z-index: 1;
 }
 
+/* Ракета - переделана для полета слева направо и вверх */
 .rocket {
     position: absolute;
     bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 10%;
     width: 40px;
     height: 80px;
-    background: url('Rocket.png') no-repeat center center;
+    background: url('rocket.png') no-repeat center center;
     background-size: contain;
-    transition: bottom 0.1s linear;
+    transform: rotate(45deg);
+    transition: all 0.1s linear;
     z-index: 10;
+}
+
+/* Траектория полета */
+.rocket-flying {
+    animation: rocketFly 10s ease-in forwards;
+}
+
+@keyframes rocketFly {
+    0% {
+        left: 10%;
+        bottom: 50px;
+        transform: rotate(45deg) scale(1);
+    }
+    30% {
+        left: 30%;
+        bottom: 120px;
+        transform: rotate(45deg) scale(1);
+    }
+    60% {
+        left: 50%;
+        bottom: 200px;
+        transform: rotate(45deg) scale(1);
+    }
+    100% {
+        left: 90%;
+        bottom: 300px;
+        transform: rotate(45deg) scale(1);
+        opacity: 1;
+    }
 }
 
 .multiplier-display {
@@ -63,11 +94,65 @@
     z-index: 10;
 }
 
+/* Таймер как на изображении */
+.timer-display {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    font-weight: bold;
+    color: #fdcb6e;
+    z-index: 10;
+}
+
+/* Взрыв по центру */
+.explosion {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    background: url('fire.png') no-repeat center center;
+    background-size: contain;
+    animation: explode 1s ease-out forwards;
+    z-index: 15;
+    pointer-events: none;
+    display: none;
+}
+
+@keyframes explode {
+    0% { 
+        transform: translate(-50%, -50%) scale(0); 
+        opacity: 1; 
+    }
+    50% { 
+        transform: translate(-50%, -50%) scale(1.2); 
+        opacity: 0.8; 
+    }
+    100% { 
+        transform: translate(-50%, -50%) scale(1.5); 
+        opacity: 0; 
+    }
+}
+
+/* След от ракеты */
+.trail {
+    position: absolute;
+    width: 4px;
+    background: linear-gradient(to right, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%);
+    z-index: 1;
+    transform-origin: left bottom;
+}
+
+/* Панель ставок как на изображении */
 .betting-panel {
     background: rgba(25, 30, 42, 0.95);
     border-radius: 15px;
     padding: 20px;
     margin-bottom: 20px;
+    color: white;
 }
 
 .bet-controls {
@@ -118,12 +203,14 @@
     cursor: not-allowed;
 }
 
+/* Список игроков как на изображении */
 .players-list {
     background: rgba(25, 30, 42, 0.95);
     border-radius: 15px;
     padding: 20px;
     max-height: 200px;
     overflow-y: auto;
+    color: white;
 }
 
 .player-item {
@@ -146,6 +233,7 @@
     font-weight: bold;
 }
 
+/* Статус игры */
 .game-status {
     text-align: center;
     padding: 10px;
@@ -171,6 +259,7 @@
     color: #ff6b6b;
 }
 
+/* История */
 .history-container {
     margin-top: 20px;
 }
@@ -199,64 +288,34 @@
     color: #ff6b6b;
 }
 
-/* Обновленная анимация взрыва */
-.explosion {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 200px;
-    height: 200px;
-    background: url('Fire.png') no-repeat center center;
-    background-size: contain;
-    animation: explode 1s ease-out forwards;
-    z-index: 15;
-    pointer-events: none;
+/* Стили для текущих ставок как на изображении */
+.current-bets {
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
 }
 
-@keyframes explode {
-    0% { 
-        transform: translate(-50%, -50%) scale(0); 
-        opacity: 1; 
-    }
-    50% { 
-        transform: translate(-50%, -50%) scale(1.2); 
-        opacity: 0.8; 
-    }
-    100% { 
-        transform: translate(-50%, -50%) scale(1.5); 
-        opacity: 0; 
-    }
+.bet-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.trail {
-    position: absolute;
-    bottom: 90px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 4px;
-    background: linear-gradient(to top, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%);
-    z-index: 1;
+.bet-item:last-child {
+    border-bottom: none;
 }
 
-/* Анимация для частиц следа */
-.particle {
-    position: absolute;
-    width: 3px;
-    height: 10px;
-    background: linear-gradient(to top, #ff7700, #ff3300);
-    border-radius: 50%;
-    opacity: 0.7;
-    animation: particleFloat 1s ease-out forwards;
+.bet-player {
+    color: #f0f0f0;
+    font-weight: bold;
 }
 
-@keyframes particleFloat {
-    0% {
-        transform: translateY(0) scale(1);
-        opacity: 0.7;
-    }
-    100% {
-        transform: translateY(-20px) scale(0.3);
-        opacity: 0;
-    }
+.bet-amount {
+    color: #00b894;
+}
+
+.bet-multiplier {
+    color: #74b9ff;
 }
