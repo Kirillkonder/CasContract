@@ -9,6 +9,13 @@ let rocketPosition = 50;
 let countdownInterval = null;
 let rocketSpeed = 0.1;
 
+// В самом начале, после объявления переменных
+document.addEventListener('DOMContentLoaded', function() {
+    initializeGame();
+    connectWebSocket();
+    resetRocketPosition(); // Добавьте эту строку
+});
+
 // Инициализация
 document.addEventListener('DOMContentLoaded', function() {
     initializeGame();
@@ -110,7 +117,7 @@ function updateGameState(gameState) {
             statusElement.textContent = `Ракета взорвалась на ${gameState.crashPoint.toFixed(2)}x!`;
             countdownElement.textContent = '';
             clearCountdown();
-            showExplosion();
+            crashRocket(); // Замените showExplosion() на crashRocket()
             break;
     }
     
@@ -181,18 +188,12 @@ function updateRocketPosition(multiplier) {
     rocketElement.style.bottom = `${newPosition}px`;
     trailElement.style.height = `${newPosition - 90}px`;
     rocketElement.style.transition = `bottom ${0.5/rocketSpeed}s linear`;
+    
+    // Добавьте этот вызов для обновления множителя
+    updateMultiplier(multiplier);
 }
 
-function showExplosion() {
-    const canvas = document.getElementById('rocketCanvas');
-    const explosion = document.createElement('div');
-    explosion.className = 'explosion';
-    canvas.appendChild(explosion);
-    
-    setTimeout(() => {
-        canvas.removeChild(explosion);
-    }, 1000);
-}
+
 
 function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
@@ -407,6 +408,46 @@ function resetBettingUI() {
     document.getElementById('cashoutButton').textContent = 'Забрать выигрыш';
     
     updateBettingUI();
+}
+
+// Функция для взрыва ракеты
+function crashRocket() {
+    const rocket = document.getElementById('rocket');
+    const crashText = document.getElementById('crashText');
+    const multiplierDisplay = document.getElementById('multiplierDisplay');
+    
+    // Скрываем ракету и показываем текст "КРАХ"
+    rocket.style.display = 'none';
+    crashText.style.display = 'block';
+    multiplierDisplay.style.display = 'none';
+    
+    // Через 3 секунды возвращаем к исходному состоянию
+    setTimeout(() => {
+        crashText.style.display = 'none';
+        rocket.style.display = 'block';
+        multiplierDisplay.style.display = 'block';
+        resetRocketPosition();
+    }, 3000);
+}
+
+// Функция для сброса позиции ракеты
+function resetRocketPosition() {
+    const rocket = document.getElementById('rocket');
+    const trail = document.getElementById('rocketTrail');
+    rocket.style.bottom = '50px';
+    trail.style.height = '0px';
+}
+
+// Функция для обновления множителя
+function updateMultiplier(value) {
+    const multiplierDisplay = document.getElementById('multiplierDisplay');
+    multiplierDisplay.textContent = value.toFixed(2) + 'x';
+    
+    // Анимация пульсации
+    multiplierDisplay.classList.add('multiplier-animate');
+    setTimeout(() => {
+        multiplierDisplay.classList.remove('multiplier-animate');
+    }, 300);
 }
 
 // Глобальная переменная для доступа из WebSocket

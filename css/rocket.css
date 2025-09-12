@@ -63,7 +63,7 @@
 
 .rocket-canvas {
     position: relative;
-    height: 300px;
+    height: 400px;
     background: #0f1219;
     border-radius: 15px;
     margin-bottom: 15px;
@@ -87,14 +87,24 @@
 
 .multiplier-display {
     position: absolute;
-    top: 15px;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    font-size: 24px;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
     font-weight: bold;
     color: white;
-    text-shadow: 0 0 5px rgba(0,0,0,0.7);
+    text-shadow: 0 0 10px rgba(0,0,0,0.7);
     z-index: 5;
+    transition: all 0.3s ease;
+}
+
+.multiplier-animate {
+    animation: pulse 0.5s infinite alternate;
+}
+
+@keyframes pulse {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    100% { transform: translate(-50%, -50%) scale(1.1); }
 }
 
 .rocket {
@@ -107,25 +117,25 @@
 }
 
 .rocket-image {
-    width: 40px;
-    height: 80px;
+    width: 60px;
+    height: 120px;
     display: block;
 }
 
 .rocket-flame {
     position: absolute;
-    bottom: -15px;
+    bottom: -20px;
     left: 50%;
     transform: translateX(-50%);
-    width: 20px;
-    height: 30px;
+    width: 30px;
+    height: 50px;
     background: radial-gradient(ellipse at center, #ff9900 0%, #ff5500 50%, transparent 70%);
     animation: flame 0.5s infinite alternate;
 }
 
 @keyframes flame {
-    0% { height: 25px; opacity: 0.8; }
-    100% { height: 35px; opacity: 1; }
+    0% { height: 40px; opacity: 0.8; }
+    100% { height: 50px; opacity: 1; }
 }
 
 .trail {
@@ -133,7 +143,7 @@
     bottom: 50px;
     left: 50%;
     transform: translateX(-50%);
-    width: 4px;
+    width: 6px;
     background: linear-gradient(to top, #ff7675, #74b9ff, transparent);
     height: 0px;
     z-index: 5;
@@ -144,8 +154,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 100px;
-    height: 100px;
+    width: 150px;
+    height: 150px;
     background: radial-gradient(circle, #ff7675, #e17055, transparent 70%);
     border-radius: 50%;
     animation: explode 0.5s ease-out;
@@ -155,6 +165,26 @@
 @keyframes explode {
     0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
     100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+}
+
+.crash-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 64px;
+    font-weight: bold;
+    color: #ff0000;
+    text-shadow: 0 0 10px rgba(255,0,0,0.7);
+    z-index: 25;
+    display: none;
+    animation: crashPulse 1s infinite;
+}
+
+@keyframes crashPulse {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 .betting-panel {
