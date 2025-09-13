@@ -172,36 +172,32 @@
     const rocketElement = document.getElementById('rocket');
     const trailElement = document.getElementById('rocketTrail');
     const canvasElement = document.getElementById('rocketCanvas');
-    const rocketImg = rocketElement.querySelector('.rocket-img');
     
-    // Убираем все inline стили позиционирования, чтобы работал CSS
-    rocketElement.style.bottom = '';
-    rocketElement.style.left = '';
-    rocketElement.style.transform = '';
-    
-    // Обновляем след ракеты в зависимости от множителя
+    // Обновляем след ракеты
     const trailHeight = Math.min(multiplier * 20, 250);
     trailElement.style.height = `${trailHeight}px`;
     
-    // Убираем все предыдущие классы анимации
-    rocketImg.classList.remove('rocket-flying', 'rocket-rotated', 'rocket-fully-rotated', 'rocket-pulsing');
-    canvasElement.classList.remove('pulsing-background');
-    
-    // Добавляем анимации в зависимости от множителя
-    if (multiplier > 1.1) {
-        rocketImg.classList.add('rocket-flying');
-    }
-    
-    // После 3x - плавно поворачиваем вверх
+    // После 3x - начинаем поворачивать ракету
     if (multiplier >= 3 && multiplier < 5) {
-        rocketImg.classList.add('rocket-rotated');
+        const rotation = -90 * ((multiplier - 3) / 2); // Плавный поворот от 0 до -90 градусов
+        rocketElement.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
     }
     
-    // После 5x - полностью поворачиваем вверх и добавляем пульсацию
+    // После 5x - полностью повернута и пульсирует
     if (multiplier >= 5) {
-        rocketImg.classList.remove('rocket-rotated');
-        rocketImg.classList.add('rocket-fully-rotated', 'rocket-pulsing');
+        rocketElement.style.transform = 'translateX(-50%) rotate(-90deg)';
+        rocketElement.classList.add('rocket-pulsing');
         canvasElement.classList.add('pulsing-background');
+    } else {
+        rocketElement.classList.remove('rocket-pulsing');
+        canvasElement.classList.remove('pulsing-background');
+    }
+    
+    // Двигаем ракету вверх
+    if (multiplier > 1) {
+        const maxHeight = 80; // Максимальная высота в %
+        const rocketHeight = Math.min(maxHeight, 50 + (multiplier * 6));
+        rocketElement.style.bottom = `${rocketHeight}%`;
     }
 }
 
