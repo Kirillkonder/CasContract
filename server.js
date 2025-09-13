@@ -322,11 +322,11 @@ function processRocketGameEnd() {
         totalPayouts: rocketGame.players.reduce((sum, p) => sum + (p.cashedOut ? p.winAmount : 0), 0)
     });
 
-  // Обрабатываем выплаты для реальных игроков
-   rocketGame.players.forEach(player => {
-        if (!player.isBot) {
+    // Обрабатываем выплаты для реальных игроков
+    rocketGame.players.forEach(player => {
+        if (!player.isBot && player.cashedOut) {
             const user = users.findOne({ telegram_id: parseInt(player.userId) });
-            if (user && player.cashedOut) {
+            if (user) {
                 const winAmount = player.betAmount * player.cashoutMultiplier;
                 
                 if (player.demoMode) {
@@ -367,8 +367,8 @@ function processRocketGameEnd() {
         }
     });
 
-  // Добавляем в историю
-  rocketGame.history.unshift({
+    // Добавляем в историю
+    rocketGame.history.unshift({
         crashPoint: rocketGame.crashPoint,
         multiplier: rocketGame.multiplier
     });
@@ -379,14 +379,19 @@ function processRocketGameEnd() {
 
     broadcastRocketUpdate();
 
-    // Через 5 секунд начинаем новую игру
+    // Перезапускаем игру через 3 секунды
     setTimeout(() => {
-        rocketGame.status = 'waiting';
-        rocketGame.multiplier = 1.00;
-        rocketGame.players = [];
+        rocketGame = {
+            status: 'waiting',
+            multiplier: 1.0,
+            players: [],
+            history: rocketGame.history,
+            startTime: Date.now() + 10000, // 10 секунд до начала
+            endBetTime: Date.now() + 10000, // 10 секунд на ставки
+            crashPoint: 0
+        };
         broadcastRocketUpdate();
-        startRocketGame();
-    }, 5000);
+    }, 3000);
 }
 
 function broadcastRocketUpdate() {

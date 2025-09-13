@@ -30,8 +30,8 @@
     transform: translateX(-50%);
     transition: bottom 0.1s linear;
     z-index: 10;
-    width: 100px; /* Увеличили размер ракеты */
-    height: 150px; /* Увеличили размер ракеты */
+    width: 100px;
+    height: 150px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -220,16 +220,6 @@
         transform: scale(1); 
         opacity: 0; 
     }
-}
-
-.trail {
-    position: absolute;
-    bottom: 90px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 4px;
-    background: linear-gradient(to top, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%);
-    z-index: 1;
 }
 
 /* Анимация для ракеты */
