@@ -162,11 +162,11 @@
     }
 
     function clearCountdown() {
-    if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
     }
-}
 
     function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
@@ -224,53 +224,50 @@
     }, 1000);
 }
 
-    
-function updatePlayersList(players) {
-    const playersList = document.getElementById('playersList');
-    const playersCount = document.getElementById('playersCount');
-    
-    playersList.innerHTML = '';
-    playersCount.textContent = players.length;
-    
-    players.forEach(player => {
-        const playerElement = document.createElement('div');
-        playerElement.className = 'player-item';
+    function updatePlayersList(players) {
+        const playersList = document.getElementById('playersList');
+        const playersCount = document.getElementById('playersCount');
         
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'player-name';
-        nameSpan.textContent = player.name;
+        playersList.innerHTML = '';
+        playersCount.textContent = players.length;
         
-        const betSpan = document.createElement('span');
-        betSpan.className = 'player-bet';
-        
-        if (player.cashedOut) {
-            betSpan.textContent = `${player.cashoutMultiplier.toFixed(2)}x (${player.winAmount.toFixed(2)} TON)`;
-            betSpan.style.color = '#00b894';
-        } else if (player.betAmount > 0) {
-            betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-            betSpan.style.color = '#fdcb6e';
-        } else {
-            betSpan.textContent = '0 TON';
-        }
-        
-        playerElement.appendChild(nameSpan);
-        playerElement.appendChild(betSpan);
-        playersList.appendChild(playerElement);
-    });
-}
+        players.forEach(player => {
+            const playerItem = document.createElement('div');
+            playerItem.className = 'player-item';
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'player-name';
+            nameSpan.textContent = player.name;
+            
+            const betSpan = document.createElement('span');
+            betSpan.className = 'player-bet';
+            
+            if (player.cashedOut) {
+                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+                betSpan.style.color = '#00b894';
+            } else if (player.isBot) {
+                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+            } else {
+                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+            }
+            
+            playerItem.appendChild(nameSpan);
+            playerItem.appendChild(betSpan);
+            playersList.appendChild(playerItem);
+        });
+    }
 
-    
-function updateHistory(history) {
-    const historyItems = document.getElementById('historyItems');
-    historyItems.innerHTML = '';
-    
-    history.slice(0, 10).forEach(item => {
-        const historyItem = document.createElement('div');
-        historyItem.className = `history-item ${item.crashPoint < 2 ? 'history-loss' : 'history-win'}`;
-        historyItem.textContent = `${item.crashPoint.toFixed(2)}x`;
-        historyItems.appendChild(historyItem);
-    });
-}
+    function updateHistory(history) {
+        const historyContainer = document.getElementById('historyItems');
+        historyContainer.innerHTML = '';
+        
+        history.slice(0, 10).forEach(item => {
+            const historyItem = document.createElement('div');
+            historyItem.className = `history-item ${item.multiplier >= 2 ? 'history-win' : 'history-loss'}`;
+            historyItem.textContent = `${item.multiplier.toFixed(2)}x`;
+            historyContainer.appendChild(historyItem);
+        });
+    }
 
     async function placeBet() {
         const betAmount = parseFloat(document.getElementById('betAmount').value);
@@ -428,14 +425,15 @@ function updateHistory(history) {
     }
 
     function resetBettingUI() {
-    userBet = 0;
-    userCashedOut = false;
-    document.getElementById('userBet').textContent = '0';
-    document.getElementById('potentialWin').textContent = '0';
-    document.getElementById('placeBetButton').disabled = false;
-    document.getElementById('placeBetButton').textContent = 'Поставить';
-    document.getElementById('cashoutButton').disabled = true;
-}
+        userBet = 0;
+        userCashedOut = false;
+        userPlayer = null;
+        document.getElementById('userBet').textContent = '0';
+        document.getElementById('potentialWin').textContent = '0';
+        document.getElementById('placeBetButton').disabled = false;
+        document.getElementById('placeBetButton').textContent = 'Поставить';
+        updateBettingUI();
+    }
 
     // Глобальная переменная для доступа из WebSocket
     let rocketGame = {
