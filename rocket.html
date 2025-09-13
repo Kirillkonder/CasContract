@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rocket Game</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/rocket.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
     <div class="container">
@@ -20,64 +20,66 @@
             </div>
         </div>
 
-        <!-- Игровое поле -->
+        <!-- Игровая зона -->
         <div class="game-area">
-            <div class="rocket-container" id="rocketContainer">
-                <img src="Rocket.png" alt="Rocket" class="rocket" id="rocket">
-                <div class="graph-container" id="graphContainer"></div>
-                <div class="explosion-container" id="explosionContainer"></div>
-            </div>
-            
-            <!-- Таймер и статус -->
-            <div class="game-status-container">
-                <div id="gameStatus" class="game-status status-waiting">
-                    <span id="statusText">Ожидание начала игры...</span>
-                    <span id="countdown" class="countdown"></span>
+            <!-- График и ракета -->
+            <div class="rocket-container">
+                <div id="graphContainer" class="graph-container"></div>
+                <div id="rocketContainer" class="rocket-wrapper">
+                    <img id="rocket" src="Rocket.png" alt="Rocket" class="rocket">
                 </div>
-                <div class="multiplier-display">
-                    <span id="multiplierDisplay">1.00x</span>
+                <div id="explosionContainer" class="explosion-container"></div>
+                
+                <!-- Таймер и статус игры -->
+                <div class="game-status-container">
+                    <div id="gameStatus" class="game-status status-waiting">
+                        <span id="statusText">Ожидание начала игры...</span>
+                        <span id="countdown"></span>
+                    </div>
+                    <div class="multiplier-display">
+                        <span id="multiplierDisplay">1.00x</span>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Панель управления -->
-        <div class="control-panel">
-            <div class="bet-controls">
-                <div class="input-group">
+            <!-- Панель ставок -->
+            <div class="betting-panel">
+                <div class="bet-input-container">
                     <input type="number" id="betAmount" min="0.5" max="50" step="0.5" value="1.0" placeholder="Сумма ставки">
-                    <span class="currency">TON</span>
+                    <button id="placeBetButton" class="bet-button" onclick="placeBet()">Поставить</button>
                 </div>
-                <button id="placeBetButton" class="bet-button" onclick="placeBet()">Поставить</button>
                 <button id="cashoutButton" class="cashout-button" onclick="cashout()">Забрать выигрыш</button>
-            </div>
-            
-            <div class="user-stats">
-                <div class="stat-item">
-                    <span class="stat-label">Ваша ставка:</span>
-                    <span id="userBet" class="stat-value">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Потенциальный выигрыш:</span>
-                    <span id="potentialWin" class="stat-value">0</span>
+                
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <span>Ваша ставка:</span>
+                        <span id="userBet">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Потенциальный выигрыш:</span>
+                        <span id="potentialWin">0</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Информационные панели -->
-        <div class="info-panels">
-            <div class="panel">
-                <div class="panel-header">
-                    <h3>Игроки онлайн</h3>
-                    <span id="playersCount" class="badge">0</span>
+        <!-- Нижняя панель с историей и игроками -->
+        <div class="bottom-panel">
+            <div class="history-container">
+                <h3>История</h3>
+                <div id="historyItems" class="history-items">
+                    <!-- История будет добавлена через JS -->
                 </div>
-                <div id="playersList" class="panel-content"></div>
             </div>
             
-            <div class="panel">
-                <div class="panel-header">
-                    <h3>История игр</h3>
+            <div class="players-container">
+                <div class="players-header">
+                    <h3>Игроки</h3>
+                    <span id="playersCount">0</span>
                 </div>
-                <div id="historyItems" class="panel-content history-container"></div>
+                <div id="playersList" class="players-list">
+                    <!-- Список игроков будет добавлен через JS -->
+                </div>
             </div>
         </div>
     </div>
