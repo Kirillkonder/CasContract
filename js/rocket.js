@@ -1,4 +1,4 @@
-   // Здесь будет ваш код из rocket.js
+ // Здесь будет ваш код из rocket.js
         let ws = null;
         let currentUser = null;
         let isDemoMode = false;
@@ -104,6 +104,7 @@
                     countdownElement.textContent = '';
                     clearCountdown();
                     updateRocketPosition(gameState.multiplier);
+                    drawFlightPath(gameState.multiplier);
                     break;
                     
                 case 'crashed':
@@ -171,14 +172,15 @@
 
         function updateRocketPosition(multiplier) {
             const rocketElement = document.getElementById('rocket');
+            const rocketContainer = document.getElementById('rocketContainer');
             
             // Корректировка размера, масштаба и поворота в зависимости от множителя
             if (multiplier >= 3 && multiplier < 5) {
                 const rotationProgress = (multiplier - 3) / 2; // от 0 до 1
                 const rotation = -60 * rotationProgress; // плавный поворот
-                rocketElement.style.transform = `translateX(-50%) translateY(50%) scale(1.2) rotate(${rotation}deg)`;
+                rocketElement.style.transform = `scale(1.2) rotate(${rotation}deg)`;
             } else if (multiplier >= 5) {
-                rocketElement.style.transform = `translateX(-50%) translateY(50%) scale(1.5) rotate(-60deg)`;
+                rocketElement.style.transform = `scale(1.5) rotate(-60deg)`;
             }
 
             // Применение пульсации после достижения 3x множителя
@@ -191,7 +193,55 @@
             // Корректировка позиции ракеты в зависимости от множителя
             if (multiplier > 1) {
                 const verticalOffset = Math.min(35, (multiplier - 1) * 10);
-                rocketElement.style.bottom = `calc(50% + ${verticalOffset}%)`;
+                rocketContainer.style.bottom = `calc(50% + ${verticalOffset}%)`;
+            }
+        }
+
+        function drawFlightPath(multiplier) {
+            const graphContainer = document.getElementById('graphContainer');
+            graphContainer.innerHTML = '';
+            
+            if (multiplier > 1.1) {
+                const path = document.createElement('div');
+                path.style.position = 'absolute';
+                path.style.bottom = '50%';
+                path.style.left = '0';
+                path.style.width = '100%';
+                path.style.height = '2px';
+                path.style.background = 'linear-gradient(90deg, transparent, rgba(0, 184, 148, 0.7), transparent)';
+                path.style.zIndex = '1';
+                
+                graphContainer.appendChild(path);
+                
+                // Добавляем точки на график
+                for (let i = 1; i < multiplier; i += 0.5) {
+                    if (i > 10) break; // Ограничиваем количество точек
+                    
+                    const point = document.createElement('div');
+                    point.style.position = 'absolute';
+                    point.style.bottom = `calc(50% + ${Math.min(35, (i - 1) * 10)}%)`;
+                    point.style.left = `${i * 8}%`;
+                    point.style.width = '4px';
+                    point.style.height = '4px';
+                    point.style.backgroundColor = '#00b894';
+                    point.style.borderRadius = '50%';
+                    point.style.zIndex = '2';
+                    
+                    graphContainer.appendChild(point);
+                    
+                    const value = document.createElement('div');
+                    value.style.position = 'absolute';
+                    value.style.bottom = `calc(50% + ${Math.min(35, (i - 1) * 10) + 5}%)`;
+                    value.style.left = `${i * 8}%`;
+                    value.style.transform = 'translateX(-50%)';
+                    value.style.color = '#00b894';
+                    value.style.fontSize = '10px';
+                    value.style.fontWeight = 'bold';
+                    value.textContent = `${i.toFixed(1)}x`;
+                    value.style.zIndex = '2';
+                    
+                    graphContainer.appendChild(value);
+                }
             }
         }
 
@@ -199,6 +249,9 @@
             const canvas = document.getElementById('rocketCanvas');
             const explosion = document.createElement('div');
             explosion.className = 'explosion';
+            explosion.style.left = '50%';
+            explosion.style.bottom = '50%';
+            explosion.style.transform = 'translate(-50%, 50%)';
             canvas.appendChild(explosion);
             
             // Скрываем ракету при взрыве
@@ -208,8 +261,16 @@
             setTimeout(() => {
                 canvas.removeChild(explosion);
                 rocketElement.style.display = 'block'; // Ракета снова появляется после взрыва
-                rocketElement.style.transform = 'translateX(-50%) translateY(50%)'; // Сброс трансформации
+                rocketElement.style.transform = ''; // Сброс трансформации
                 rocketElement.classList.remove('rocket-pulsing'); // Убираем пульсацию
+                
+                // Сбрасываем позицию ракеты
+                const rocketContainer = document.getElementById('rocketContainer');
+                rocketContainer.style.bottom = '50%';
+                
+                // Очищаем график
+                const graphContainer = document.getElementById('graphContainer');
+                graphContainer.innerHTML = '';
             }, 1000); // Время анимации взрыва
         }
 
