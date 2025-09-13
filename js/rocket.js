@@ -168,7 +168,8 @@
         }
     }
 
- function updateRocketPosition(multiplier) {
+ // rocket.js - ОБНОВЛЕННАЯ ФУНКЦИЯ updateRocketPosition
+function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const trailElement = document.getElementById('rocketTrail');
     const canvasElement = document.getElementById('rocketCanvas');
@@ -179,8 +180,10 @@
     
     // После 3x - начинаем поворачивать ракету до 60 градусов
     if (multiplier >= 3 && multiplier < 5) {
-        const rotation = -60 * ((multiplier - 3) / 2); // Плавный поворот от 0 до -60 градусов
+        const rotationProgress = (multiplier - 3) / 2; // от 0 до 1
+        const rotation = -60 * rotationProgress; // Плавный поворот от 0 до -60 градусов
         rocketElement.style.transform = `translateX(-50%) translateY(50%) rotate(${rotation}deg)`;
+        console.log('Rotating rocket:', rotation, 'degrees at multiplier:', multiplier);
     }
     
     // После 5x - полностью повернута на 60 градусов и пульсирует
@@ -195,8 +198,8 @@
     
     // Двигаем ракету вверх (центр остается по центру, но смещается вверх)
     if (multiplier > 1) {
-        const maxOffset = 30; // Максимальное смещение вверх в %
-        const verticalOffset = Math.min(maxOffset, (multiplier - 1) * 8);
+        const maxOffset = 35; // Максимальное смещение вверх в %
+        const verticalOffset = Math.min(maxOffset, (multiplier - 1) * 10);
         rocketElement.style.bottom = `calc(50% + ${verticalOffset}%)`;
     }
 }
