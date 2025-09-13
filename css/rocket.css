@@ -1,3 +1,4 @@
+
 .rocket-container {
     max-width: 600px;
     margin: 0 auto;
@@ -194,18 +195,28 @@
 
 .explosion {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    width: 150px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: explode 1s ease-out;
+}
+
+.explosion-img {
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle, rgba(255,0,0,0.8) 0%, rgba(255,0,0,0) 70%);
-    animation: explode 1s ease-out;
-    z-index: 5;
+    object-fit: contain;
 }
 
 @keyframes explode {
-    0% { transform: scale(0); opacity: 1; }
-    100% { transform: scale(2); opacity: 0; }
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
 }
 
 .trail {
