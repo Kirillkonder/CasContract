@@ -1,183 +1,77 @@
-/* Reset and base styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #1a1f2e 0%, #0d1117 100%);
-    color: white;
-    min-height: 100vh;
-    padding: 0;
-}
-
+/* Ваши стили */
 .rocket-container {
-    max-width: 480px;
+    max-width: 600px;
     margin: 0 auto;
-    padding: 15px;
-    background: rgba(13, 17, 23, 0.95);
-    min-height: 100vh;
+    padding: 20px;
 }
 
-/* Header */
 .rocket-header {
-    margin-bottom: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 15px;
-    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.back-button {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background 0.3s ease;
-}
-
-.back-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.balance {
-    font-size: 14px;
-    font-weight: 600;
-    color: #00ff88;
-}
-
-.demo-badge {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 10px;
-    margin-left: 8px;
-}
-
-/* Game Canvas */
-.game-canvas {
-    position: relative;
+.rocket-canvas {
     width: 100%;
-    height: 280px;
-    background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
+    height: 500px;
+    background: 
+        linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%), 
+        url('https://path-to-your-image.jpg');
+    background-size: cover;
     border-radius: 15px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    position: relative;
     overflow: hidden;
-    border: 2px solid rgba(0, 255, 136, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border: 2px solid #00b894;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: backgroundPulse 5s ease-in-out infinite;
+}
+
+.rocket-image {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(50%) scale(1.2);
+    width: 150px;
+    height: 220px;
+    z-index: 10;
+}
+
+.rocket-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
 }
 
 .multiplier-display {
     position: absolute;
-    top: 15px;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 28px;
+    font-size: 32px;
     font-weight: bold;
-    color: #00ff88;
-    text-shadow: 0 0 15px rgba(0, 255, 136, 0.7);
-    z-index: 20;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid rgba(0, 255, 136, 0.3);
-}
-
-.rocket-wrapper {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 120px;
-    z-index: 15;
-}
-
-.rocket-image {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.3s ease;
-}
-
-.rocket-img {
-    width: 40px;
-    height: 80px;
-    object-fit: contain;
-    filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.5));
-    transition: all 0.3s ease;
-}
-
-.grid-lines {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-        linear-gradient(90deg, transparent 24px, rgba(0, 255, 136, 0.1) 24px, rgba(0, 255, 136, 0.1) 25px, transparent 25px),
-        linear-gradient(180deg, transparent 24px, rgba(0, 255, 136, 0.1) 24px, rgba(0, 255, 136, 0.1) 25px, transparent 25px);
-    background-size: 50px 50px;
-    opacity: 0.3;
-    z-index: 5;
-}
-
-/* Game Controls */
-.game-controls {
-    margin-bottom: 15px;
-}
-
-.game-status {
-    text-align: center;
-    padding: 12px;
-    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-    border-radius: 12px;
-    margin-bottom: 12px;
-    font-weight: 600;
-    font-size: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.status-waiting {
-    color: #fbbf24;
-}
-
-.status-counting {
-    color: #60a5fa;
-}
-
-.status-flying {
-    color: #00ff88;
-}
-
-.status-crashed {
-    color: #ef4444;
+    color: #00b894;
+    text-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
+    z-index: 10;
 }
 
 .betting-panel {
-    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-    border-radius: 12px;
-    padding: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
-.bet-input-group {
+.bet-controls {
     display: flex;
     gap: 10px;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
 }
 
 .bet-input {
@@ -185,117 +79,56 @@ body {
     padding: 12px;
     background: rgba(35, 40, 52, 0.8);
     border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border-radius: 12px;
     color: white;
-    font-size: 14px;
-    outline: none;
-}
-
-.bet-input:focus {
-    border-color: rgba(0, 255, 136, 0.5);
+    font-size: 16px;
 }
 
 .bet-button {
     padding: 12px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #667eea, #5a6fd8);
     color: white;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.3s ease;
-}
-
-.bet-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    font-weight: bold;
 }
 
 .bet-button:disabled {
-    background: #4a5568;
+    background: #666;
     cursor: not-allowed;
-    transform: none;
 }
 
 .cashout-button {
-    padding: 15px;
-    background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+    padding: 15px 30px;
+    background: linear-gradient(135deg, #00b894, #008066);
     color: white;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 18px;
     width: 100%;
-    margin-bottom: 12px;
-    transition: all 0.3s ease;
-}
-
-.cashout-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
 }
 
 .cashout-button:disabled {
-    background: #4a5568;
+    background: #666;
     cursor: not-allowed;
-    transform: none;
-}
-
-.bet-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: #cbd5e0;
-}
-
-.bet-amount, .potential-win {
-    font-weight: 500;
-}
-
-/* Players Section */
-.players-section {
-    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.section-header h3 {
-    font-size: 14px;
-    font-weight: 600;
-    color: #e2e8f0;
-}
-
-.players-count {
-    background: rgba(0, 255, 136, 0.2);
-    color: #00ff88;
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
 }
 
 .players-list {
-    max-height: 150px;
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    max-height: 200px;
     overflow-y: auto;
 }
 
 .player-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
     padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .player-item:last-child {
@@ -303,140 +136,143 @@ body {
 }
 
 .player-name {
-    color: #e2e8f0;
-    font-size: 12px;
-    font-weight: 500;
+    color: #f0f0f0;
 }
 
 .player-bet {
-    color: #00ff88;
-    font-weight: 600;
-    font-size: 12px;
+    color: #00b894;
+    font-weight: bold;
 }
 
-/* History Section */
-.history-section {
-    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-    border-radius: 12px;
-    padding: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+.game-status {
+    text-align: center;
+    padding: 10px;
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 10px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.status-waiting {
+    color: #fdcb6e;
+}
+
+.status-counting {
+    color: #74b9ff;
+}
+
+.status-flying {
+    color: #00b894;
+}
+
+.status-crashed {
+    color: #ff6b6b;
+}
+
+.history-container {
+    margin-top: 20px;
 }
 
 .history-items {
     display: flex;
-    gap: 6px;
+    gap: 5px;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .history-item {
-    padding: 6px 10px;
+    padding: 5px 10px;
     border-radius: 8px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
-    min-width: 45px;
-    text-align: center;
 }
 
 .history-win {
-    background: linear-gradient(135deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 204, 106, 0.2) 100%);
-    color: #00ff88;
-    border: 1px solid rgba(0, 255, 136, 0.3);
+    background: rgba(0, 184, 148, 0.2);
+    color: #00b894;
 }
 
 .history-loss {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-/* Animations */
-@keyframes rocketFloat {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-    100% { transform: translateY(0); }
-}
-
-.rocket-image {
-    animation: rocketFloat 2s ease-in-out infinite;
-}
-
-@keyframes rocketPulse {
-    0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.5)); }
-    50% { transform: scale(1.1); filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.8)); }
-    100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.5)); }
-}
-
-.rocket-pulsing .rocket-img {
-    animation: rocketPulse 0.8s ease-in-out infinite;
-}
-
-@keyframes explode {
-    0% { 
-        transform: scale(0); 
-        opacity: 1; 
-    }
-    50% {
-        opacity: 0.8;
-    }
-    100% { 
-        transform: scale(3); 
-        opacity: 0; 
-    }
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
 }
 
 .explosion {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, rgba(239, 68, 68, 0.8) 0%, rgba(239, 68, 68, 0) 70%);
-    border-radius: 50%;
-    animation: explode 0.8s ease-out forwards;
-    z-index: 25;
-    transform: translate(-50%, -50%) scale(0);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,0,0,0.8) 0%, rgba(255,0,0,0) 70%);
+    animation: explode 1s ease-out;
+    z-index: 5;
 }
 
-/* Scrollbar styling */
-.players-list::-webkit-scrollbar {
-    width: 4px;
+@keyframes explode {
+    0% { transform: scale(0); opacity: 1; }
+    100% { transform: scale(2); opacity: 0; }
 }
 
-.players-list::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 2px;
+.trail {
+    display: none;  /* Прячем след ракеты */
 }
 
-.players-list::-webkit-scrollbar-thumb {
-    background: rgba(0, 255, 136, 0.3);
-    border-radius: 2px;
+/* Ваши анимации для ракеты */
+@keyframes rocketFloat {
+    0% { transform: translateX(-50%) translateY(50%) rotate(0deg) translateY(0); }
+    50% { transform: translateX(-50%) translateY(50%) rotate(0deg) translateY(-8px); }
+    100% { transform: translateX(-50%) translateY(50%) rotate(0deg) translateY(0); }
 }
 
-.players-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 255, 136, 0.5);
+.rocket-image {
+    animation: rocketFloat 1.5s ease-in-out infinite;
 }
 
-/* Responsive adjustments */
-@media (max-width: 480px) {
-    .rocket-container {
-        padding: 10px;
-    }
-    
-    .game-canvas {
-        height: 250px;
-    }
-    
-    .multiplier-display {
-        font-size: 24px;
-        padding: 6px 12px;
-    }
-    
-    .bet-input-group {
-        flex-direction: column;
-    }
-    
-    .bet-info {
-        flex-direction: column;
-        gap: 5px;
-    }
+.rocket-rotating {
+    transform: translateX(-50%) translateY(50%) rotate(-60deg) !important;
+    transition: transform 2s ease-in-out;
+}
+
+.rocket-pulsing {
+    animation: rocketPulse 0.5s ease-in-out infinite !important;
+}
+
+@keyframes rocketPulse {
+    0% { transform: translateX(-50%) translateY(50%) scale(1.2); }
+    50% { transform: translateX(-50%) translateY(50%) scale(1.4); }
+    100% { transform: translateX(-50%) translateY(50%) scale(1.2); }
+}
+
+/* Фон с звездами и линиями */
+.rocket-canvas::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(0, 150, 255, 0.4) 4px, transparent 4px),
+        radial-gradient(circle at 60% 20%, rgba(0, 200, 255, 0.3) 5px, transparent 5px),
+        radial-gradient(circle at 80% 70%, rgba(100, 150, 255, 0.35) 6px, transparent 6px),
+        linear-gradient(to bottom, transparent 95%, rgba(0, 100, 255, 0.2) 100%),
+        linear-gradient(to right, transparent 95%, rgba(0, 100, 255, 0.15) 100%);
+    background-size: 120px 120px, 180px 180px, 160px 160px, 100% 35px, 35px 100%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.pulsing-background::before {
+    animation: backgroundPulse 0.7s ease-in-out infinite !important;
+}
+
+@keyframes backgroundPulse {
+    0% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0.7; transform: scale(1); }
+}
+
+.rocket-moving-up {
+    transition: bottom 0.8s ease-out;
 }
