@@ -171,6 +171,7 @@
  function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const trailElement = document.getElementById('rocketTrail');
+    const canvasElement = document.getElementById('rocketCanvas');
     const rocketImg = rocketElement.querySelector('.rocket-img');
     
     // Убираем все inline стили позиционирования, чтобы работал CSS
@@ -184,6 +185,7 @@
     
     // Убираем все предыдущие классы анимации
     rocketImg.classList.remove('rocket-flying', 'rocket-rotated', 'rocket-fully-rotated', 'rocket-pulsing');
+    canvasElement.classList.remove('pulsing-background');
     
     // Добавляем анимации в зависимости от множителя
     if (multiplier > 1.1) {
@@ -191,7 +193,7 @@
     }
     
     // После 3x - плавно поворачиваем вверх
-    if (multiplier >= 3) {
+    if (multiplier >= 3 && multiplier < 5) {
         rocketImg.classList.add('rocket-rotated');
     }
     
@@ -199,6 +201,7 @@
     if (multiplier >= 5) {
         rocketImg.classList.remove('rocket-rotated');
         rocketImg.classList.add('rocket-fully-rotated', 'rocket-pulsing');
+        canvasElement.classList.add('pulsing-background');
     }
 }
 
