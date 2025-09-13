@@ -1,4 +1,4 @@
-// Здесь будет ваш код из rocket.js
+ // Здесь будет ваш код из rocket.js
         let ws = null;
         let currentUser = null;
         let isDemoMode = false;
