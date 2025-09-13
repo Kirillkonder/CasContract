@@ -173,19 +173,25 @@
     const trailElement = document.getElementById('rocketTrail');
     const rocketImg = rocketElement.querySelector('.rocket-img');
     
-    // Вычисляем новую позицию ракеты (от 50px до 250px)
-    const maxHeight = 300; // Высота canvas
-    const rocketHeight = 120; // Высота изображения ракеты
-    const availableSpace = maxHeight - rocketHeight - 20; // 20px отступ сверху
+    // Фиксированная позиция по центру
+    rocketElement.style.left = '50%';
+    rocketElement.style.transform = 'translateX(-50%)';
     
+    // Вычисляем высоту полета (от 50px до 250px)
+    const maxHeight = 300;
+    const rocketHeight = 150;
+    const availableSpace = maxHeight - rocketHeight - 20;
+    
+    // Плавное увеличение высоты с множителем
     const newPosition = 50 + (multiplier * 2);
-    // Ограничиваем позицию, чтобы ракета не улетела за пределы
     const boundedPosition = Math.min(newPosition, availableSpace);
     
     rocketElement.style.bottom = `${boundedPosition}px`;
     
     // Обновляем след ракеты
     trailElement.style.height = `${boundedPosition - 40}px`;
+    trailElement.style.left = '50%';
+    trailElement.style.transform = 'translateX(-50%)';
     
     // Добавляем анимацию полета
     if (multiplier > 1.1) {
@@ -196,15 +202,27 @@
 }
 
     function showExplosion() {
-        const canvas = document.getElementById('rocketCanvas');
-        const explosion = document.createElement('div');
-        explosion.className = 'explosion';
-        canvas.appendChild(explosion);
-        
-        setTimeout(() => {
-            canvas.removeChild(explosion);
-        }, 1000);
-    }
+    const rocket = document.getElementById('rocket');
+    const explosionContainer = document.getElementById('explosionContainer');
+    const explosionImg = explosionContainer.querySelector('.explosion-img');
+    
+    // Прячем ракету
+    rocket.style.display = 'none';
+    
+    // Показываем взрыв в позиции ракеты
+    const rocketRect = rocket.getBoundingClientRect();
+    const canvasRect = document.getElementById('rocketCanvas').getBoundingClientRect();
+    
+    explosionContainer.style.display = 'block';
+    explosionContainer.style.left = `${rocketRect.left - canvasRect.left + rocketRect.width / 2}px`;
+    explosionContainer.style.top = `${rocketRect.top - canvasRect.top + rocketRect.height / 2}px`;
+    
+    // Через 1 секунду скрываем взрыв и показываем ракету снова
+    setTimeout(() => {
+        explosionContainer.style.display = 'none';
+        rocket.style.display = 'block';
+    }, 1000);
+}
 
     function updatePlayersList(players) {
         const playersList = document.getElementById('playersList');
