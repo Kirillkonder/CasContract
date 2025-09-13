@@ -16,25 +16,32 @@
 .rocket-canvas {
     width: 100%;
     height: 500px;  /* Увеличиваем высоту канваса */
-    background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
+    background: 
+        linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%), 
+        url('https://path-to-your-image.jpg'); /* Здесь указываем путь к изображению фона */
+    background-size: cover;
     border-radius: 15px;
     margin-bottom: 20px;
     position: relative;
     overflow: hidden;
-    border: 2px solid #00b894;  /* Зеленая линия, как на фото */
+    border: 2px solid #00b894;  /* Зеленая линия */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: backgroundPulse 5s ease-in-out infinite; /* Пульсация фона */
 }
+
+
+
 .rocket-image {
     position: absolute;
     bottom: 50%;
     left: 50%;
-    transform: translateX(-50%) translateY(50%) rotate(0deg);
+    transform: translateX(-50%) translateY(50%) scale(1.2); /* Увеличиваем размер ракеты */
     z-index: 10;
-    width: 120px;
-    height: 180px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 1s ease-in-out;
+    width: 150px;  /* Увеличиваем ширину */
+    height: 220px; /* Увеличиваем высоту */
+    transition: transform 0.3s ease;
 }
 
 .rocket-img {
@@ -234,9 +241,9 @@
 }
 
 @keyframes rocketPulse {
-    0% { transform: translateX(-50%) translateY(50%) rotate(-60deg) scale(1); }
-    50% { transform: translateX(-50%) translateY(50%) rotate(-60deg) scale(1.3); }
-    100% { transform: translateX(-50%) translateY(50%) rotate(-60deg) scale(1); }
+    0% { transform: translateX(-50%) translateY(50%) scale(1.2); }
+    50% { transform: translateX(-50%) translateY(50%) scale(1.4); }
+    100% { transform: translateX(-50%) translateY(50%) scale(1.2); }
 }
 
 /* Фон с звездами и линиями */
@@ -268,6 +275,7 @@
     50% { opacity: 1; transform: scale(1.1); }
     100% { opacity: 0.7; transform: scale(1); }
 }
+
 
 .rocket-moving-up {
     transition: bottom 0.8s ease-out;
