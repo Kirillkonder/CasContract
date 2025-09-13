@@ -1,4 +1,4 @@
-.rocket-container {
+  .rocket-container {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
@@ -13,12 +13,51 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
         
-        .rocket-canvas {
+        .game-canvas-container {
+            display: flex;
             width: 100%;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .multiplier-sidebar {
+            width: 60px;
+            background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
+            border-radius: 15px;
+            padding: 10px 5px;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .multiplier-mark {
+            width: 100%;
+            text-align: center;
+            padding: 5px 0;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            font-weight: bold;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .multiplier-mark.active {
+            color: #00b894;
+            background: rgba(0, 184, 148, 0.1);
+        }
+        
+        .multiplier-mark.reached {
+            color: #00b894;
+        }
+        
+        .rocket-canvas {
+            flex: 1;
             height: 300px;
             background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
             border-radius: 15px;
-            margin-bottom: 20px;
             position: relative;
             overflow: hidden;
         }
@@ -27,10 +66,17 @@
             position: absolute;
             bottom: 50px;
             left: 50%;
-            transform: translateX(-50%);
-            font-size: 40px;
+            transform: translateX(-50%) rotate(-50deg);
             transition: bottom 0.1s linear;
             z-index: 10;
+            width: 60px;
+            height: 60px;
+        }
+        
+        .rocket img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
         
         .multiplier-display {
@@ -205,4 +251,49 @@
             width: 4px;
             background: linear-gradient(to top, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%);
             z-index: 1;
+        }
+        
+        .back-button {
+            background: linear-gradient(135deg, #667eea, #5a6fd8);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .balance {
+            color: white;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        
+        .demo-badge {
+            background: #fdcb6e;
+            color: #333;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            color: white;
+        }
+        
+        /* Индикатор текущего множителя на боковой панели */
+        .current-multiplier-indicator {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #00b894;
+            box-shadow: 0 0 10px #00b894;
+            z-index: 5;
         }
