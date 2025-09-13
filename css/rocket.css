@@ -16,7 +16,7 @@
 .rocket-canvas {
     width: 100%;
     height: 400px;
-    background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
+    background: linear-gradient(180deg, #0a0e14 0%, #151a25 100%);
     border-radius: 15px;
     margin-bottom: 20px;
     position: relative;
@@ -25,26 +25,12 @@
 
 .rocket {
     position: absolute;
-    bottom: 120px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 50px;
-    z-index: 10;
-}
-
-.trail {
-    position: absolute;
     bottom: 160px;
     left: 50%;
     transform: translateX(-50%);
-    width: 6px;
-    background: linear-gradient(to top, 
-        rgba(255, 100, 100, 0.8) 0%, 
-        rgba(255, 150, 150, 0.5) 30%,
-        rgba(255, 200, 200, 0.3) 60%,
-        rgba(255, 255, 255, 0) 100%);
-    z-index: 1;
-    height: 0;
+    font-size: 50px;
+    z-index: 20;
+    text-shadow: 0 0 15px #00ff88, 0 0 30px #00ff88;
 }
 
 .multiplier-display {
@@ -54,11 +40,138 @@
     transform: translateX(-50%);
     font-size: 32px;
     font-weight: bold;
-    color: #00b894;
-    text-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
-    z-index: 10;
+    color: #00ff88;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.7);
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 2px solid #00ff88;
 }
 
+/* Голубая сетка */
+.blue-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(to right, rgba(64, 156, 255, 0.3) 2px, transparent 2px),
+        linear-gradient(to bottom, rgba(64, 156, 255, 0.3) 2px, transparent 2px);
+    background-size: 40px 40px;
+    z-index: 2;
+    animation: gridPulse 3s ease-in-out infinite;
+}
+
+/* Зеленая траектория */
+.green-trajectory {
+    position: absolute;
+    bottom: 160px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 0;
+    background: linear-gradient(to top, 
+        transparent 0%,
+        #00ff88 20%,
+        #00ff88 80%,
+        transparent 100%);
+    z-index: 3;
+    border-radius: 3px;
+    box-shadow: 0 0 20px #00ff88, 0 0 40px rgba(0, 255, 136, 0.4);
+}
+
+/* Анимация роста траектории */
+@keyframes growTrajectory {
+    0% { height: 0; opacity: 0; }
+    10% { height: 40px; opacity: 1; }
+    100% { height: 300px; opacity: 1; }
+}
+
+/* Эффект движения звезд */
+.stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(2px 2px at 40px 60px, #fff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 20px 120px, #fff, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 80px 80px, #fff, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 120px 40px, #fff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 200px 180px, #fff, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 160px 220px, #fff, rgba(0,0,0,0));
+    background-repeat: repeat;
+    background-size: 250px 250px;
+    animation: starsMove 20s linear infinite;
+    z-index: 1;
+}
+
+/* Частицы эффекта */
+.particles {
+    position: absolute;
+    bottom: 160px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 100px;
+    z-index: 4;
+}
+
+.particle {
+    position: absolute;
+    background: #00ff88;
+    border-radius: 50%;
+    opacity: 0;
+    animation: particleFloat 1s ease-out infinite;
+}
+
+@keyframes particleFloat {
+    0% {
+        transform: translate(0, 0) scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(
+            calc(var(--tx) * 50px), 
+            calc(var(--ty) * 100px)
+        ) scale(1);
+        opacity: 0;
+    }
+}
+
+@keyframes gridPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes starsMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 500px; }
+}
+
+/* Анимации для разных множителей */
+.rocket-moving .green-trajectory {
+    animation: growTrajectory 10s linear forwards;
+}
+
+.rocket-moving .blue-grid {
+    animation: gridPulse 1s ease-in-out infinite;
+}
+
+.rocket-high-multiplier .blue-grid {
+    animation: gridPulse 0.5s ease-in-out infinite;
+    opacity: 0.8;
+}
+
+.rocket-very-high-multiplier .blue-grid {
+    animation: gridPulse 0.2s ease-in-out infinite;
+    opacity: 1;
+}
+
+/* Остальные стили */
 .betting-panel {
     background: rgba(25, 30, 42, 0.95);
     border-radius: 15px;
@@ -99,7 +212,7 @@
 
 .cashout-button {
     padding: 15px 30px;
-    background: linear-gradient(135deg, #00b894, #008066);
+    background: linear-gradient(135deg, #00ff88, #008066);
     color: white;
     border: none;
     border-radius: 12px;
@@ -138,7 +251,7 @@
 }
 
 .player-bet {
-    color: #00b894;
+    color: #00ff88;
     font-weight: bold;
 }
 
@@ -160,7 +273,7 @@
 }
 
 .status-flying {
-    color: #00b894;
+    color: #00ff88;
 }
 
 .status-crashed {
@@ -186,8 +299,8 @@
 }
 
 .history-win {
-    background: rgba(0, 184, 148, 0.2);
-    color: #00b894;
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
 }
 
 .history-loss {
@@ -203,158 +316,10 @@
     height: 100%;
     background: radial-gradient(circle, rgba(255,0,0,0.8) 0%, rgba(255,0,0,0) 70%);
     animation: explode 1s ease-out;
-    z-index: 5;
+    z-index: 25;
 }
 
 @keyframes explode {
     0% { transform: scale(0); opacity: 1; }
     100% { transform: scale(2); opacity: 0; }
-}
-
-.rocket-moving .rocket-canvas {
-    background-position: 0 0;
-    animation: moveBackground 20s linear infinite;
-}
-
-@keyframes moveBackground {
-    0% { background-position: 0 0; }
-    100% { background-position: 0 100%; }
-}
-
-/* Добавляем звездный фон */
-.rocket-canvas::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-        radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
-        radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
-        radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
-    background-size: 550px 550px, 350px 350px, 250px 250px;
-    background-position: 0 0, 40px 60px, 130px 270px;
-    animation: starsMovement 60s linear infinite;
-    z-index: 1;
-}
-
-/* Голубые толстые линии с пульсацией */
-.blue-grid {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-        linear-gradient(to right, rgba(100, 200, 255, 0.4) 3px, transparent 3px),
-        linear-gradient(to bottom, rgba(100, 200, 255, 0.4) 3px, transparent 3px);
-    background-size: 60px 60px;
-    z-index: 2;
-    opacity: 0.6;
-}
-
-/* Зеленая линия графика */
-.green-graph-line {
-    position: absolute;
-    bottom: 160px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 400px;
-    height: 200px;
-    z-index: 3;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-}
-
-.rocket-moving .green-graph-line {
-    opacity: 0.8;
-}
-
-.green-graph-line::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 6px;
-    height: 100%;
-    background: linear-gradient(to top, 
-        rgba(0, 184, 148, 0) 0%,
-        rgba(0, 184, 148, 0.6) 20%,
-        rgba(0, 184, 148, 0.8) 50%,
-        rgba(0, 184, 148, 0.6) 80%,
-        rgba(0, 184, 148, 0) 100%);
-    animation: greenLinePulse 1.5s ease-in-out infinite;
-}
-
-.green-graph-line::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-        linear-gradient(to right, transparent 49%, rgba(0, 184, 148, 0.2) 50%, transparent 51%),
-        linear-gradient(to bottom, transparent 49%, rgba(0, 184, 148, 0.2) 50%, transparent 51%);
-    background-size: 40px 40px;
-    animation: graphGridPulse 2s ease-in-out infinite;
-}
-
-/* Анимация пульсации зеленой линии графика */
-@keyframes greenLinePulse {
-    0%, 100% { 
-        opacity: 0.7;
-        box-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
-    }
-    50% { 
-        opacity: 1;
-        box-shadow: 0 0 20px rgba(0, 184, 148, 0.8), 0 0 30px rgba(0, 184, 148, 0.4);
-    }
-}
-
-/* Анимация пульсации сетки графика */
-@keyframes graphGridPulse {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.6; }
-}
-
-/* Анимация пульсации голубых линий */
-@keyframes blueLinesPulse {
-    0%, 100% { 
-        opacity: 0.5;
-        background-image: 
-            linear-gradient(to right, rgba(100, 200, 255, 0.4) 3px, transparent 3px),
-            linear-gradient(to bottom, rgba(100, 200, 255, 0.4) 3px, transparent 3px);
-    }
-    50% { 
-        opacity: 0.8;
-        background-image: 
-            linear-gradient(to right, rgba(100, 200, 255, 0.6) 4px, transparent 4px),
-            linear-gradient(to bottom, rgba(100, 200, 255, 0.6) 4px, transparent 4px);
-    }
-}
-
-/* Анимация интенсивной пульсации голубых линий */
-@keyframes blueLinesIntensePulse {
-    0%, 100% { 
-        opacity: 0.6;
-        background-image: 
-            linear-gradient(to right, rgba(100, 200, 255, 0.5) 4px, transparent 4px),
-            linear-gradient(to bottom, rgba(100, 200, 255, 0.5) 4px, transparent 4px);
-    }
-    50% { 
-        opacity: 1;
-        background-image: 
-            linear-gradient(to right, rgba(100, 200, 255, 0.8) 5px, transparent 5px),
-            linear-gradient(to bottom, rgba(100, 200, 255, 0.8) 5px, transparent 5px);
-        filter: brightness(1.2);
-    }
-}
-
-/* Анимация движения звездного фона */
-@keyframes starsMovement {
-    from { background-position: 0 0, 40px 60px, 130px 270px; }
-    to { background-position: 0 550px, 40px 610px, 130px 820px; }
 }

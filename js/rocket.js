@@ -167,61 +167,25 @@
             countdownInterval = null;
         }
     }
-
-   function updateRocketPosition(multiplier) {
-    const rocketElement = document.getElementById('rocket');
-    const trailElement = document.getElementById('rocketTrail');
+function updateRocketPosition(multiplier) {
     const canvasElement = document.getElementById('rocketCanvas');
-    const blueGridElement = document.querySelector('.blue-grid');
+    const trajectoryElement = document.querySelector('.green-trajectory');
     
-    // Ракета остается фиксированной, но меняем ее внешний вид
-    const rocketSize = 50 + (multiplier * 3);
-    rocketElement.style.fontSize = `${Math.min(80, rocketSize)}px`;
+    // Убираем предыдущие классы
+    canvasElement.classList.remove('rocket-high-multiplier', 'rocket-very-high-multiplier');
     
-    // Увеличиваем след ракеты
-    const trailHeight = Math.min(250, multiplier * 20);
-    trailElement.style.height = `${trailHeight}px`;
-    
-    // Управляем пульсацией голубых линий в зависимости от множителя
-    if (blueGridElement) {
-        if (multiplier > 5) {
-            // Интенсивная пульсация при высоком множителе
-            blueGridElement.style.animation = `blueLinesIntensePulse ${1 + (10/multiplier)}s ease-in-out infinite`;
-        } else if (multiplier > 1.5) {
-            // Средняя пульсация
-            blueGridElement.style.animation = `blueLinesPulse ${2 - (multiplier/10)}s ease-in-out infinite`;
-        } else {
-            // Слабая пульсация или отсутствие
-            blueGridElement.style.animation = 'none';
-            blueGridElement.style.opacity = '0.6';
-        }
-    }
-    
-    // Меняем цвет ракеты при высоком множителе
+    // Добавляем классы в зависимости от множителя
     if (multiplier > 5) {
-        rocketElement.style.textShadow = `0 0 20px gold, 0 0 30px orange`;
-        rocketElement.style.color = 'gold';
-    } else if (multiplier > 3) {
-        rocketElement.style.textShadow = `0 0 15px red, 0 0 25px yellow`;
-        rocketElement.style.color = 'orange';
-    } else {
-        rocketElement.style.textShadow = `0 0 10px #00b894, 0 0 20px white`;
-        rocketElement.style.color = 'white';
+        canvasElement.classList.add('rocket-very-high-multiplier');
+    } else if (multiplier > 2) {
+        canvasElement.classList.add('rocket-high-multiplier');
     }
     
-    // Добавляем класс для анимации фона при полете
+    // Обновляем высоту траектории
     if (rocketGame.status === 'flying') {
-        canvasElement.classList.add('rocket-moving');
-    } else {
-        canvasElement.classList.remove('rocket-moving');
-        rocketElement.style.textShadow = `0 0 10px #00b894, 0 0 20px white`;
-        rocketElement.style.color = 'white';
-        
-        // Сбрасываем пульсацию голубых линий
-        if (blueGridElement) {
-            blueGridElement.style.animation = 'none';
-            blueGridElement.style.opacity = '0.6';
-        }
+        const maxHeight = 300; // Максимальная высота траектории
+        const trajectoryHeight = Math.min(maxHeight, multiplier * 50);
+        trajectoryElement.style.height = `${trajectoryHeight}px`;
     }
 }
 
