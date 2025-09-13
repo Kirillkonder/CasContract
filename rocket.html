@@ -5,54 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rocket - Casino Gift Contract</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/rocket.css">
 </head>
 <body>
-    <div class="container">
-        <button class="back-button" onclick="goBack()">← Назад</button>
-        
+    <div class="rocket-container">
         <div class="rocket-header">
-            <div class="balance">
-                Баланс: <span id="balance">0</span> TON
-                <span id="demo-badge" class="demo-badge">TESTNET</span>
+            <div class="header-top">
+                <button class="back-button" onclick="goBack()">← Назад</button>
+                <div class="balance">
+                    Баланс: <span id="balance">0</span> TON
+                    <span id="demo-badge" class="demo-badge">TESTNET</span>
+                </div>
             </div>
         </div>
 
-        <div class="game-status" id="gameStatus">
-            <span id="statusText">Ожидание начала игры...</span>
-            <span id="countdown"></span>
-        </div>
-
-        <div class="rocket-canvas" id="rocketCanvas">
+        <div class="game-canvas">
             <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
-            <div class="rocket-image" id="rocket">
-                <img src="Rocket.png" alt="Rocket" class="rocket-img">
+            <div class="rocket-wrapper">
+                <div class="rocket-image" id="rocket">
+                    <img src="Rocket.png" alt="Rocket" class="rocket-img">
+                </div>
             </div>
-            <div class="trail" id="rocketTrail"></div>
+            <div class="grid-lines"></div>
+            <div class="explosion-container" id="explosionContainer"></div>
         </div>
 
-        <div class="betting-panel">
-            <div class="bet-controls">
-                <input type="number" class="bet-input" id="betAmount" min="0.5" max="50" step="0.1" value="1.0" placeholder="Сумма ставки">
-                <button class="bet-button" id="placeBetButton" onclick="placeBet()">Поставить</button>
+        <div class="game-controls">
+            <div class="game-status" id="gameStatus">
+                <span id="statusText">Ожидание начала игры...</span>
+                <span id="countdown"></span>
             </div>
-            
-            <button class="cashout-button" id="cashoutButton" onclick="cashout()" disabled>Забрать выигрыш</button>
-            
-            <div style="margin-top: 15px; text-align: center;">
-                <div>Ваша ставка: <span id="userBet">0</span> TON</div>
-                <div>Потенциальный выигрыш: <span id="potentialWin">0</span> TON</div>
+
+            <div class="betting-panel">
+                <div class="bet-input-group">
+                    <input type="number" class="bet-input" id="betAmount" min="0.5" max="50" step="0.1" value="1.0" placeholder="Сумма ставки">
+                    <button class="bet-button" id="placeBetButton" onclick="placeBet()">Поставить</button>
+                </div>
+                
+                <button class="cashout-button" id="cashoutButton" onclick="cashout()" disabled>Забрать выигрыш</button>
+                
+                <div class="bet-info">
+                    <div class="bet-amount">Ваша ставка: <span id="userBet">0</span> TON</div>
+                    <div class="potential-win">Потенциальный выигрыш: <span id="potentialWin">0</span> TON</div>
+                </div>
             </div>
         </div>
 
-        <div class="players-list">
-            <h3>Игроки в этом раунде (<span id="playersCount">0</span>)</h3>
-            <div id="playersList"></div>
+        <div class="players-section">
+            <div class="section-header">
+                <h3>Игроки в этом раунде</h3>
+                <span class="players-count" id="playersCount">0</span>
+            </div>
+            <div class="players-list" id="playersList"></div>
         </div>
 
-        <div class="history-container">
-            <h3>История игр</h3>
+        <div class="history-section">
+            <div class="section-header">
+                <h3>История игр</h3>
+            </div>
             <div class="history-items" id="historyItems"></div>
         </div>
     </div>
