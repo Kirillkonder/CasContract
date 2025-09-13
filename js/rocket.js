@@ -8,10 +8,27 @@ let userPlayer = null;
 let rocketPosition = 50;
 let countdownInterval = null;
 
+// Предопределенная траектория полета
+const flightPath = [
+    { x: 0, multiplier: 1.0 },
+    { x: 10, multiplier: 1.2 },
+    { x: 20, multiplier: 1.5 },
+    { x: 30, multiplier: 2.0 },
+    { x: 40, multiplier: 2.8 },
+    { x: 50, multiplier: 3.5 },
+    { x: 60, multiplier: 4.3 },
+    { x: 70, multiplier: 5.2 },
+    { x: 80, multiplier: 6.5 },
+    { x: 90, multiplier: 8.0 },
+    { x: 100, multiplier: 10.0 }
+];
+
 // Инициализация
 document.addEventListener('DOMContentLoaded', function() {
     initializeGame();
     connectWebSocket();
+    // Запускаем демо-режим для тестирования
+    setTimeout(startDemoMode, 2000);
 });
 
 function goBack() {
@@ -20,7 +37,7 @@ function goBack() {
 
 function initializeGame() {
     const tg = window.Telegram.WebApp;
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
         currentUser = {
             id: tg.initDataUnsafe.user.id,
             username: tg.initDataUnsafe.user.username || `User_${tg.initDataUnsafe.user.id}`,
@@ -28,6 +45,17 @@ function initializeGame() {
             lastName: tg.initDataUnsafe.user.last_name
         };
         loadUserData();
+    } else {
+        // Демо-режим для тестирования
+        currentUser = {
+            id: 123456789,
+            username: 'DemoUser',
+            firstName: 'Demo',
+            lastName: 'User'
+        };
+        isDemoMode = true;
+        document.getElementById('demo-badge').textContent = 'TESTNET';
+        document.getElementById('balance').textContent = '1000.00';
     }
 }
 
@@ -174,10 +202,28 @@ function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const rocketContainer = document.getElementById('rocketContainer');
     
+    // Находим позицию на траектории по множителю
+    let targetX = 0;
+    let targetY = 0;
+    
+    for (let i = 0; i < flightPath.length - 1; i++) {
+        if (multiplier >= flightPath[i].multiplier && multiplier <= flightPath[i + 1].multiplier) {
+            const progress = (multiplier - flightPath[i].multiplier) / 
+                            (flightPath[i + 1].multiplier - flightPath[i].multiplier);
+            targetX = flightPath[i].x + (flightPath[i + 1].x - flightPath[i].x) * progress;
+            targetY = Math.min(35, (multiplier - 1) * 10);
+            break;
+        }
+    }
+    
+    // Обновляем позицию ракеты
+    rocketContainer.style.left = `${targetX}%`;
+    rocketContainer.style.bottom = `calc(50% + ${targetY}%)`;
+    
     // Корректировка размера, масштаба и поворота в зависимости от множителя
     if (multiplier >= 3 && multiplier < 5) {
-        const rotationProgress = (multiplier - 3) / 2; // от 0 до 1
-        const rotation = -60 * rotationProgress; // плавный поворот
+        const rotationProgress = (multiplier - 3) / 2;
+        const rotation = -60 * rotationProgress;
         rocketElement.style.transform = `translateX(-50%) scale(1.2) rotate(${rotation}deg)`;
     } else if (multiplier >= 5) {
         rocketElement.style.transform = `translateX(-50%) scale(1.5) rotate(-60deg)`;
@@ -189,12 +235,6 @@ function updateRocketPosition(multiplier) {
     } else {
         rocketElement.classList.remove('rocket-pulsing');
     }
-
-    // Корректировка позиции ракеты в зависимости от множителя
-    if (multiplier > 1) {
-        const verticalOffset = Math.min(35, (multiplier - 1) * 10);
-        rocketContainer.style.bottom = `calc(50% + ${verticalOffset}%)`;
-    }
 }
 
 function drawFlightPath(multiplier) {
@@ -202,43 +242,46 @@ function drawFlightPath(multiplier) {
     graphContainer.innerHTML = '';
     
     if (multiplier > 1.1) {
+        // Рисуем линию траектории
         const path = document.createElement('div');
         path.style.position = 'absolute';
         path.style.bottom = '50%';
         path.style.left = '0';
         path.style.width = '100%';
         path.style.height = '2px';
-        path.style.background = 'linear-gradient(90deg, transparent, rgba(0, 184, 148, 0.7), transparent)';
+        path.style.background = 'linear-gradient(90deg, transparent, #6c5ce7, transparent)';
         path.style.zIndex = '1';
         
         graphContainer.appendChild(path);
         
         // Добавляем точки на график
-        for (let i = 1; i < multiplier; i += 0.5) {
-            if (i > 10) break; // Ограничиваем количество точек
+        for (let i = 0; i < flightPath.length; i++) {
+            if (flightPath[i].multiplier > multiplier) break;
             
             const point = document.createElement('div');
             point.style.position = 'absolute';
-            point.style.bottom = `calc(50% + ${Math.min(35, (i - 1) * 10)}%)`;
-            point.style.left = `${i * 8}%`;
-            point.style.width = '4px';
-            point.style.height = '4px';
-            point.style.backgroundColor = '#00b894';
+            point.style.bottom = `calc(50% + ${Math.min(35, (flightPath[i].multiplier - 1) * 10)}%)`;
+            point.style.left = `${flightPath[i].x}%`;
+            point.style.width = '6px';
+            point.style.height = '6px';
+            point.style.backgroundColor = '#a29bfe';
             point.style.borderRadius = '50%';
             point.style.zIndex = '2';
+            point.style.boxShadow = '0 0 10px rgba(108, 92, 231, 0.8)';
             
             graphContainer.appendChild(point);
             
             const value = document.createElement('div');
             value.style.position = 'absolute';
-            value.style.bottom = `calc(50% + ${Math.min(35, (i - 1) * 10) + 5}%)`;
-            value.style.left = `${i * 8}%`;
+            value.style.bottom = `calc(50% + ${Math.min(35, (flightPath[i].multiplier - 1) * 10) + 5}%)`;
+            value.style.left = `${flightPath[i].x}%`;
             value.style.transform = 'translateX(-50%)';
-            value.style.color = '#00b894';
+            value.style.color = '#a29bfe';
             value.style.fontSize = '10px';
             value.style.fontWeight = 'bold';
-            value.textContent = `${i.toFixed(1)}x`;
+            value.textContent = `${flightPath[i].multiplier.toFixed(1)}x`;
             value.style.zIndex = '2';
+            value.style.textShadow = '0 0 5px rgba(0, 0, 0, 0.8)';
             
             graphContainer.appendChild(value);
         }
@@ -249,6 +292,13 @@ function showExplosion() {
     const explosionContainer = document.getElementById('explosionContainer');
     const explosion = document.createElement('div');
     explosion.className = 'explosion';
+    
+    // Позиционируем взрыв на месте ракеты
+    const rocketContainer = document.getElementById('rocketContainer');
+    explosion.style.left = rocketContainer.style.left;
+    explosion.style.bottom = rocketContainer.style.bottom;
+    explosion.style.transform = 'translateX(-50%) translateY(50%)';
+    
     explosionContainer.appendChild(explosion);
     
     // Скрываем ракету при взрыве
@@ -257,18 +307,18 @@ function showExplosion() {
     
     setTimeout(() => {
         explosionContainer.removeChild(explosion);
-        rocketElement.style.display = 'block'; // Ракета снова появляется после взрыва
-        rocketElement.style.transform = 'translateX(-50%)'; // Сброс трансформации
-        rocketElement.classList.remove('rocket-pulsing'); // Убираем пульсацию
+        rocketElement.style.display = 'block';
+        rocketElement.style.transform = 'translateX(-50%)';
+        rocketElement.classList.remove('rocket-pulsing');
         
         // Сбрасываем позицию ракеты
-        const rocketContainer = document.getElementById('rocketContainer');
+        rocketContainer.style.left = '50%';
         rocketContainer.style.bottom = '50%';
         
         // Очищаем график
         const graphContainer = document.getElementById('graphContainer');
         graphContainer.innerHTML = '';
-    }, 1000); // Время анимации взрыва
+    }, 1000);
 }
 
 function updatePlayersList(players) {
@@ -480,6 +530,83 @@ function resetBettingUI() {
     document.getElementById('placeBetButton').disabled = false;
     document.getElementById('placeBetButton').textContent = 'Поставить';
     updateBettingUI();
+}
+
+// Демо-режим для тестирования
+function startDemoMode() {
+    // Имитируем получение данных с сервера
+    const demoGameState = {
+        status: 'counting',
+        multiplier: 1.00,
+        endBetTime: Date.now() + 15000,
+        players: [
+            { userId: 123456789, name: 'DemoUser', betAmount: 1, cashedOut: false, isBot: false },
+            { userId: 1, name: 'Bot1', betAmount: 2.5, cashedOut: false, isBot: true },
+            { userId: 2, name: 'Bot2', betAmount: 1.8, cashedOut: false, isBot: true }
+        ],
+        history: [
+            { multiplier: 3.45 },
+            { multiplier: 1.23 },
+            { multiplier: 8.91 },
+            { multiplier: 2.67 },
+            { multiplier: 5.32 }
+        ],
+        crashPoint: 0
+    };
+    
+    updateGameState(demoGameState);
+    
+    // Запускаем демо-полет через 15 секунд
+    setTimeout(() => {
+        startDemoFlight();
+    }, 15000);
+}
+
+function startDemoFlight() {
+    let multiplier = 1.00;
+    const flightInterval = setInterval(() => {
+        multiplier += 0.05 + (Math.random() * 0.1);
+        
+        // Обновляем состояние игры
+        const demoGameState = {
+            status: 'flying',
+            multiplier: multiplier,
+            endBetTime: 0,
+            players: [
+                { userId: 123456789, name: 'DemoUser', betAmount: 1, cashedOut: false, isBot: false },
+                { userId: 1, name: 'Bot1', betAmount: 2.5, cashedOut: Math.random() > 0.8, isBot: true, winAmount: 2.5 * multiplier, cashoutMultiplier: multiplier },
+                { userId: 2, name: 'Bot2', betAmount: 1.8, cashedOut: Math.random() > 0.7, isBot: true, winAmount: 1.8 * multiplier, cashoutMultiplier: multiplier }
+            ],
+            history: rocketGame.history,
+            crashPoint: 0
+        };
+        
+        updateGameState(demoGameState);
+        
+        // Случайный краш между 1.5x и 10x
+        if (multiplier > 1.5 && (Math.random() < 0.02 || multiplier > 10)) {
+            clearInterval(flightInterval);
+            
+            setTimeout(() => {
+                const demoGameStateCrashed = {
+                    status: 'crashed',
+                    multiplier: multiplier,
+                    endBetTime: 0,
+                    players: demoGameState.players,
+                    history: [{ multiplier: multiplier }, ...rocketGame.history.slice(0, 9)],
+                    crashPoint: multiplier
+                };
+                
+                updateGameState(demoGameStateCrashed);
+                
+                // Перезапускаем через 5 секунд
+                setTimeout(() => {
+                    resetBettingUI();
+                    startDemoMode();
+                }, 5000);
+            }, 1000);
+        }
+    }, 100);
 }
 
 // Глобальная переменная для доступа из WebSocket

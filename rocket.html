@@ -3,83 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rocket Game</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Rocket Game - 1win Style</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="css/rocket.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
     <div class="container">
         <!-- Верхняя панель -->
         <div class="top-panel">
-            <button class="back-button" onclick="goBack()">← Назад</button>
             <div class="balance-container">
                 <span class="balance-label">Баланс:</span>
-                <span id="balance" class="balance-value">0.00</span>
+                <span id="balance" class="balance-amount">100.00</span>
                 <span id="demo-badge" class="demo-badge">MAINNET</span>
             </div>
+            <button class="back-button" onclick="goBack()">← Назад</button>
         </div>
 
-        <!-- Игровая зона -->
-        <div class="game-area">
-            <!-- График и ракета -->
-            <div class="rocket-container">
+        <!-- Основное игровое поле -->
+        <div class="game-container">
+            <div class="rocket-animation-area">
+                <div id="gameStatus" class="game-status status-waiting">
+                    <span id="statusText">Ожидание начала игры...</span>
+                    <span id="countdown"></span>
+                </div>
+                
                 <div id="graphContainer" class="graph-container"></div>
-                <div id="rocketContainer" class="rocket-wrapper">
+                
+                <div id="rocketContainer" class="rocket-container">
                     <img id="rocket" src="Rocket.png" alt="Rocket" class="rocket">
                 </div>
+                
                 <div id="explosionContainer" class="explosion-container"></div>
                 
-                <!-- Таймер и статус игры -->
-                <div class="game-status-container">
-                    <div id="gameStatus" class="game-status status-waiting">
-                        <span id="statusText">Ожидание начала игры...</span>
-                        <span id="countdown"></span>
-                    </div>
-                    <div class="multiplier-display">
-                        <span id="multiplierDisplay">1.00x</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Панель ставок -->
-            <div class="betting-panel">
-                <div class="bet-input-container">
-                    <input type="number" id="betAmount" min="0.5" max="50" step="0.5" value="1.0" placeholder="Сумма ставки">
-                    <button id="placeBetButton" class="bet-button" onclick="placeBet()">Поставить</button>
-                </div>
-                <button id="cashoutButton" class="cashout-button" onclick="cashout()">Забрать выигрыш</button>
-                
-                <div class="user-stats">
-                    <div class="stat-item">
-                        <span>Ваша ставка:</span>
-                        <span id="userBet">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>Потенциальный выигрыш:</span>
-                        <span id="potentialWin">0</span>
-                    </div>
+                <div class="multiplier-display">
+                    <span id="multiplierDisplay">1.00x</span>
                 </div>
             </div>
         </div>
 
-        <!-- Нижняя панель с историей и игроками -->
-        <div class="bottom-panel">
-            <div class="history-container">
-                <h3>История</h3>
-                <div id="historyItems" class="history-items">
-                    <!-- История будет добавлена через JS -->
-                </div>
+        <!-- Панель управления -->
+        <div class="control-panel">
+            <div class="bet-controls">
+                <input type="number" id="betAmount" class="bet-input" placeholder="0.5" min="0.5" max="50" step="0.1" value="1">
+                <button id="placeBetButton" class="bet-button" onclick="placeBet()">Поставить</button>
+                <button id="cashoutButton" class="cashout-button" onclick="cashout()">Забрать выигрыш</button>
             </div>
             
-            <div class="players-container">
-                <div class="players-header">
-                    <h3>Игроки</h3>
-                    <span id="playersCount">0</span>
+            <div class="user-stats">
+                <div class="stat-item">
+                    <span>Ваша ставка:</span>
+                    <span id="userBet">0</span>
                 </div>
-                <div id="playersList" class="players-list">
-                    <!-- Список игроков будет добавлен через JS -->
+                <div class="stat-item">
+                    <span>Потенциальный выигрыш:</span>
+                    <span id="potentialWin">0</span>
                 </div>
+            </div>
+        </div>
+
+        <!-- Нижняя панель с информацией -->
+        <div class="bottom-panel">
+            <div class="players-section">
+                <h3>Игроки (<span id="playersCount">0</span>)</h3>
+                <div id="playersList" class="players-list"></div>
+            </div>
+            
+            <div class="history-section">
+                <h3>История</h3>
+                <div id="historyItems" class="history-items"></div>
             </div>
         </div>
     </div>
