@@ -4,77 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rocket Game</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/rocket.css">
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <!-- Верхняя панель -->
+        <div class="top-panel">
             <button class="back-button" onclick="goBack()">← Назад</button>
             <div class="balance-container">
-                <div class="balance" id="balance">100.00 TON</div>
-                <div class="demo-badge" id="demo-badge">MAINNET</div>
+                <span class="balance-label">Баланс:</span>
+                <span id="balance" class="balance-value">0.00</span>
+                <span id="demo-badge" class="demo-badge">MAINNET</span>
             </div>
         </div>
 
+        <!-- Игровое поле -->
         <div class="game-area">
-            <div class="game-canvas" id="rocketCanvas">
-                <div class="flight-path"></div>
-                <div class="graph-container" id="graphContainer"></div>
-            </div>
-            
             <div class="rocket-container" id="rocketContainer">
-                <div class="rocket" id="rocket"></div>
+                <img src="Rocket.png" alt="Rocket" class="rocket" id="rocket">
+                <div class="graph-container" id="graphContainer"></div>
+                <div class="explosion-container" id="explosionContainer"></div>
             </div>
             
-            <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
-            
-            <div class="game-status status-waiting" id="gameStatus">
-                <div class="status-text" id="statusText">Ожидание начала игры...</div>
-                <div class="countdown" id="countdown"></div>
-            </div>
-        </div>
-
-        <div class="betting-panel">
-            <div class="bet-input-container">
-                <input type="number" class="bet-input" id="betAmount" placeholder="Сумма ставки" min="0.5" max="50" step="0.1" value="1.0">
-                <button class="action-button bet-button" id="placeBetButton" onclick="placeBet()">Поставить</button>
-                <button class="action-button cashout-button" id="cashoutButton" onclick="cashout()">Забрать</button>
-            </div>
-            
-            <div class="user-info">
-                <div class="info-item">
-                    <div class="info-label">Ваша ставка</div>
-                    <div class="info-value" id="userBet">0.00</div>
+            <!-- Таймер и статус -->
+            <div class="game-status-container">
+                <div id="gameStatus" class="game-status status-waiting">
+                    <span id="statusText">Ожидание начала игры...</span>
+                    <span id="countdown" class="countdown"></span>
                 </div>
-                <div class="info-item">
-                    <div class="info-label">Потенциальный выигрыш</div>
-                    <div class="info-value" id="potentialWin">0.00</div>
+                <div class="multiplier-display">
+                    <span id="multiplierDisplay">1.00x</span>
                 </div>
             </div>
         </div>
 
-        <div class="players-panel">
-            <div class="panel-header">
-                <div class="panel-title">Игроки</div>
-                <div class="players-count">Игроков: <span id="playersCount">0</span></div>
+        <!-- Панель управления -->
+        <div class="control-panel">
+            <div class="bet-controls">
+                <div class="input-group">
+                    <input type="number" id="betAmount" min="0.5" max="50" step="0.5" value="1.0" placeholder="Сумма ставки">
+                    <span class="currency">TON</span>
+                </div>
+                <button id="placeBetButton" class="bet-button" onclick="placeBet()">Поставить</button>
+                <button id="cashoutButton" class="cashout-button" onclick="cashout()">Забрать выигрыш</button>
             </div>
-            <div class="players-list" id="playersList">
-                <!-- Список игроков будет добавляться динамически -->
+            
+            <div class="user-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Ваша ставка:</span>
+                    <span id="userBet" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Потенциальный выигрыш:</span>
+                    <span id="potentialWin" class="stat-value">0</span>
+                </div>
             </div>
         </div>
 
-        <div class="history-panel">
-            <div class="panel-header">
-                <div class="panel-title">История</div>
+        <!-- Информационные панели -->
+        <div class="info-panels">
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Игроки онлайн</h3>
+                    <span id="playersCount" class="badge">0</span>
+                </div>
+                <div id="playersList" class="panel-content"></div>
             </div>
-            <div class="history-items" id="historyItems">
-                <!-- История будет добавляться динамически -->
+            
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>История игр</h3>
+                </div>
+                <div id="historyItems" class="panel-content history-container"></div>
             </div>
         </div>
     </div>
 
-    <script src="js/rocket.js"></script>
+    <script src="rocket.js"></script>
 </body>
 </html>
