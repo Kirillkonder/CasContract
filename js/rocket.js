@@ -168,18 +168,28 @@
         }
     }
 
-    function updateRocketPosition(multiplier) {
+   function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const trailElement = document.getElementById('rocketTrail');
     const canvasElement = document.getElementById('rocketCanvas');
+    const blueGridElement = document.querySelector('.blue-grid');
     
     // Ракета остается фиксированной, но меняем ее внешний вид
-    const rocketSize = 50 + (multiplier * 3); // Более заметное увеличение размера
+    const rocketSize = 50 + (multiplier * 3);
     rocketElement.style.fontSize = `${Math.min(80, rocketSize)}px`;
     
     // Увеличиваем след ракеты
     const trailHeight = Math.min(250, multiplier * 20);
     trailElement.style.height = `${trailHeight}px`;
+    
+    // Управляем пульсацией голубых линий в зависимости от множителя
+    if (blueGridElement) {
+        const pulseIntensity = Math.min(1, multiplier / 10); // От 0 до 1
+        const pulseSpeed = 1 + (pulseIntensity * 2); // От 1s до 3s
+        
+        blueGridElement.style.animation = `bluePulse ${pulseSpeed}s ease-in-out infinite`;
+        blueGridElement.style.opacity = 0.5 + (pulseIntensity * 0.3);
+    }
     
     // Меняем цвет ракеты при высоком множителе
     if (multiplier > 5) {
@@ -200,6 +210,12 @@
         canvasElement.classList.remove('rocket-moving');
         rocketElement.style.textShadow = `0 0 10px #00b894, 0 0 20px white`;
         rocketElement.style.color = 'white';
+        
+        // Сбрасываем пульсацию голубых линий
+        if (blueGridElement) {
+            blueGridElement.style.animation = 'none';
+            blueGridElement.style.opacity = '0.7';
+        }
     }
 }
 
