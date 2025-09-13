@@ -612,14 +612,7 @@ input[type="text"]:focus {
 
 
 
-.rocket {
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 40px;
-    transition: bottom 0.1s linear;
-}
+
 
 
 

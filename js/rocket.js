@@ -169,16 +169,28 @@
     }
 
     function updateRocketPosition(multiplier) {
-        const rocketElement = document.getElementById('rocket');
-        const trailElement = document.getElementById('rocketTrail');
-        
-        // Вычисляем новую позицию ракеты (от 50px до 250px)
-        const newPosition = 50 + (multiplier * 2);
-        rocketElement.style.bottom = `${newPosition}px`;
-        
-        // Обновляем след ракеты
-        trailElement.style.height = `${newPosition - 90}px`;
+    const rocketElement = document.getElementById('rocket');
+    const trailElement = document.getElementById('rocketTrail');
+    const canvasElement = document.getElementById('rocketCanvas');
+    
+    // Ракета остается фиксированной в центре
+    // Вместо движения ракеты будем менять визуальные эффекты
+    
+    // Обновляем след ракеты (может увеличиваться в высоту)
+    const trailHeight = Math.min(300, multiplier * 15); // Ограничиваем максимальную высоту
+    trailElement.style.height = `${trailHeight}px`;
+    
+    // Добавляем класс для анимации фона при полете
+    if (rocketGame.status === 'flying') {
+        canvasElement.classList.add('rocket-moving');
+    } else {
+        canvasElement.classList.remove('rocket-moving');
     }
+    
+    // Меняем размер ракеты в зависимости от множителя
+    const rocketSize = 40 + (multiplier * 2);
+    rocketElement.style.fontSize = `${Math.min(60, rocketSize)}px`;
+}
 
     function showExplosion() {
         const canvas = document.getElementById('rocketCanvas');
