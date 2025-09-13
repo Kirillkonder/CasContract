@@ -168,22 +168,19 @@
         }
     }
 
-    function updateRocketPosition(multiplier) {
+  function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const trailElement = document.getElementById('rocketTrail');
     const rocketImg = rocketElement.querySelector('.rocket-img');
     
-    // Фиксированная позиция ракеты по центру
-    rocketElement.style.bottom = '50px';
-    rocketElement.style.left = '50%';
-    rocketElement.style.transform = 'translateX(-50%)';
+    // Убираем все inline стили позиционирования, чтобы работал CSS
+    rocketElement.style.bottom = '';
+    rocketElement.style.left = '';
+    rocketElement.style.transform = '';
     
     // Обновляем след ракеты в зависимости от множителя
-    const trailHeight = Math.min(multiplier * 20, 250); // Ограничиваем высоту следа
+    const trailHeight = Math.min(multiplier * 20, 250);
     trailElement.style.height = `${trailHeight}px`;
-    trailElement.style.bottom = '90px';
-    trailElement.style.left = '50%';
-    trailElement.style.transform = 'translateX(-50%)';
     
     // Добавляем анимацию полета
     if (multiplier > 1.1) {
