@@ -1,3 +1,4 @@
+/* Ваши стили */
 .rocket-container {
     max-width: 600px;
     margin: 0 auto;
@@ -15,33 +16,30 @@
 
 .rocket-canvas {
     width: 100%;
-    height: 500px;  /* Увеличиваем высоту канваса */
+    height: 500px;
     background: 
         linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%), 
-        url('https://path-to-your-image.jpg'); /* Здесь указываем путь к изображению фона */
+        url('https://path-to-your-image.jpg');
     background-size: cover;
     border-radius: 15px;
     margin-bottom: 20px;
     position: relative;
     overflow: hidden;
-    border: 2px solid #00b894;  /* Зеленая линия */
+    border: 2px solid #00b894;
     display: flex;
     justify-content: center;
     align-items: center;
-    animation: backgroundPulse 5s ease-in-out infinite; /* Пульсация фона */
+    animation: backgroundPulse 5s ease-in-out infinite;
 }
-
-
 
 .rocket-image {
     position: absolute;
     bottom: 50%;
     left: 50%;
-    transform: translateX(-50%) translateY(50%) scale(1.2); /* Увеличиваем размер ракеты */
+    transform: translateX(-50%) translateY(50%) scale(1.2);
+    width: 150px;
+    height: 220px;
     z-index: 10;
-    width: 150px;  /* Увеличиваем ширину */
-    height: 220px; /* Увеличиваем высоту */
-    transition: transform 0.3s ease;
 }
 
 .rocket-img {
@@ -215,12 +213,11 @@
     100% { transform: scale(2); opacity: 0; }
 }
 
-
 .trail {
     display: none;  /* Прячем след ракеты */
 }
 
-/* Анимация для ракеты */
+/* Ваши анимации для ракеты */
 @keyframes rocketFloat {
     0% { transform: translateX(-50%) translateY(50%) rotate(0deg) translateY(0); }
     50% { transform: translateX(-50%) translateY(50%) rotate(0deg) translateY(-8px); }
@@ -275,7 +272,6 @@
     50% { opacity: 1; transform: scale(1.1); }
     100% { opacity: 0.7; transform: scale(1); }
 }
-
 
 .rocket-moving-up {
     transition: bottom 0.8s ease-out;

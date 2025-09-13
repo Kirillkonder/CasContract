@@ -171,37 +171,26 @@
  // rocket.js - ОБНОВЛЕННАЯ ФУНКЦИЯ updateRocketPosition
 function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
-    const canvasElement = document.getElementById('rocketCanvas');
     
-    // Обновляем позицию ракеты по вертикали (центр остается по центру, но смещается вверх)
-    rocketElement.style.transform = `translateX(-50%) translateY(50%) scale(1.2)`; // Центровка и увеличение
-    
-    // Плавный поворот ракеты от 3x до 5x
+    // Корректировка размера, масштаба и поворота в зависимости от множителя
     if (multiplier >= 3 && multiplier < 5) {
         const rotationProgress = (multiplier - 3) / 2; // от 0 до 1
-        const rotation = -60 * rotationProgress; // Плавный поворот от 0 до -60 градусов
+        const rotation = -60 * rotationProgress; // плавный поворот
         rocketElement.style.transform = `translateX(-50%) translateY(50%) scale(1.2) rotate(${rotation}deg)`;
+    } else if (multiplier >= 5) {
+        rocketElement.style.transform = `translateX(-50%) translateY(50%) scale(1.5) rotate(-60deg)`;
     }
 
-    // Полный поворот на 60 градусов при 5x и выше
-    if (multiplier >= 5) {
-        rocketElement.style.transform = `translateX(-50%) translateY(50%) rotate(-60deg) scale(1.2)`;
-    }
-    
-    // Пульсация ракеты (начинает пульсировать с 3x, максимум до 8x)
-    if (multiplier >= 3 && multiplier < 8) {
+    // Применение пульсации после достижения 3x множителя
+    if (multiplier >= 3) {
         rocketElement.classList.add('rocket-pulsing');
-    } else if (multiplier >= 8) {
-        rocketElement.classList.remove('rocket-pulsing');
-        rocketElement.style.animation = 'none';  // Останавливаем пульсацию после 8x
     } else {
         rocketElement.classList.remove('rocket-pulsing');
     }
 
-    // Двигаем ракету вверх (центр остается по центру, но смещается вверх)
+    // Корректировка позиции ракеты в зависимости от множителя
     if (multiplier > 1) {
-        const maxOffset = 35; // Максимальное смещение вверх в %
-        const verticalOffset = Math.min(maxOffset, (multiplier - 1) * 10);
+        const verticalOffset = Math.min(35, (multiplier - 1) * 10);
         rocketElement.style.bottom = `calc(50% + ${verticalOffset}%)`;
     }
 }
