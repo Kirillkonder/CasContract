@@ -169,16 +169,24 @@
     }
 
     function updateRocketPosition(multiplier) {
-        const rocketElement = document.getElementById('rocket');
-        const trailElement = document.getElementById('rocketTrail');
-        
-        // Вычисляем новую позицию ракеты (от 50px до 250px)
-        const newPosition = 50 + (multiplier * 2);
-        rocketElement.style.bottom = `${newPosition}px`;
-        
-        // Обновляем след ракеты
-        trailElement.style.height = `${newPosition - 90}px`;
-    }
+    const rocketElement = document.getElementById('rocket');
+    const trailElement = document.getElementById('rocketTrail');
+    
+    // Вычисляем новую позицию ракеты (от 50px до 250px)
+    // Учитываем высоту изображения ракеты (примерно 120px)
+    const maxHeight = 300; // Высота canvas
+    const rocketHeight = 120; // Высота вашего изображения ракеты
+    const availableSpace = maxHeight - rocketHeight - 20; // 20px отступ сверху
+    
+    const newPosition = 50 + (multiplier * 2);
+    // Ограничиваем позицию, чтобы ракета не улетела за пределы
+    const boundedPosition = Math.min(newPosition, availableSpace);
+    
+    rocketElement.style.bottom = `${boundedPosition}px`;
+    
+    // Обновляем след ракеты
+    trailElement.style.height = `${boundedPosition - 40}px`; // Корректируем позицию следа
+}
 
     function showExplosion() {
         const canvas = document.getElementById('rocketCanvas');
