@@ -173,19 +173,17 @@
     const trailElement = document.getElementById('rocketTrail');
     const rocketImg = rocketElement.querySelector('.rocket-img');
     
-    // Вычисляем новую позицию ракеты (от 50px до 250px)
-    const maxHeight = 300; // Высота canvas
-    const rocketHeight = 120; // Высота изображения ракеты
-    const availableSpace = maxHeight - rocketHeight - 20; // 20px отступ сверху
+    // Фиксированная позиция ракеты по центру
+    rocketElement.style.bottom = '50px';
+    rocketElement.style.left = '50%';
+    rocketElement.style.transform = 'translateX(-50%)';
     
-    const newPosition = 50 + (multiplier * 2);
-    // Ограничиваем позицию, чтобы ракета не улетела за пределы
-    const boundedPosition = Math.min(newPosition, availableSpace);
-    
-    rocketElement.style.bottom = `${boundedPosition}px`;
-    
-    // Обновляем след ракеты
-    trailElement.style.height = `${boundedPosition - 40}px`;
+    // Обновляем след ракеты в зависимости от множителя
+    const trailHeight = Math.min(multiplier * 20, 250); // Ограничиваем высоту следа
+    trailElement.style.height = `${trailHeight}px`;
+    trailElement.style.bottom = '90px';
+    trailElement.style.left = '50%';
+    trailElement.style.transform = 'translateX(-50%)';
     
     // Добавляем анимацию полета
     if (multiplier > 1.1) {
