@@ -1,371 +1,208 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
-}
-
-body {
-    background: linear-gradient(135deg, #0a0a1a, #1a1a3a);
-    color: #fff;
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-
-.container {
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 10px;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    margin-bottom: 15px;
-}
-
-.back-button {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.back-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.balance-container {
-    display: flex;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 8px 12px;
-    border-radius: 6px;
-    position: relative;
-}
-
-.demo-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #ff9900;
-    color: #000;
-    font-size: 10px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 10px;
-}
-
-.game-container {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.game-canvas {
-    position: relative;
-    height: 40vh;
-    background-color: #000;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 15px;
-    box-shadow: 0 0 20px rgba(0, 150, 255, 0.3);
-}
-
-.grid-lines {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-        linear-gradient(to right, rgba(0, 150, 255, 0.15) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 150, 255, 0.15) 1px, transparent 1px);
-    background-size: 20px 20px;
-    animation: pulseGrid 2s infinite alternate;
-}
-
-.pulsating-line {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 4px;
-    height: 0;
-    background: linear-gradient(to top, transparent, #00ff00);
-    box-shadow: 0 0 10px #00ff00;
-    animation: pulseLine 1.5s infinite alternate;
-    opacity: 0.7;
-}
-
-@keyframes pulseGrid {
-    0% { opacity: 0.3; }
-    100% { opacity: 0.7; }
-}
-
-@keyframes pulseLine {
-    0% { opacity: 0.4; height: 0; }
-    100% { opacity: 0.8; height: 20%; }
-}
-
-.countdown-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 10;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-}
-
-.countdown-overlay.visible {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.countdown-number {
-    font-size: 100px;
-    font-weight: bold;
-    color: #fff;
-    text-shadow: 0 0 20px rgba(0, 150, 255, 0.8);
-    animation: pulseCountdown 1s infinite alternate;
-}
-
-@keyframes pulseCountdown {
-    0% { transform: scale(1); opacity: 0.7; }
-    100% { transform: scale(1.2); opacity: 1; }
-}
-
-.rocket {
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    height: 80px;
-    width: auto;
-    transition: transform 0.5s ease;
-    z-index: 5;
-}
-
-.rocket-trail {
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 4px;
-    height: 0;
-    background: linear-gradient(to top, #ff7700, transparent);
-    z-index: 4;
-    transition: height 0.2s ease;
-}
-
-.multiplier-display {
-    text-align: center;
-    font-size: 28px;
-    font-weight: bold;
-    margin: 10px 0;
-    text-shadow: 0 0 10px rgba(0, 150, 255, 0.7);
-}
-
-.game-status {
-    text-align: center;
-    padding: 8px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    background: rgba(0, 0, 0, 0.3);
-}
-
-.status-waiting {
-    background: rgba(100, 100, 100, 0.3);
-}
-
-.status-counting {
-    background: rgba(0, 100, 200, 0.3);
-}
-
-.status-flying {
-    background: rgba(0, 150, 0, 0.3);
-}
-
-.status-crashed {
-    background: rgba(200, 0, 0, 0.3);
-}
-
-.betting-panel {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-radius: 12px;
-}
-
-.input-group {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.input-group input {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    margin-right: 10px;
-}
-
-.buttons-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.buttons-group button {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-#placeBetButton {
-    background: linear-gradient(to right, #0074cc, #00aaff);
-}
-
-#placeBetButton:hover:not(:disabled) {
-    background: linear-gradient(to right, #0088ff, #00ccff);
-}
-
-#cashoutButton {
-    background: linear-gradient(to right, #00cc88, #00ffaa);
-}
-
-#cashoutButton:hover:not(:disabled) {
-    background: linear-gradient(to right, #00dd99, #00ffbb);
-}
-
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.user-stats {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-}
-
-.info-panels {
-    display: flex;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.panel {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 12px;
-    border-radius: 8px;
-}
-
-.panel h3 {
-    margin-bottom: 10px;
-    font-size: 14px;
-    color: #aaa;
-}
-
-.players-list {
-    max-height: 120px;
-    overflow-y: auto;
-}
-
-.player-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 5px 0;
-    font-size: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.player-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.player-bet {
-    font-weight: bold;
-}
-
-.history-container {
-    display: flex;
-    gap: 5px;
-    flex-wrap: wrap;
-}
-
-.history-item {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.history-win {
-    background: rgba(0, 200, 0, 0.3);
-}
-
-.history-loss {
-    background: rgba(200, 0, 0, 0.3);
-}
-
-.explosion {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, #ff8800, #ff5500, transparent 70%);
-    border-radius: 50%;
-    animation: explode 0.5s forwards;
-    z-index: 20;
-}
-
-@keyframes explode {
-    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
-}
-
-.rocket.pulsating {
-    animation: rocketPulse 0.5s infinite alternate;
-}
-
-@keyframes rocketPulse {
-    0% { transform: translateX(-50%) scale(1); }
-    100% { transform: translateX(-50%) scale(1.1); }
-}
-
-@media (max-width: 400px) {
-    .info-panels {
-        flex-direction: column;
-    }
-    
-    .multiplier-display {
-        font-size: 24px;
-    }
-    
-    .countdown-number {
-        font-size: 80px;
-    }
-}
+.rocket-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .rocket-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(25, 30, 42, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .rocket-canvas {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .rocket {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 40px;
+            transition: bottom 0.1s linear;
+            z-index: 10;
+        }
+        
+        .multiplier-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            font-weight: bold;
+            color: #00b894;
+            text-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
+            z-index: 10;
+        }
+        
+        .betting-panel {
+            background: rgba(25, 30, 42, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .bet-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .bet-input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(35, 40, 52, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .bet-button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea, #5a6fd8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .bet-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .cashout-button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #00b894, #008066);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+            width: 100%;
+        }
+        
+        .cashout-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .players-list {
+            background: rgba(25, 30, 42, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .player-item:last-child {
+            border-bottom: none;
+        }
+        
+        .player-name {
+            color: #f0f0f0;
+        }
+        
+        .player-bet {
+            color: #00b894;
+            font-weight: bold;
+        }
+        
+        .game-status {
+            text-align: center;
+            padding: 10px;
+            background: rgba(25, 30, 42, 0.95);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .status-waiting {
+            color: #fdcb6e;
+        }
+        
+        .status-counting {
+            color: #74b9ff;
+        }
+        
+        .status-flying {
+            color: #00b894;
+        }
+        
+        .status-crashed {
+            color: #ff6b6b;
+        }
+        
+        .history-container {
+            margin-top: 20px;
+        }
+        
+        .history-items {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .history-item {
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .history-win {
+            background: rgba(0, 184, 148, 0.2);
+            color: #00b894;
+        }
+        
+        .history-loss {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+        
+        .explosion {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,0,0,0.8) 0%, rgba(255,0,0,0) 70%);
+            animation: explode 1s ease-out;
+            z-index: 5;
+        }
+        
+        @keyframes explode {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        
+        .trail {
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            background: linear-gradient(to top, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%);
+            z-index: 1;
+        }
