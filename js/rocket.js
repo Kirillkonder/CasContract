@@ -173,23 +173,34 @@
     const trailElement = document.getElementById('rocketTrail');
     const canvasElement = document.getElementById('rocketCanvas');
     
-    // Ракета остается фиксированной в центре
-    // Вместо движения ракеты будем менять визуальные эффекты
+    // Ракета остается фиксированной, но меняем ее внешний вид
+    const rocketSize = 50 + (multiplier * 3); // Более заметное увеличение размера
+    rocketElement.style.fontSize = `${Math.min(80, rocketSize)}px`;
     
-    // Обновляем след ракеты (может увеличиваться в высоту)
-    const trailHeight = Math.min(300, multiplier * 15); // Ограничиваем максимальную высоту
+    // Увеличиваем след ракеты
+    const trailHeight = Math.min(250, multiplier * 20);
     trailElement.style.height = `${trailHeight}px`;
+    
+    // Меняем цвет ракеты при высоком множителе
+    if (multiplier > 5) {
+        rocketElement.style.textShadow = `0 0 20px gold, 0 0 30px orange`;
+        rocketElement.style.color = 'gold';
+    } else if (multiplier > 3) {
+        rocketElement.style.textShadow = `0 0 15px red, 0 0 25px yellow`;
+        rocketElement.style.color = 'orange';
+    } else {
+        rocketElement.style.textShadow = `0 0 10px #00b894, 0 0 20px white`;
+        rocketElement.style.color = 'white';
+    }
     
     // Добавляем класс для анимации фона при полете
     if (rocketGame.status === 'flying') {
         canvasElement.classList.add('rocket-moving');
     } else {
         canvasElement.classList.remove('rocket-moving');
+        rocketElement.style.textShadow = `0 0 10px #00b894, 0 0 20px white`;
+        rocketElement.style.color = 'white';
     }
-    
-    // Меняем размер ракеты в зависимости от множителя
-    const rocketSize = 40 + (multiplier * 2);
-    rocketElement.style.fontSize = `${Math.min(60, rocketSize)}px`;
 }
 
     function showExplosion() {
