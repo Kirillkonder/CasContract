@@ -311,87 +311,82 @@ function startRocketFlight() {
 
 
 function processRocketGameEnd() {
-    // Сохраняем игру в историю
-    const gameRecord = rocketGames.insert({
-        crashPoint: rocketGame.crashPoint,
-        maxMultiplier: rocketGame.multiplier,
-        startTime: new Date(rocketGame.startTime),
-        endTime: new Date(),
-        playerCount: rocketGame.players.length,
-        totalBets: rocketGame.players.reduce((sum, p) => sum + p.betAmount, 0),
-        totalPayouts: rocketGame.players.reduce((sum, p) => sum + (p.cashedOut ? p.winAmount : 0), 0)
-    });
+  // Сохраняем игру в историю
+  const gameRecord = rocketGames.insert({
+    crashPoint: rocketGame.crashPoint,
+    maxMultiplier: rocketGame.multiplier,
+    startTime: new Date(rocketGame.startTime),
+    endTime: new Date(),
+    playerCount: rocketGame.players.length,
+    totalBets: rocketGame.players.reduce((sum, p) => sum + p.betAmount, 0),
+    totalPayouts: rocketGame.players.reduce((sum, p) => sum + (p.cashedOut ? p.winAmount : 0), 0)
+  });
 
-    // Обрабатываем выплаты для реальных игроков
-    rocketGame.players.forEach(player => {
-        if (!player.isBot && player.cashedOut) {
-            const user = users.findOne({ telegram_id: parseInt(player.userId) });
-            if (user) {
-                const winAmount = player.betAmount * player.cashoutMultiplier;
-                
-                if (player.demoMode) {
-                    users.update({
-                        ...user,
-                        demo_balance: user.demo_balance + winAmount
-                    });
-                } else {
-                    users.update({
-                        ...user,
-                        main_balance: user.main_balance + winAmount
-                    });
-                    updateCasinoBank(-winAmount);
-                }
-
-                // Записываем транзакцию
-                transactions.insert({
-                    user_id: user.$loki,
-                    amount: winAmount,
-                    type: 'rocket_win',
-                    status: 'completed',
-                    demo_mode: player.demoMode,
-                    game_id: gameRecord.$loki,
-                    created_at: new Date()
-                });
-
-                // Сохраняем ставку
-                rocketBets.insert({
-                    game_id: gameRecord.$loki,
-                    user_id: user.$loki,
-                    bet_amount: player.betAmount,
-                    cashout_multiplier: player.cashoutMultiplier,
-                    win_amount: winAmount,
-                    demo_mode: player.demoMode,
-                    created_at: new Date()
-                });
-            }
+  // Обрабатываем выплаты для реальных игроков
+  rocketGame.players.forEach(player => {
+    if (!player.isBot) {
+      const user = users.findOne({ telegram_id: parseInt(player.userId) });
+      if (user && player.cashedOut) {
+        const winAmount = player.betAmount * player.cashoutMultiplier;
+        
+        if (player.demoMode) {
+          users.update({
+            ...user,
+            demo_balance: user.demo_balance + winAmount
+          });
+        } else {
+          users.update({
+            ...user,
+            main_balance: user.main_balance + winAmount
+          });
+          updateCasinoBank(-winAmount);
         }
-    });
 
-    // Добавляем в историю
-    rocketGame.history.unshift({
-        crashPoint: rocketGame.crashPoint,
-        multiplier: rocketGame.multiplier
-    });
+        // Записываем транзакцию
+        transactions.insert({
+          user_id: user.$loki,
+          amount: winAmount,
+          type: 'rocket_win',
+          status: 'completed',
+          demo_mode: player.demoMode,
+          game_id: gameRecord.$loki,
+          created_at: new Date()
+        });
 
-    if (rocketGame.history.length > 50) {
-        rocketGame.history.pop();
+        // Сохраняем ставку
+        rocketBets.insert({
+          game_id: gameRecord.$loki,
+          user_id: user.$loki,
+          bet_amount: player.betAmount,
+          cashout_multiplier: player.cashoutMultiplier,
+          win_amount: winAmount,
+          demo_mode: player.demoMode,
+          created_at: new Date()
+        });
+      }
     }
+  });
 
+  // Добавляем в историю
+  rocketGame.history.unshift({
+    crashPoint: rocketGame.crashPoint,
+    multiplier: rocketGame.multiplier
+  });
+
+  if (rocketGame.history.length > 50) {
+    rocketGame.history.pop();
+  }
+
+  broadcastRocketUpdate();
+
+  // Через 5 секунд начинаем новую игру
+  setTimeout(() => {
+    rocketGame.status = 'waiting';
+    rocketGame.multiplier = 1.00;
+    rocketGame.players = [];
     broadcastRocketUpdate();
-
-    // Перезапускаем игру через 3 секунды
-    setTimeout(() => {
-        rocketGame = {
-            status: 'waiting',
-            multiplier: 1.0,
-            players: [],
-            history: rocketGame.history,
-            startTime: Date.now() + 10000, // 10 секунд до начала
-            endBetTime: Date.now() + 10000, // 10 секунд на ставки
-            crashPoint: 0
-        };
-        broadcastRocketUpdate();
-    }, 3000);
+    startRocketGame();
+  }, 5000);
 }
 
 function broadcastRocketUpdate() {
