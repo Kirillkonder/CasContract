@@ -600,11 +600,7 @@ input[type="text"]:focus {
 }
 
 
-.rocket-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-}
+
 
 .rocket-game {
     background: rgba(25, 30, 42, 0.95);
@@ -614,15 +610,7 @@ input[type="text"]:focus {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.rocket-canvas {
-    width: 100%;
-    height: 300px;
-    background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
-    border-radius: 15px;
-    margin-bottom: 20px;
-    position: relative;
-    overflow: hidden;
-}
+
 
 .rocket {
     position: absolute;
@@ -635,23 +623,9 @@ input[type="text"]:focus {
 
 
 
-.multiplier-display {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 32px;
-    font-weight: bold;
-    color: #00b894;
-    text-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
-}
+
 
 /* Rocket specific styles */
-.rocket-container {
-    background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 100%);
-    min-height: 100vh;
-    padding: 20px;
-}
 
 .back-button {
     background: rgba(255, 255, 255, 0.1);
@@ -669,11 +643,7 @@ input[type="text"]:focus {
 
 
 /* Rocket specific styles */
-.rocket-container {
-    background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 100%);
-    min-height: 100vh;
-    padding: 20px;
-}
+
 
 .back-button {
     background: rgba(255, 255, 255, 0.1);
@@ -690,11 +660,4 @@ input[type="text"]:focus {
 }
 
 /* Анимации для ракетки */
-@keyframes rocketFly {
-    0% { transform: translateX(-50%) translateY(0); }
-    100% { transform: translateX(-50%) translateY(-100px); }
-}
 
-.rocket-flying {
-    animation: rocketFly 0.5s ease-in-out infinite alternate;
-}
