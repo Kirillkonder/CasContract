@@ -3,61 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rocket Game</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/rocket.css">
+    <title>Ракета - Игра</title>
+    <link rel="stylesheet" href="rocket.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <button onclick="goBack()">← Назад</button>
-            <div class="balance-container">
-                <div class="balance">Баланс: <span id="balance">0.00</span> TON</div>
-                <div class="demo-badge" id="demo-badge">TESTNET</div>
+        <!-- Верхняя панель -->
+        <div class="top-panel">
+            <div class="balance-panel">
+                <span class="balance-label">Баланс:</span>
+                <span id="balance" class="balance-value">1000.00</span>
+                <span id="demo-badge" class="demo-badge">TESTNET</span>
             </div>
+            <button class="back-button" onclick="goBack()">← Назад</button>
         </div>
-        
+
+        <!-- Основное игровое поле -->
         <div class="game-area">
-            <div class="graph-container" id="graphContainer"></div>
-            <div class="rocket-container" id="rocketContainer">
-                <img src="Rocket.png" alt="Rocket" id="rocket">
+            <div class="rocket-container">
+                <div id="graphContainer" class="graph-container"></div>
+                <div id="rocketContainer" class="rocket-container-inner">
+                    <img id="rocket" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA0MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjNEM0QzRDIiByeD0iOCIvPgo8cGF0aCBkPSJNMTAgMjBMMzAgMjBNMTAgMzBMMzAgMzBNMTAgNDBMMzAgNDBNMTAgNTBMMzAgNTAiIHN0cm9rZT0iI0ZGRiIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0yMCAxMEwyMCA3MCIgc3Ryb2tlPSIjRkZGIiBzdHJva2Utd2lkdGg9IjIiLz4KPHJlY3QgeD0iMTUiIHk9IjY1IiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNGRkYiLz4KPC9zdmc+" alt="Ракета" class="rocket">
+                </div>
+                <div id="explosionContainer" class="explosion-container"></div>
             </div>
-            <div class="explosion-container" id="explosionContainer"></div>
-            
-            <div class="game-status" id="gameStatus">
-                <div id="statusText">Ожидание начала игры...</div>
-                <div id="countdown"></div>
-            </div>
-            
-            <div class="multiplier-display">
-                Множитель: <span id="multiplierDisplay">1.00x</span>
+
+            <div class="game-info">
+                <div id="gameStatus" class="game-status status-waiting">
+                    <span id="statusText">Ожидание начала игры...</span>
+                    <span id="countdown" class="countdown"></span>
+                </div>
+                <div class="multiplier-display">
+                    <span id="multiplierDisplay">1.00x</span>
+                </div>
             </div>
         </div>
-        
-        <div class="controls">
-            <div class="bet-controls">
-                <input type="number" id="betAmount" min="0.5" max="50" step="0.1" value="1.0">
-                <button id="placeBetButton" onclick="placeBet()">Поставить</button>
+
+        <!-- Нижняя панель управления -->
+        <div class="control-panel">
+            <div class="betting-panel">
+                <div class="input-group">
+                    <input type="number" id="betAmount" min="0.5" max="50" step="0.1" value="1.0" placeholder="Сумма ставки">
+                    <button id="placeBetButton" onclick="placeBet()">Поставить</button>
+                </div>
                 <button id="cashoutButton" onclick="cashout()" disabled>Забрать выигрыш</button>
             </div>
-            <div class="user-bet-info">
-                <span>Ваша ставка: <span id="userBet">0</span> TON</span>
-                <span>Потенциальный выигрыш: <span id="potentialWin">0</span> TON</span>
+
+            <div class="user-stats">
+                <div class="stat-item">
+                    <span>Ваша ставка:</span>
+                    <span id="userBet">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Потенциальный выигрыш:</span>
+                    <span id="potentialWin">0</span>
+                </div>
             </div>
         </div>
-        
+
+        <!-- Дополнительная информация -->
         <div class="info-panels">
-            <div class="panel">
+            <div class="players-panel">
                 <h3>Игроки (<span id="playersCount">0</span>)</h3>
-                <div id="playersList"></div>
+                <div id="playersList" class="players-list"></div>
             </div>
-            <div class="panel">
+
+            <div class="history-panel">
                 <h3>История</h3>
-                <div class="history-items" id="historyItems"></div>
+                <div id="historyItems" class="history-items"></div>
             </div>
         </div>
     </div>
 
-    <script src="js/rocket.js"></script>
+    <script src="rocket.js"></script>
 </body>
 </html>
