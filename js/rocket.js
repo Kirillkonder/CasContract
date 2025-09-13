@@ -184,11 +184,17 @@
     
     // Управляем пульсацией голубых линий в зависимости от множителя
     if (blueGridElement) {
-        const pulseIntensity = Math.min(1, multiplier / 10); // От 0 до 1
-        const pulseSpeed = 1 + (pulseIntensity * 2); // От 1s до 3s
-        
-        blueGridElement.style.animation = `bluePulse ${pulseSpeed}s ease-in-out infinite`;
-        blueGridElement.style.opacity = 0.5 + (pulseIntensity * 0.3);
+        if (multiplier > 5) {
+            // Интенсивная пульсация при высоком множителе
+            blueGridElement.style.animation = `blueLinesIntensePulse ${1 + (10/multiplier)}s ease-in-out infinite`;
+        } else if (multiplier > 1.5) {
+            // Средняя пульсация
+            blueGridElement.style.animation = `blueLinesPulse ${2 - (multiplier/10)}s ease-in-out infinite`;
+        } else {
+            // Слабая пульсация или отсутствие
+            blueGridElement.style.animation = 'none';
+            blueGridElement.style.opacity = '0.6';
+        }
     }
     
     // Меняем цвет ракеты при высоком множителе
@@ -214,7 +220,7 @@
         // Сбрасываем пульсацию голубых линий
         if (blueGridElement) {
             blueGridElement.style.animation = 'none';
-            blueGridElement.style.opacity = '0.7';
+            blueGridElement.style.opacity = '0.6';
         }
     }
 }
