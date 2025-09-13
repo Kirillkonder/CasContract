@@ -633,18 +633,7 @@ input[type="text"]:focus {
     transition: bottom 0.1s linear;
 }
 
-.rocket-image {
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    transition: bottom 0.1s linear;
-    z-index: 10;
-    width: 80px; /* Настройте под размер вашего изображения */
-    height: 120px; /* Настройте под размер вашего изображения */
-    background: url('Rocket.png') no-repeat center center;
-    background-size: contain;
-}
+
 
 .multiplier-display {
     position: absolute;
