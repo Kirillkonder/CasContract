@@ -178,15 +178,14 @@ function updateRocketPosition(multiplier) {
     const trailHeight = Math.min(multiplier * 25, 300);
     trailElement.style.height = `${trailHeight}px`;
     
-    // После 3x - начинаем поворачивать ракету до 60 градусов
+    // Поворот ракеты при достижении множителя 3x и выше
     if (multiplier >= 3 && multiplier < 5) {
         const rotationProgress = (multiplier - 3) / 2; // от 0 до 1
         const rotation = -60 * rotationProgress; // Плавный поворот от 0 до -60 градусов
         rocketElement.style.transform = `translateX(-50%) translateY(50%) rotate(${rotation}deg)`;
-        console.log('Rotating rocket:', rotation, 'degrees at multiplier:', multiplier);
     }
     
-    // После 5x - полностью повернута на 60 градусов и пульсирует
+    // Полный поворот на 60 градусов при 5x и выше
     if (multiplier >= 5) {
         rocketElement.style.transform = 'translateX(-50%) translateY(50%) rotate(-60deg)';
         rocketElement.classList.add('rocket-pulsing');
@@ -204,17 +203,20 @@ function updateRocketPosition(multiplier) {
     }
 }
 
-    function showExplosion() {
-        const canvas = document.getElementById('rocketCanvas');
-        const explosion = document.createElement('div');
-        explosion.className = 'explosion';
-        canvas.appendChild(explosion);
-        
-        setTimeout(() => {
-            canvas.removeChild(explosion);
-        }, 1000);
-    }
-
+ function showExplosion() {
+    const canvas = document.getElementById('rocketCanvas');
+    const explosion = document.createElement('div');
+    explosion.className = 'explosion';
+    canvas.appendChild(explosion);
+    
+    // Скрываем ракету при взрыве
+    document.getElementById('rocket').style.display = 'none';
+    
+    setTimeout(() => {
+        canvas.removeChild(explosion);
+        document.getElementById('rocket').style.display = 'block'; // Ракета снова появляется после взрыва
+    }, 1000); // Время анимации взрыва
+}
     function updatePlayersList(players) {
         const playersList = document.getElementById('playersList');
         const playersCount = document.getElementById('playersCount');
