@@ -173,25 +173,29 @@ function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const canvasElement = document.getElementById('rocketCanvas');
     
-    // Убираем след ракеты
-    const trailElement = document.getElementById('rocketTrail');
-    trailElement.style.height = '0px';  // Убираем след ракеты
+    // Обновляем позицию ракеты по вертикали (центр остается по центру, но смещается вверх)
+    rocketElement.style.transform = `translateX(-50%) translateY(50%) scale(1.2)`; // Центровка и увеличение
     
-    // Поворот ракеты при достижении множителя 3x и выше
+    // Плавный поворот ракеты от 3x до 5x
     if (multiplier >= 3 && multiplier < 5) {
         const rotationProgress = (multiplier - 3) / 2; // от 0 до 1
         const rotation = -60 * rotationProgress; // Плавный поворот от 0 до -60 градусов
-        rocketElement.style.transform = `translateX(-50%) translateY(50%) rotate(${rotation}deg)`;
+        rocketElement.style.transform = `translateX(-50%) translateY(50%) scale(1.2) rotate(${rotation}deg)`;
     }
-    
+
     // Полный поворот на 60 градусов при 5x и выше
     if (multiplier >= 5) {
-        rocketElement.style.transform = 'translateX(-50%) translateY(50%) rotate(-60deg)';
+        rocketElement.style.transform = `translateX(-50%) translateY(50%) rotate(-60deg) scale(1.2)`;
+    }
+    
+    // Пульсация ракеты (начинает пульсировать с 3x, максимум до 8x)
+    if (multiplier >= 3 && multiplier < 8) {
         rocketElement.classList.add('rocket-pulsing');
-        canvasElement.classList.add('pulsing-background');
+    } else if (multiplier >= 8) {
+        rocketElement.classList.remove('rocket-pulsing');
+        rocketElement.style.animation = 'none';  // Останавливаем пульсацию после 8x
     } else {
         rocketElement.classList.remove('rocket-pulsing');
-        canvasElement.classList.remove('pulsing-background');
     }
 
     // Двигаем ракету вверх (центр остается по центру, но смещается вверх)
@@ -202,7 +206,7 @@ function updateRocketPosition(multiplier) {
     }
 }
 
- function showExplosion() {
+function showExplosion() {
     const canvas = document.getElementById('rocketCanvas');
     const explosion = document.createElement('div');
     explosion.className = 'explosion';
