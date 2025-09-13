@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rocket - Casino Gift Contract</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/rocket.css">
-    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/rocket.css">
+   
 </head>
 <body>
     <div class="container">
@@ -26,19 +26,12 @@
             <span id="countdown"></span>
         </div>
 
-        <div class="game-canvas-container">
-            <div class="multiplier-sidebar" id="multiplierSidebar">
-                <div class="current-multiplier-indicator" id="currentMultiplierIndicator" style="bottom: 0%;"></div>
-                <!-- Множители будут добавлены через JS -->
-            </div>
-            
-            <div class="rocket-canvas" id="rocketCanvas">
-                <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
-                <div class="rocket" id="rocket">
-                    <img src="Rocket.png" alt="Rocket">
-                </div>
-                <div class="trail" id="rocketTrail"></div>
-            </div>
+        <div class="rocket-canvas" id="rocketCanvas">
+            <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
+            <img src="Rocket.png" class="rocket-image" id="rocket">
+            <div class="multiplier-scale"></div>
+            <div class="multiplier-markers" id="multiplierMarkers"></div>
+            <div class="current-multiplier-line" id="currentMultiplierLine" style="display: none;"></div>
         </div>
 
         <div class="betting-panel">
@@ -66,6 +59,6 @@
         </div>
     </div>
 
-    <script src="js/rocket.js"></script>
+   <script src="js/rocket.js"></script>
 </body>
 </html>
