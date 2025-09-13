@@ -2,156 +2,277 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
 }
 
 body {
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background-color: #0a0e17;
     color: #fff;
-    min-height: 100vh;
-    overflow-x: hidden;
+    overflow: hidden;
+    height: 100vh;
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    height: 100vh;
+    max-width: 100%;
+    margin: 0 auto;
 }
 
-/* Верхняя панель */
-.top-panel {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.balance-panel {
+/* Шапка */
+.header {
     display: flex;
     align-items: center;
-    gap: 15px;
-}
-
-.balance-label {
-    font-size: 16px;
-    opacity: 0.8;
-}
-
-.balance-value {
-    font-size: 20px;
-    font-weight: bold;
-    color: #6c5ce7;
-}
-
-.demo-badge {
-    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
+    padding: 12px 16px;
+    background-color: #131a29;
+    border-bottom: 1px solid #1e2a40;
 }
 
 .back-button {
-    background: rgba(255, 255, 255, 0.1);
+    background: none;
     border: none;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 10px;
+    color: #4fc3f7;
+    font-size: 24px;
+    margin-right: 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
-.back-button:hover {
-    background: rgba(255, 255, 255, 0.2);
+.balance-container {
+    display: flex;
+    align-items: center;
 }
 
-/* Игровая область */
+.balance-label {
+    margin-right: 8px;
+    color: #8c9cb0;
+}
+
+.balance {
+    font-weight: bold;
+    margin-right: 8px;
+    color: #fff;
+}
+
+.demo-badge {
+    background-color: #4fc3f7;
+    color: #0a0e17;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Основная игровая зона */
 .game-area {
-    position: relative;
-    height: 400px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 20px;
-    overflow: hidden;
-    border: 2px solid rgba(108, 92, 231, 0.3);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
 }
 
-.rocket-container {
+.game-status {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: inline-block;
+    align-self: center;
+}
+
+.status-waiting {
+    background-color: #2d3b55;
+    color: #8c9cb0;
+}
+
+.status-counting {
+    background-color: #4fc3f7;
+    color: #0a0e17;
+}
+
+.status-flying {
+    background-color: #00b894;
+    color: #0a0e17;
+}
+
+.status-crashed {
+    background-color: #ff7675;
+    color: #0a0e17;
+}
+
+.multiplier {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 16px;
+    color: #4fc3f7;
+}
+
+/* Поле с ракетой */
+.rocket-field {
     position: relative;
+    height: 40vh;
+    background-color: #0a0e17;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    border: 1px solid #1e2a40;
+}
+
+/* Сетка линий */
+.grid-lines {
+    position: absolute;
     width: 100%;
     height: 100%;
+    pointer-events: none;
 }
 
+.horizontal-line {
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    background-color: rgba(79, 195, 247, 0.15);
+    left: 0;
+}
+
+.horizontal-line.line-1 { top: 25%; }
+.horizontal-line.line-2 { top: 50%; }
+.horizontal-line.line-3 { top: 75%; }
+.horizontal-line.line-4 { top: 90%; }
+
+.vertical-line {
+    position: absolute;
+    height: 100%;
+    width: 1px;
+    background-color: rgba(79, 195, 247, 0.15);
+    top: 0;
+}
+
+.vertical-line.line-v1 { left: 25%; }
+.vertical-line.line-v2 { left: 50%; }
+.vertical-line.line-v3 { left: 75%; }
+
+/* Анимация пульсации для линий */
+@keyframes pulse {
+    0% { opacity: 0.15; }
+    50% { opacity: 0.3; }
+    100% { opacity: 0.15; }
+}
+
+.grid-lines .horizontal-line,
+.grid-lines .vertical-line {
+    animation: pulse 2s infinite ease-in-out;
+}
+
+/* Контейнер для графика */
 .graph-container {
     position: absolute;
     width: 100%;
     height: 100%;
-    bottom: 0;
-    left: 0;
+    pointer-events: none;
 }
 
-.trajectory-line {
+/* Зеленая линия траектории */
+.green-line {
     position: absolute;
     bottom: 50%;
     left: 0;
     width: 100%;
     height: 2px;
-    background: linear-gradient(90deg, transparent, #00b894, transparent);
-    z-index: 1;
+    background-color: #00b894;
+    transform-origin: left center;
+    animation: linePulse 1.5s infinite ease-in-out;
 }
 
+@keyframes linePulse {
+    0% { opacity: 0.7; height: 2px; }
+    50% { opacity: 1; height: 3px; }
+    100% { opacity: 0.7; height: 2px; }
+}
+
+/* Точки траектории */
 .trajectory-point {
     position: absolute;
-    width: 8px;
-    height: 8px;
-    background: #a29bfe;
+    width: 12px;
+    height: 12px;
+    background-color: #00b894;
     border-radius: 50%;
-    transform: translate(-50%, -50%) rotate(45deg);
-    box-shadow: 0 0 15px rgba(108, 92, 231, 0.8);
-    z-index: 2;
+    transform: translate(-50%, 50%);
+    box-shadow: 0 0 8px rgba(0, 184, 148, 0.7);
 }
 
 .trajectory-value {
     position: absolute;
-    color: #a29bfe;
-    font-size: 12px;
-    font-weight: bold;
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+    font-size: 10px;
+    color: #00b894;
     transform: translateX(-50%);
-    z-index: 2;
+    font-weight: bold;
 }
 
-.rocket-container-inner {
+/* Контейнер для ракеты */
+.rocket-container {
     position: absolute;
     left: 50%;
     bottom: 50%;
     transform: translateX(-50%);
-    transition: all 0.1s ease-out;
+    transition: all 0.2s ease-out;
     z-index: 10;
 }
 
 .rocket {
     width: 40px;
     height: 80px;
-    transition: all 0.2s ease;
-    filter: drop-shadow(0 0 10px rgba(108, 92, 231, 0.6));
+    transform: translateX(-50%);
+    transition: transform 0.5s ease-out;
 }
 
 .rocket-pulsing {
-    animation: pulse 0.5s infinite alternate;
+    animation: rocketPulse 0.8s infinite ease-in-out;
 }
 
-@keyframes pulse {
-    from { transform: translateX(-50%) scale(1); }
-    to { transform: translateX(-50%) scale(1.1); }
+@keyframes rocketPulse {
+    0% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.1); }
+    100% { transform: translateX(-50%) scale(1); }
 }
 
+/* Контейнер для обратного отсчета */
+.countdown-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(10, 14, 23, 0.9);
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.countdown-container.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.countdown-number {
+    font-size: 80px;
+    font-weight: bold;
+    color: #4fc3f7;
+    animation: countdownPulse 1s infinite ease-in-out;
+}
+
+@keyframes countdownPulse {
+    0% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.7; }
+}
+
+/* Контейнер для взрыва */
 .explosion-container {
     position: absolute;
     width: 100%;
@@ -163,260 +284,154 @@ body {
     position: absolute;
     width: 100px;
     height: 100px;
-    background: radial-gradient(circle, #ff6b6b 0%, #ee5a24 30%, transparent 70%);
+    background: radial-gradient(circle, #ff7675 0%, #ff4757 30%, transparent 70%);
     border-radius: 50%;
-    animation: explode 0.5s ease-out forwards;
-    opacity: 0;
+    transform: translate(-50%, 50%);
+    animation: explode 0.8s forwards;
+    z-index: 15;
 }
 
 @keyframes explode {
-    0% { transform: scale(0); opacity: 1; }
-    100% { transform: scale(3); opacity: 0; }
-}
-
-.game-info {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    z-index: 5;
-}
-
-.game-status {
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    background: rgba(0, 0, 0, 0.7);
-}
-
-.status-waiting { background: rgba(108, 92, 231, 0.3); }
-.status-counting { background: rgba(253, 203, 110, 0.3); }
-.status-flying { background: rgba(0, 184, 148, 0.3); }
-.status-crashed { background: rgba(255, 107, 107, 0.3); }
-
-.countdown {
-    margin-left: 10px;
-    color: #fdcb6e;
-}
-
-.multiplier-display {
-    font-size: 28px;
-    font-weight: bold;
-    color: #6c5ce7;
-    text-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
+    0% { transform: translate(-50%, 50%) scale(0); opacity: 1; }
+    100% { transform: translate(-50%, 50%) scale(2); opacity: 0; }
 }
 
 /* Панель управления */
 .control-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #131a29;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
 }
 
-.betting-panel {
+.bet-info {
     display: flex;
-    gap: 15px;
-    justify-content: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    flex-wrap: wrap;
+}
+
+.info-item span:first-child {
+    font-size: 12px;
+    color: #8c9cb0;
+    margin-bottom: 4px;
+}
+
+.info-item span:last-child {
+    font-weight: bold;
 }
 
 .input-group {
     display: flex;
-    gap: 10px;
+    margin-bottom: 12px;
 }
 
-input[type="number"] {
-    padding: 12px 15px;
-    border: none;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+.bet-input {
+    flex: 1;
+    padding: 10px 12px;
+    background-color: #1e2a40;
+    border: 1px solid #2d3b55;
+    border-radius: 8px 0 0 8px;
+    color: #fff;
     font-size: 16px;
-    width: 120px;
 }
 
-input[type="number"]:focus {
-    outline: 2px solid #6c5ce7;
-}
-
-button {
-    padding: 12px 25px;
+.bet-button {
+    padding: 10px 16px;
+    background-color: #4fc3f7;
+    color: #0a0e17;
     border: none;
-    border-radius: 10px;
-    font-size: 16px;
+    border-radius: 0 8px 8px 0;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
-#placeBetButton {
-    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
-    color: white;
-}
-
-#placeBetButton:hover:not(:disabled) {
-    background: linear-gradient(45deg, #5d4ae7, #9188fd);
-}
-
-#placeBetButton:disabled {
-    background: rgba(255, 255, 255, 0.1);
+.bet-button:disabled {
+    background-color: #2d3b55;
+    color: #8c9cb0;
     cursor: not-allowed;
 }
 
-#cashoutButton {
-    background: linear-gradient(45deg, #00b894, #00d8a0);
-    color: white;
-}
-
-#cashoutButton:hover:not(:disabled) {
-    background: linear-gradient(45deg, #00a382, #00c490);
-}
-
-#cashoutButton:disabled {
-    background: rgba(255, 255, 255, 0.1);
-    cursor: not-allowed;
-}
-
-.user-stats {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-}
-
-.stat-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-
-.stat-item span:first-child {
-    font-size: 14px;
-    opacity: 0.8;
-}
-
-.stat-item span:last-child {
-    font-size: 18px;
+.cashout-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #00b894;
+    color: #0a0e17;
+    border: none;
+    border-radius: 8px;
     font-weight: bold;
-    color: #6c5ce7;
+    cursor: pointer;
 }
 
-/* Информационные панели */
-.info-panels {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+.cashout-button:disabled {
+    background-color: #2d3b55;
+    color: #8c9cb0;
+    cursor: not-allowed;
 }
 
-.players-panel, .history-panel {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 15px;
-    padding: 20px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+/* Боковая панель */
+.sidebar {
+    background-color: #131a29;
+    border-radius: 12px;
+    padding: 16px;
+    overflow-y: auto;
+    max-height: 25vh;
 }
 
-.players-panel h3, .history-panel h3 {
-    margin-bottom: 15px;
-    color: #a29bfe;
-    text-align: center;
+.players-section, .history-section {
+    margin-bottom: 16px;
+}
+
+.players-section h3, .history-section h3 {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #8c9cb0;
 }
 
 .players-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    max-height: 200px;
-    overflow-y: auto;
+    gap: 8px;
 }
 
 .player-item {
     display: flex;
     justify-content: space-between;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
+    font-size: 12px;
 }
 
 .player-name {
-    font-weight: bold;
+    color: #fff;
 }
 
 .player-bet {
-    color: #00b894;
+    font-weight: bold;
 }
 
 .history-items {
     display: flex;
-    gap: 10px;
+    gap: 6px;
     flex-wrap: wrap;
-    justify-content: center;
 }
 
 .history-item {
-    padding: 8px 12px;
-    border-radius: 20px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
     font-weight: bold;
-    font-size: 14px;
 }
 
 .history-win {
-    background: rgba(0, 184, 148, 0.2);
-    color: #00b894;
+    background-color: #00b894;
+    color: #0a0e17;
 }
 
 .history-loss {
-    background: rgba(255, 107, 107, 0.2);
-    color: #ff6b6b;
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .info-panels {
-        grid-template-columns: 1fr;
-    }
-    
-    .game-area {
-        height: 300px;
-    }
-    
-    .betting-panel {
-        flex-direction: column;
-    }
-    
-    .user-stats {
-        flex-direction: column;
-        gap: 10px;
-    }
-}
-
-/* Специальные классы для анимаций */
-.rocket-rotate-50 {
-    transform: translateX(-50%) rotate(-50deg) !important;
-}
-
-.rocket-rotate-180 {
-    transform: translateX(-50%) rotate(-180deg) !important;
-}
-
-.green-line {
-    position: absolute;
-    bottom: 50%;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #00b894, transparent);
-    z-index: 1;
+    background-color: #ff7675;
+    color: #0a0e17;
 }

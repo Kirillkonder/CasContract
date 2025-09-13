@@ -2,912 +2,100 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Rocket Game</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0a0a2a, #000000);
-            color: white;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .logo {
-            font-size: 28px;
-            font-weight: bold;
-            background: linear-gradient(45deg, #ff6b6b, #ffa36c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .balance {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .balance-amount {
-            color: #4cd964;
-        }
-        
-        .game-area {
-            position: relative;
-            height: 50vh;
-            background-color: #000;
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            border: 2px solid #2a2a5a;
-        }
-        
-        .grid-lines {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-        
-        .grid-line {
-            position: absolute;
-            background: rgba(0, 162, 255, 0.15);
-        }
-        
-        .horizontal {
-            width: 100%;
-            height: 1px;
-        }
-        
-        .vertical {
-            width: 1px;
-            height: 100%;
-        }
-        
-        .rocket-container {
-            position: absolute;
-            bottom: 50%;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            transition: transform 0.3s ease;
-        }
-        
-        .rocket {
-            width: 60px;
-            height: 120px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><path d="M50,10 L70,60 L65,190 L35,190 L30,60 Z" fill="%23ff6b6b"/><path d="M30,60 L70,60 L65,190 L35,190 Z" fill="%23ff3b3b"/><path d="M35,40 L65,40 L65,60 L35,60 Z" fill="%2333a1ff"/><path d="M40,20 L60,20 L60,40 L40,40 Z" fill="%23ffffff"/><circle cx="50" cy="140" r="10" fill="%2333a1ff"/><circle cx="50" cy="110" r="8" fill="%2333a1ff"/><circle cx="50" cy="80" r="6" fill="%2333a1ff"/></svg>') center/contain no-repeat;
-            transform-origin: center bottom;
-            transition: transform 0.5s ease;
-        }
-        
-        .countdown {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 60px;
-            font-weight: bold;
-            color: #ff6b6b;
-            text-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
-            z-index: 5;
-        }
-        
-        .flight-path {
-            position: absolute;
-            bottom: 50%;
-            left: 0;
-            width: 100%;
-            height: 0;
-            border-bottom: 2px dashed #4cd964;
-            z-index: 2;
-            transform-origin: left bottom;
-        }
-        
-        .multiplier-display {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 32px;
-            font-weight: bold;
-            color: #4cd964;
-            text-shadow: 0 0 10px rgba(76, 217, 100, 0.7);
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 8px 20px;
-            border-radius: 30px;
-        }
-        
-        .controls {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 20px;
-        }
-        
-        .bet-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        input {
-            flex: 1;
-            padding: 12px 15px;
-            border: none;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 16px;
-        }
-        
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .place-bet {
-            background: linear-gradient(45deg, #4cd964, #2aaf7e);
-            color: white;
-        }
-        
-        .place-bet:disabled {
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.5);
-            cursor: not-allowed;
-        }
-        
-        .cash-out {
-            background: linear-gradient(45deg, #ff6b6b, #ff3b3b);
-            color: white;
-        }
-        
-        .cash-out:disabled {
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.5);
-            cursor: not-allowed;
-        }
-        
-        .game-info {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-        }
-        
-        .info-item {
-            text-align: center;
-        }
-        
-        .info-label {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 5px;
-        }
-        
-        .info-value {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        
-        .players-panel {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 16px;
-            margin-bottom: 20px;
-        }
-        
-        .panel-title {
-            font-size: 16px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .players-list {
-            max-height: 150px;
-            overflow-y: auto;
-        }
-        
-        .player-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .player-name {
-            color: rgba(255, 255, 255, 0.8);
-        }
-        
-        .player-bet {
-            font-weight: bold;
-            color: #4cd964;
-        }
-        
-        .history {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 16px;
-        }
-        
-        .history-items {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 5px 0;
-        }
-        
-        .history-item {
-            padding: 8px 12px;
-            border-radius: 10px;
-            font-weight: bold;
-            min-width: 70px;
-            text-align: center;
-        }
-        
-        .history-win {
-            background: rgba(76, 217, 100, 0.2);
-            color: #4cd964;
-        }
-        
-        .history-loss {
-            background: rgba(255, 107, 107, 0.2);
-            color: #ff6b6b;
-        }
-        
-        .pulsing {
-            animation: pulse 0.5s infinite alternate;
-        }
-        
-        .fast-pulse {
-            animation: pulse 0.2s infinite alternate;
-        }
-        
-        .rotate-50 {
-            transform: translateX(-50%) rotate(-50deg);
-        }
-        
-        .rotate-180 {
-            transform: translateX(-50%) rotate(-180deg);
-        }
-        
-        @keyframes pulse {
-            from { opacity: 0.7; transform: scale(1); }
-            to { opacity: 1; transform: scale(1.05); }
-        }
-        
-        .demo-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #ff6b6b;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            z-index: 20;
-        }
-    </style>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="css/rocket.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="logo">ROCKET</div>
-            <div class="balance">
-                <span>Баланс:</span>
-                <span class="balance-amount" id="balance">1000.00</span>
-                <span>TON</span>
+        <!-- Шапка с балансом и статусом -->
+        <header class="header">
+            <button class="back-button" onclick="goBack()">←</button>
+            <div class="balance-container">
+                <span class="balance-label">Баланс:</span>
+                <span id="balance" class="balance">0.00</span>
+                <span id="demo-badge" class="demo-badge">TESTNET</span>
             </div>
-        </div>
-        
-        <div class="game-area">
-            <div class="demo-badge" id="demo-badge">TESTNET</div>
-            
-            <div class="grid-lines" id="gridLines"></div>
-            
-            <div class="rocket-container" id="rocketContainer">
-                <div class="rocket" id="rocket"></div>
-            </div>
-            
-            <div class="countdown" id="countdown"></div>
-            
-            <div class="flight-path" id="flightPath"></div>
-            
-            <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
-        </div>
-        
-        <div class="controls">
-            <div class="bet-controls">
-                <input type="number" id="betAmount" placeholder="Сумма ставки" value="1.0" step="0.1" min="0.5" max="50">
-                <button class="place-bet" id="placeBetButton" onclick="placeBet()">Поставить</button>
-                <button class="cash-out" id="cashoutButton" onclick="cashout()" disabled>Забрать</button>
+        </header>
+
+        <!-- Основная игровая зона -->
+        <main class="game-area">
+            <!-- Статус игры и множитель -->
+            <div id="gameStatus" class="game-status status-waiting">
+                <span id="statusText">Ожидание начала игры...</span>
+                <span id="countdown"></span>
             </div>
             
-            <div class="game-info">
-                <div class="info-item">
-                    <div class="info-label">Ваша ставка</div>
-                    <div class="info-value" id="userBet">0.00 TON</div>
+            <div id="multiplierDisplay" class="multiplier">1.00x</div>
+            
+            <!-- Контейнер для графика и ракеты -->
+            <div class="rocket-field">
+                <!-- Фоновые линии -->
+                <div class="grid-lines">
+                    <div class="horizontal-line line-1"></div>
+                    <div class="horizontal-line line-2"></div>
+                    <div class="horizontal-line line-3"></div>
+                    <div class="horizontal-line line-4"></div>
+                    <div class="vertical-line line-v1"></div>
+                    <div class="vertical-line line-v2"></div>
+                    <div class="vertical-line line-v3"></div>
                 </div>
-                <div class="info-item">
-                    <div class="info-label">Потенциальный выигрыш</div>
-                    <div class="info-value" id="potentialWin">0.00 TON</div>
+                
+                <!-- Контейнер для графика -->
+                <div id="graphContainer" class="graph-container"></div>
+                
+                <!-- Контейнер для взрыва -->
+                <div id="explosionContainer" class="explosion-container"></div>
+                
+                <!-- Контейнер для ракеты -->
+                <div id="rocketContainer" class="rocket-container">
+                    <img src="Rocket.png" id="rocket" class="rocket" alt="Rocket">
                 </div>
-                <div class="info-item">
-                    <div class="info-label">Игроков</div>
-                    <div class="info-value" id="playersCount">0</div>
+                
+                <!-- Контейнер для таймера обратного отсчета -->
+                <div id="countdownContainer" class="countdown-container">
+                    <div id="countdownNumber" class="countdown-number">5</div>
                 </div>
             </div>
-        </div>
-        
-        <div class="players-panel">
-            <div class="panel-title">
-                <span>Игроки</span>
-                <span>Ставки</span>
+            
+            <!-- Панель управления -->
+            <div class="control-panel">
+                <div class="bet-info">
+                    <div class="info-item">
+                        <span>Ваша ставка:</span>
+                        <span id="userBet">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Потенциальный выигрыш:</span>
+                        <span id="potentialWin">0</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <input type="number" id="betAmount" class="bet-input" value="1.0" min="0.5" max="50" step="0.5">
+                    <button id="placeBetButton" class="bet-button" onclick="placeBet()">Поставить</button>
+                </div>
+                
+                <button id="cashoutButton" class="cashout-button" onclick="cashout()">Забрать выигрыш</button>
             </div>
-            <div class="players-list" id="playersList">
-                <!-- Players will be added here dynamically -->
+        </main>
+
+        <!-- Боковая панель с игроками и историей -->
+        <aside class="sidebar">
+            <div class="players-section">
+                <h3>Игроки (<span id="playersCount">0</span>)</h3>
+                <div id="playersList" class="players-list"></div>
             </div>
-        </div>
-        
-        <div class="history">
-            <div class="panel-title">История</div>
-            <div class="history-items" id="historyItems">
-                <!-- History items will be added here dynamically -->
+            
+            <div class="history-section">
+                <h3>История</h3>
+                <div id="historyItems" class="history-items"></div>
             </div>
-        </div>
+        </aside>
     </div>
 
-    <script>
-        // Game state variables
-        let ws = null;
-        let currentUser = null;
-        let isDemoMode = false;
-        let userBet = 0;
-        let userCashedOut = false;
-        let userPlayer = null;
-        let rocketPosition = 50;
-        let countdownInterval = null;
-        let gameStatus = 'waiting';
-        let multiplier = 1.00;
-        let endBetTime = 0;
-
-        // Predefined flight path
-        const flightPath = [
-            { x: 0, multiplier: 1.0 },
-            { x: 10, multiplier: 1.2 },
-            { x: 20, multiplier: 1.5 },
-            { x: 30, multiplier: 2.0 },
-            { x: 40, multiplier: 2.8 },
-            { x: 50, multiplier: 3.5 },
-            { x: 60, multiplier: 4.3 },
-            { x: 70, multiplier: 5.2 },
-            { x: 80, multiplier: 6.5 },
-            { x: 90, multiplier: 8.0 },
-            { x: 100, multiplier: 10.0 }
-        ];
-
-        // Initialize the game
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeGame();
-            createGridLines();
-            connectWebSocket();
-            // Start demo mode for testing
-            setTimeout(startDemoMode, 2000);
-        });
-
-        function createGridLines() {
-            const gridLines = document.getElementById('gridLines');
-            
-            // Create horizontal lines
-            for (let i = 0; i < 10; i++) {
-                const line = document.createElement('div');
-                line.className = 'grid-line horizontal';
-                line.style.top = `${i * 10}%`;
-                gridLines.appendChild(line);
-            }
-            
-            // Create vertical lines
-            for (let i = 0; i < 10; i++) {
-                const line = document.createElement('div');
-                line.className = 'grid-line vertical';
-                line.style.left = `${i * 10}%`;
-                gridLines.appendChild(line);
-            }
-        }
-
-        function initializeGame() {
-            // Demo mode for testing
-            currentUser = {
-                id: 123456789,
-                username: 'DemoUser',
-                firstName: 'Demo',
-                lastName: 'User'
-            };
-            isDemoMode = true;
-            document.getElementById('demo-badge').textContent = 'TESTNET';
-            document.getElementById('balance').textContent = '1000.00';
-        }
-
-        function connectWebSocket() {
-            // In a real implementation, this would connect to a WebSocket server
-            console.log('WebSocket connection simulated');
-        }
-
-        function updateGameState(gameState) {
-            gameStatus = gameState.status;
-            multiplier = gameState.multiplier;
-            endBetTime = gameState.endBetTime;
-            
-            // Update game status
-            const statusElement = document.getElementById('statusText');
-            const countdownElement = document.getElementById('countdown');
-            
-            switch(gameState.status) {
-                case 'waiting':
-                    clearCountdown();
-                    resetBettingUI();
-                    break;
-                    
-                case 'counting':
-                    startCountdown(gameState.endBetTime);
-                    updateBettingUI();
-                    break;
-                    
-                case 'flying':
-                    countdownElement.textContent = '';
-                    clearCountdown();
-                    updateRocketPosition(gameState.multiplier);
-                    drawFlightPath(gameState.multiplier);
-                    break;
-                    
-                case 'crashed':
-                    countdownElement.textContent = '';
-                    clearCountdown();
-                    showExplosion();
-                    break;
-            }
-            
-            // Update multiplier
-            document.getElementById('multiplierDisplay').textContent = gameState.multiplier.toFixed(2) + 'x';
-            
-            // Find our player
-            userPlayer = gameState.players.find(p => p.userId == currentUser.id && !p.isBot);
-            
-            if (userPlayer) {
-                userBet = userPlayer.betAmount;
-                userCashedOut = userPlayer.cashedOut;
-                document.getElementById('userBet').textContent = userBet.toFixed(2);
-                
-                if (userCashedOut) {
-                    document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2);
-                }
-            }
-            
-            // Update players list
-            updatePlayersList(gameState.players);
-            
-            // Update history
-            updateHistory(gameState.history);
-            
-            // Update potential win
-            if (userBet > 0 && !userCashedOut && gameState.status === 'flying') {
-                const potentialWin = userBet * gameState.multiplier;
-                document.getElementById('potentialWin').textContent = potentialWin.toFixed(2);
-            }
-            
-            updateBettingUI();
-        }
-
-        function startCountdown(endTime) {
-            clearCountdown();
-            
-            // Hide rocket and show countdown
-            document.getElementById('rocket').style.display = 'none';
-            const countdownElement = document.getElementById('countdown');
-            countdownElement.style.display = 'block';
-            
-            function updateCountdown() {
-                const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
-                countdownElement.textContent = `${timeLeft}с`;
-                
-                // Add pulsing animation
-                countdownElement.classList.add('pulsing');
-                
-                if (timeLeft <= 0) {
-                    clearCountdown();
-                    countdownElement.style.display = 'none';
-                    document.getElementById('rocket').style.display = 'block';
-                    updateBettingUI();
-                }
-            }
-            
-            updateCountdown();
-            countdownInterval = setInterval(updateCountdown, 1000);
-        }
-
-        function clearCountdown() {
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-            }
-            document.getElementById('countdown').style.display = 'none';
-            document.getElementById('rocket').style.display = 'block';
-        }
-
-        function updateRocketPosition(currentMultiplier) {
-            const rocketElement = document.getElementById('rocket');
-            const gridLines = document.getElementById('gridLines');
-            
-            // Apply transformations based on multiplier
-            if (currentMultiplier >= 3 && currentMultiplier < 5) {
-                // Smooth rotation to 50 degrees
-                const rotationProgress = (currentMultiplier - 3) / 2;
-                const rotation = -50 * rotationProgress;
-                rocketElement.style.transform = `rotate(${rotation}deg)`;
-            } else if (currentMultiplier >= 5) {
-                // Full flip to 180 degrees
-                rocketElement.style.transform = `rotate(-180deg)`;
-                rocketElement.classList.add('pulsing');
-                
-                // Make grid lines pulse faster
-                gridLines.classList.remove('pulsing');
-                gridLines.classList.add('fast-pulse');
-            } else {
-                rocketElement.style.transform = `rotate(0deg)`;
-                rocketElement.classList.remove('pulsing');
-                
-                // Reset grid lines pulsing
-                gridLines.classList.remove('fast-pulse');
-                gridLines.classList.add('pulsing');
-            }
-        }
-
-        function drawFlightPath(currentMultiplier) {
-            const flightPathElement = document.getElementById('flightPath');
-            
-            // Calculate height based on multiplier (capped at 35% of container)
-            const height = Math.min(35, (currentMultiplier - 1) * 10);
-            flightPathElement.style.height = `${height}%`;
-            
-            // Add pulsing animation to flight path
-            flightPathElement.classList.add('pulsing');
-        }
-
-        function showExplosion() {
-            const rocketElement = document.getElementById('rocket');
-            const explosion = document.createElement('div');
-            explosion.style.position = 'absolute';
-            explosion.style.top = '50%';
-            explosion.style.left = '50%';
-            explosion.style.transform = 'translate(-50%, -50%)';
-            explosion.style.width = '100px';
-            explosion.style.height = '100px';
-            explosion.style.background = 'radial-gradient(circle, #ff6b6b 0%, #ff3b3b 30%, transparent 70%)';
-            explosion.style.borderRadius = '50%';
-            explosion.style.animation = 'explode 0.5s forwards';
-            
-            document.querySelector('.game-area').appendChild(explosion);
-            
-            // Hide rocket during explosion
-            rocketElement.style.visibility = 'hidden';
-            
-            setTimeout(() => {
-                document.querySelector('.game-area').removeChild(explosion);
-                rocketElement.style.visibility = 'visible';
-                rocketElement.style.transform = 'rotate(0deg)';
-                rocketElement.classList.remove('pulsing');
-                
-                // Reset flight path
-                const flightPathElement = document.getElementById('flightPath');
-                flightPathElement.style.height = '0';
-                flightPathElement.classList.remove('pulsing');
-                
-                // Reset grid lines
-                const gridLines = document.getElementById('gridLines');
-                gridLines.classList.remove('pulsing', 'fast-pulse');
-            }, 1000);
-        }
-
-        function updatePlayersList(players) {
-            const playersList = document.getElementById('playersList');
-            const playersCount = document.getElementById('playersCount');
-            
-            playersList.innerHTML = '';
-            playersCount.textContent = players.length;
-            
-            players.forEach(player => {
-                const playerItem = document.createElement('div');
-                playerItem.className = 'player-item';
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'player-name';
-                nameSpan.textContent = player.name;
-                
-                const betSpan = document.createElement('span');
-                betSpan.className = 'player-bet';
-                
-                if (player.cashedOut) {
-                    betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
-                    betSpan.style.color = '#00b894';
-                } else if (player.isBot) {
-                    betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-                } else {
-                    betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-                }
-                
-                playerItem.appendChild(nameSpan);
-                playerItem.appendChild(betSpan);
-                playersList.appendChild(playerItem);
-            });
-        }
-
-        function updateHistory(history) {
-            const historyContainer = document.getElementById('historyItems');
-            historyContainer.innerHTML = '';
-            
-            history.slice(0, 10).forEach(item => {
-                const historyItem = document.createElement('div');
-                historyItem.className = `history-item ${item.multiplier >= 2 ? 'history-win' : 'history-loss'}`;
-                historyItem.textContent = `${item.multiplier.toFixed(2)}x`;
-                historyContainer.appendChild(historyItem);
-            });
-        }
-
-        function placeBet() {
-            const betAmount = parseFloat(document.getElementById('betAmount').value);
-            
-            if (betAmount < 0.5 || betAmount > 50) {
-                alert('Ставка должна быть от 0.5 до 50 TON');
-                return;
-            }
-            
-            // Prevent multiple bets
-            if (userBet > 0) {
-                alert('Вы уже сделали ставку в этом раунде!');
-                return;
-            }
-            
-            // Check if game is in betting stage
-            if (gameStatus !== 'counting') {
-                alert('Сейчас нельзя сделать ставку! Дождитесь следующего раунда.');
-                return;
-            }
-            
-            // Check time for bets
-            const timeLeft = Math.ceil((endBetTime - Date.now()) / 1000);
-            if (timeLeft <= 0) {
-                alert('Время для ставок закончилось! Дождитесь следующего раунда.');
-                return;
-            }
-            
-            // In a real implementation, this would send a request to the server
-            userBet = betAmount;
-            document.getElementById('userBet').textContent = betAmount.toFixed(2);
-            
-            // Disable bet button
-            document.getElementById('placeBetButton').disabled = true;
-            document.getElementById('placeBetButton').textContent = 'Ставка сделана';
-            
-            alert('Ставка принята! Удачи! 🚀');
-        }
-
-        function cashout() {
-            if (userCashedOut) {
-                alert('Вы уже забрали выигрыш!');
-                return;
-            }
-            
-            if (userBet === 0) {
-                alert('Сначала сделайте ставку!');
-                return;
-            }
-            
-            if (gameStatus !== 'flying') {
-                alert('Нельзя забрать выигрыш сейчас!');
-                return;
-            }
-            
-            // In a real implementation, this would send a request to the server
-            const winAmount = userBet * multiplier;
-            userCashedOut = true;
-            
-            // Update UI
-            document.getElementById('potentialWin').textContent = winAmount.toFixed(2);
-            document.getElementById('balance').textContent = (1000 + winAmount).toFixed(2);
-            updateBettingUI();
-            
-            alert(`🎉 Вы успешно вывели ${winAmount.toFixed(2)} TON на ${multiplier.toFixed(2)}x!`);
-        }
-
-        function updateBettingUI() {
-            const betButton = document.getElementById('placeBetButton');
-            const cashoutButton = document.getElementById('cashoutButton');
-            
-            if (gameStatus === 'counting') {
-                // In betting mode
-                const timeLeft = endBetTime ? Math.ceil((endBetTime - Date.now()) / 1000) : 0;
-                const canBet = timeLeft > 0;
-                
-                betButton.disabled = userBet > 0 || !canBet;
-                cashoutButton.disabled = true;
-                
-                if (userBet > 0) {
-                    betButton.textContent = 'Ставка сделана';
-                } else if (!canBet) {
-                    betButton.textContent = 'Время вышло';
-                } else {
-                    betButton.textContent = `Поставить (${timeLeft}с)`;
-                }
-            } else if (gameStatus === 'flying') {
-                // In flight
-                betButton.disabled = true;
-                betButton.textContent = 'Полёт...';
-                cashoutButton.disabled = userCashedOut || userBet === 0;
-                
-                if (!userCashedOut && userBet > 0) {
-                    cashoutButton.textContent = `Забрать ${multiplier.toFixed(2)}x`;
-                }
-            } else {
-                // Waiting or crash
-                betButton.disabled = gameStatus !== 'waiting';
-                cashoutButton.disabled = true;
-                betButton.textContent = 'Поставить';
-                cashoutButton.textContent = 'Забрать выигрыш';
-            }
-        }
-
-        function resetBettingUI() {
-            userBet = 0;
-            userCashedOut = false;
-            userPlayer = null;
-            document.getElementById('userBet').textContent = '0.00';
-            document.getElementById('potentialWin').textContent = '0.00';
-            document.getElementById('placeBetButton').disabled = false;
-            document.getElementById('placeBetButton').textContent = 'Поставить';
-            updateBettingUI();
-        }
-
-        // Demo mode for testing
-        function startDemoMode() {
-            // Simulate receiving data from the server
-            const demoGameState = {
-                status: 'counting',
-                multiplier: 1.00,
-                endBetTime: Date.now() + 5000, // 5 seconds for betting
-                players: [
-                    { userId: 123456789, name: 'DemoUser', betAmount: 1, cashedOut: false, isBot: false },
-                    { userId: 1, name: 'Bot1', betAmount: 2.5, cashedOut: false, isBot: true },
-                    { userId: 2, name: 'Bot2', betAmount: 1.8, cashedOut: false, isBot: true }
-                ],
-                history: [
-                    { multiplier: 3.45 },
-                    { multiplier: 1.23 },
-                    { multiplier: 8.91 },
-                    { multiplier: 2.67 },
-                    { multiplier: 5.32 }
-                ],
-                crashPoint: 0
-            };
-            
-            updateGameState(demoGameState);
-            
-            // Add pulsing to grid lines during countdown
-            document.getElementById('gridLines').classList.add('pulsing');
-            
-            // Start demo flight after 5 seconds
-            setTimeout(() => {
-                startDemoFlight();
-            }, 5000);
-        }
-
-        function startDemoFlight() {
-            let currentMultiplier = 1.00;
-            const flightInterval = setInterval(() => {
-                currentMultiplier += 0.05 + (Math.random() * 0.1);
-                
-                // Update game state
-                const demoGameState = {
-                    status: 'flying',
-                    multiplier: currentMultiplier,
-                    endBetTime: 0,
-                    players: [
-                        { userId: 123456789, name: 'DemoUser', betAmount: 1, cashedOut: false, isBot: false },
-                        { 
-                            userId: 1, 
-                            name: 'Bot1', 
-                            betAmount: 2.5, 
-                            cashedOut: Math.random() > 0.8, 
-                            isBot: true, 
-                            winAmount: 2.5 * currentMultiplier, 
-                            cashoutMultiplier: currentMultiplier 
-                        },
-                        { 
-                            userId: 2, 
-                            name: 'Bot2', 
-                            betAmount: 1.8, 
-                            cashedOut: Math.random() > 0.7, 
-                            isBot: true, 
-                            winAmount: 1.8 * currentMultiplier, 
-                            cashoutMultiplier: currentMultiplier 
-                        }
-                    ],
-                    history: [
-                        { multiplier: 3.45 },
-                        { multiplier: 1.23 },
-                        { multiplier: 8.91 },
-                        { multiplier: 2.67 },
-                        { multiplier: 5.32 }
-                    ],
-                    crashPoint: 0
-                };
-                
-                updateGameState(demoGameState);
-                
-                // Random crash between 1.5x and 10x
-                if (currentMultiplier > 1.5 && (Math.random() < 0.02 || currentMultiplier > 10)) {
-                    clearInterval(flightInterval);
-                    
-                    setTimeout(() => {
-                        const demoGameStateCrashed = {
-                            status: 'crashed',
-                            multiplier: currentMultiplier,
-                            endBetTime: 0,
-                            players: demoGameState.players,
-                            history: [{ multiplier: currentMultiplier }, ...demoGameState.history.slice(0, 4)],
-                            crashPoint: currentMultiplier
-                        };
-                        
-                        updateGameState(demoGameStateCrashed);
-                        
-                        // Restart after 5 seconds
-                        setTimeout(() => {
-                            resetBettingUI();
-                            startDemoMode();
-                        }, 5000);
-                    }, 1000);
-                }
-            }, 100);
-        }
-
-        // Add CSS for explosion animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes explode {
-                0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-                100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
+    <script src="js/rocket.js"></script>
 </body>
 </html>
