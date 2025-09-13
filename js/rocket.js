@@ -171,12 +171,11 @@
  // rocket.js - ОБНОВЛЕННАЯ ФУНКЦИЯ updateRocketPosition
 function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
-    const trailElement = document.getElementById('rocketTrail');
     const canvasElement = document.getElementById('rocketCanvas');
     
-    // Обновляем след ракеты
-    const trailHeight = Math.min(multiplier * 25, 300);
-    trailElement.style.height = `${trailHeight}px`;
+    // Убираем след ракеты
+    const trailElement = document.getElementById('rocketTrail');
+    trailElement.style.height = '0px';  // Убираем след ракеты
     
     // Поворот ракеты при достижении множителя 3x и выше
     if (multiplier >= 3 && multiplier < 5) {
@@ -194,7 +193,7 @@ function updateRocketPosition(multiplier) {
         rocketElement.classList.remove('rocket-pulsing');
         canvasElement.classList.remove('pulsing-background');
     }
-    
+
     // Двигаем ракету вверх (центр остается по центру, но смещается вверх)
     if (multiplier > 1) {
         const maxOffset = 35; // Максимальное смещение вверх в %
@@ -210,13 +209,16 @@ function updateRocketPosition(multiplier) {
     canvas.appendChild(explosion);
     
     // Скрываем ракету при взрыве
-    document.getElementById('rocket').style.display = 'none';
+    const rocketElement = document.getElementById('rocket');
+    rocketElement.style.display = 'none';
     
     setTimeout(() => {
         canvas.removeChild(explosion);
-        document.getElementById('rocket').style.display = 'block'; // Ракета снова появляется после взрыва
+        rocketElement.style.display = 'block'; // Ракета снова появляется после взрыва
     }, 1000); // Время анимации взрыва
 }
+
+
     function updatePlayersList(players) {
         const playersList = document.getElementById('playersList');
         const playersCount = document.getElementById('playersCount');
