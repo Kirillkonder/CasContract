@@ -168,72 +168,50 @@
         }
     }
 
-    function createStarsBackground() {
-    const starsElement = document.getElementById('stars');
-    if (starsElement.children.length > 0) return;
-    
-    for (let i = 0; i < 50; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        star.style.width = Math.random() * 2 + 1 + 'px';
-        star.style.height = star.style.width;
-        star.style.left = Math.random() * 100 + '%';
-        star.style.top = Math.random() * 100 + '%';
-        star.style.animationDelay = Math.random() * 3 + 's';
-        starsElement.appendChild(star);
-    }
-}
-
-
-  function updateRocketPosition(multiplier) {
+ function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const trailElement = document.getElementById('rocketTrail');
     const rocketImg = rocketElement.querySelector('.rocket-img');
-    const particlesElement = document.getElementById('particles');
     
-    // Убираем все inline стили позиционирования
+    // Убираем все inline стили позиционирования, чтобы работал CSS
     rocketElement.style.bottom = '';
     rocketElement.style.left = '';
     rocketElement.style.transform = '';
     
-    // Обновляем след ракеты
-    const trailHeight = Math.min(multiplier * 25, 400);
+    // Обновляем след ракеты в зависимости от множителя
+    const trailHeight = Math.min(multiplier * 20, 250);
     trailElement.style.height = `${trailHeight}px`;
     
-    // Убираем все классы анимации
-    rocketImg.classList.remove('rocket-flying', 'rocket-high-flight');
-    trailElement.classList.remove('trail-animated');
+    // Убираем все предыдущие классы анимации
+    rocketImg.classList.remove('rocket-flying', 'rocket-rotated', 'rocket-fully-rotated', 'rocket-pulsing');
     
-    // Добавляем соответствующую анимацию в зависимости от множителя
+    // Добавляем анимации в зависимости от множителя
     if (multiplier > 1.1) {
         rocketImg.classList.add('rocket-flying');
-        trailElement.classList.add('trail-animated');
     }
     
-    // Если множитель больше 5x - активируем специальную анимацию
-    if (multiplier > 5) {
-        rocketImg.classList.remove('rocket-flying');
-        rocketImg.classList.add('rocket-high-flight');
-        createParticles(particlesElement, multiplier);
+    // После 3x - плавно поворачиваем вверх
+    if (multiplier >= 3) {
+        rocketImg.classList.add('rocket-rotated');
     }
     
-    // Создаем звездный фон если его еще нет
-    createStarsBackground();
+    // После 5x - полностью поворачиваем вверх и добавляем пульсацию
+    if (multiplier >= 5) {
+        rocketImg.classList.remove('rocket-rotated');
+        rocketImg.classList.add('rocket-fully-rotated', 'rocket-pulsing');
+    }
 }
 
     function showExplosion() {
-    const canvas = document.getElementById('rocketCanvas');
-    const explosion = document.createElement('div');
-    explosion.className = 'explosion';
-    canvas.appendChild(explosion);
-    
-    // Также очищаем частицы при взрыве
-    document.getElementById('particles').innerHTML = '';
-    
-    setTimeout(() => {
-        canvas.removeChild(explosion);
-    }, 1000);
-}
+        const canvas = document.getElementById('rocketCanvas');
+        const explosion = document.createElement('div');
+        explosion.className = 'explosion';
+        canvas.appendChild(explosion);
+        
+        setTimeout(() => {
+            canvas.removeChild(explosion);
+        }, 1000);
+    }
 
     function updatePlayersList(players) {
         const playersList = document.getElementById('playersList');
