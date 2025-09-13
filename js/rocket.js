@@ -167,27 +167,18 @@
             countdownInterval = null;
         }
     }
-function updateRocketPosition(multiplier) {
-    const canvasElement = document.getElementById('rocketCanvas');
-    const trajectoryElement = document.querySelector('.green-trajectory');
-    
-    // Убираем предыдущие классы
-    canvasElement.classList.remove('rocket-high-multiplier', 'rocket-very-high-multiplier');
-    
-    // Добавляем классы в зависимости от множителя
-    if (multiplier > 5) {
-        canvasElement.classList.add('rocket-very-high-multiplier');
-    } else if (multiplier > 2) {
-        canvasElement.classList.add('rocket-high-multiplier');
+
+    function updateRocketPosition(multiplier) {
+        const rocketElement = document.getElementById('rocket');
+        const trailElement = document.getElementById('rocketTrail');
+        
+        // Вычисляем новую позицию ракеты (от 50px до 250px)
+        const newPosition = 50 + (multiplier * 2);
+        rocketElement.style.bottom = `${newPosition}px`;
+        
+        // Обновляем след ракеты
+        trailElement.style.height = `${newPosition - 90}px`;
     }
-    
-    // Обновляем высоту траектории
-    if (rocketGame.status === 'flying') {
-        const maxHeight = 300; // Максимальная высота траектории
-        const trajectoryHeight = Math.min(maxHeight, multiplier * 50);
-        trajectoryElement.style.height = `${trajectoryHeight}px`;
-    }
-}
 
     function showExplosion() {
         const canvas = document.getElementById('rocketCanvas');
