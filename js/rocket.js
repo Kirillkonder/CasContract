@@ -226,16 +226,16 @@ function showExplosion() {
     blastOffText.textContent = 'УЛЕТЕЛ!';
     canvas.appendChild(blastOffText);
     
-    // Создаем взрыв
-    const explosion = document.createElement('div');
-    explosion.className = 'explosion';
-    canvas.appendChild(explosion);
+    // УДАЛИТЬ создание взрыва
+    // const explosion = document.createElement('div');
+    // explosion.className = 'explosion';
+    // canvas.appendChild(explosion);
     
     setTimeout(() => {
         // Убираем взрыв и текст
-        if (explosion.parentNode) {
-            canvas.removeChild(explosion);
-        }
+        // if (explosion.parentNode) {
+        //     canvas.removeChild(explosion);
+        // }
         if (blastOffText.parentNode) {
             canvas.removeChild(blastOffText);
         }

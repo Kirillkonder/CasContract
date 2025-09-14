@@ -415,6 +415,7 @@
     z-index: 15;
 }
 
+
 @keyframes explode {
     0% { 
         transform: scale(0); 
