@@ -1,241 +1,331 @@
- .rocket-container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .rocket-header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(25, 30, 42, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        
-        .rocket-canvas {
-            width: 100%;
-            height: 360px; /* Еще больше увеличил высоту поля */
-            background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
-            border-radius: 15px;
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .rocket {
-            position: absolute;
-            bottom: 100px; /* Поднял выше начальную позицию */
-            left: 50%;
-            transform: translateX(-46%) rotate(-46deg); /* Поворот на -50 градусов */
-            transition: bottom 0.1s linear;
-            z-index: 10;
-            width: 130px; /* Увеличил размер ракетки */
-            height: 130px;
-        }
-        
-        .rocket img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        
-        .multiplier-display {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 32px;
-            font-weight: bold;
-            color: #00b894;
-            text-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
-            z-index: 10;
-        }
-        
-        .betting-panel {
-            background: rgba(25, 30, 42, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .bet-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .bet-input {
-            flex: 1;
-            padding: 12px;
-            background: rgba(35, 40, 52, 0.8);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: white;
-            font-size: 16px;
-        }
-        
-        .bet-button {
-            padding: 12px 20px;
-            background: linear-gradient(135deg, #667eea, #5a6fd8);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .bet-button:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-        
-        .cashout-button {
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #00b894, #008066);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 18px;
-            width: 100%;
-        }
-        
-        .cashout-button:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-        
-        .players-list {
-            background: rgba(25, 30, 42, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        .player-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .player-item:last-child {
-            border-bottom: none;
-        }
-        
-        .player-name {
-            color: #f0f0f0;
-        }
-        
-        .player-bet {
-            color: #00b894;
-            font-weight: bold;
-        }
-        
-        .game-status {
-            text-align: center;
-            padding: 10px;
-            background: rgba(25, 30, 42, 0.95);
-            border-radius: 10px;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        
-        .status-waiting {
-            color: #fdcb6e;
-        }
-        
-        .status-counting {
-            color: #74b9ff;
-        }
-        
-        .status-flying {
-            color: #00b894;
-        }
-        
-        .status-crashed {
-            color: #ff6b6b;
-        }
-        
-        .history-container {
-            margin-top: 20px;
-        }
-        
-        .history-items {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .history-item {
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .history-win {
-            background: rgba(0, 184, 148, 0.2);
-            color: #00b894;
-        }
-        
-        .history-loss {
-            background: rgba(255, 107, 107, 0.2);
-            color: #ff6b6b;
-        }
-        
-        .explosion {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255,0,0,0.8) 0%, rgba(255,0,0,0) 70%);
-            animation: explode 1s ease-out;
-            z-index: 5;
-        }
-        
-        @keyframes explode {
-            0% { transform: scale(0); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-        
-        
-        
-        .back-button {
-            background: linear-gradient(135deg, #667eea, #5a6fd8);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        
-        .demo-badge {
-            background: #fdcb6e;
-            color: #2d3436;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 8px;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .balance {
-            font-size: 18px;
-            font-weight: bold;
-            color: #f0f0f0;
-            margin-top: 10px;
-        }
+.rocket-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.rocket-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.rocket-canvas {
+    width: 100%;
+    height: 360px;
+    background: 
+        linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%),
+        /* Горизонтальные линии */
+        linear-gradient(90deg, 
+            transparent 24px, 
+            rgba(64, 156, 255, 0.1) 24px, 
+            rgba(64, 156, 255, 0.1) 25px, 
+            transparent 25px,
+            transparent 49px,
+            rgba(64, 156, 255, 0.15) 49px,
+            rgba(64, 156, 255, 0.15) 50px,
+            transparent 50px
+        ),
+        /* Вертикальные линии */
+        linear-gradient(0deg, 
+            transparent 24px, 
+            rgba(64, 156, 255, 0.1) 24px, 
+            rgba(64, 156, 255, 0.1) 25px, 
+            transparent 25px,
+            transparent 49px,
+            rgba(64, 156, 255, 0.15) 49px,
+            rgba(64, 156, 255, 0.15) 50px,
+            transparent 50px
+        ),
+        /* Диагональные линии */
+        linear-gradient(45deg, 
+            transparent 47%, 
+            rgba(64, 156, 255, 0.05) 47%, 
+            rgba(64, 156, 255, 0.05) 53%, 
+            transparent 53%
+        ),
+        linear-gradient(-45deg, 
+            transparent 47%, 
+            rgba(64, 156, 255, 0.05) 47%, 
+            rgba(64, 156, 255, 0.05) 53%, 
+            transparent 53%
+        );
+    background-size: 
+        100% 100%,
+        50px 50px,
+        50px 50px,
+        100px 100px,
+        100px 100px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Анимация движения сетки для эффекта полета */
+.rocket-canvas::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(90deg, 
+            transparent 24px, 
+            rgba(64, 156, 255, 0.2) 24px, 
+            rgba(64, 156, 255, 0.2) 25px, 
+            transparent 25px
+        );
+    background-size: 50px 50px;
+    animation: gridMove 20s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes gridMove {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 50px 50px;
+    }
+}
+
+/* Дополнительные звезды на фоне */
+.rocket-canvas::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 40% 70%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 60% 20%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 80% 50%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 30% 80%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 70% 10%, rgba(255,255,255,0.3) 50%, transparent 50%);
+    background-repeat: no-repeat;
+    pointer-events: none;
+}
+
+.rocket {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-46%) rotate(-46deg);
+    transition: bottom 0.1s linear;
+    z-index: 10;
+    width: 130px;
+    height: 130px;
+}
+
+.rocket img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.multiplier-display {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    font-weight: bold;
+    color: #00b894;
+    text-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
+    z-index: 10;
+}
+
+/* Остальные стили остаются без изменений */
+.betting-panel {
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.bet-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.bet-input {
+    flex: 1;
+    padding: 12px;
+    background: rgba(35, 40, 52, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+}
+
+.bet-button {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea, #5a6fd8);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.bet-button:disabled {
+    background: #666;
+    cursor: not-allowed;
+}
+
+.cashout-button {
+    padding: 15px 30px;
+    background: linear-gradient(135deg, #00b894, #008066);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 18px;
+    width: 100%;
+}
+
+.cashout-button:disabled {
+    background: #666;
+    cursor: not-allowed;
+}
+
+.players-list {
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-item:last-child {
+    border-bottom: none;
+}
+
+.player-name {
+    color: #f0f0f0;
+}
+
+.player-bet {
+    color: #00b894;
+    font-weight: bold;
+}
+
+.game-status {
+    text-align: center;
+    padding: 10px;
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 10px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.status-waiting {
+    color: #fdcb6e;
+}
+
+.status-counting {
+    color: #74b9ff;
+}
+
+.status-flying {
+    color: #00b894;
+}
+
+.status-crashed {
+    color: #ff6b6b;
+}
+
+.history-container {
+    margin-top: 20px;
+}
+
+.history-items {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.history-item {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.history-win {
+    background: rgba(0, 184, 148, 0.2);
+    color: #00b894;
+}
+
+.history-loss {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
+}
+
+.explosion {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,0,0,0.8) 0%, rgba(255,0,0,0) 70%);
+    animation: explode 1s ease-out;
+    z-index: 5;
+}
+
+@keyframes explode {
+    0% { transform: scale(0); opacity: 1; }
+    100% { transform: scale(2); opacity: 0; }
+}
+
+.back-button {
+    background: linear-gradient(135deg, #667eea, #5a6fd8);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.demo-badge {
+    background: #fdcb6e;
+    color: #2d3436;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.balance {
+    font-size: 18px;
+    font-weight: bold;
+    color: #f0f0f0;
+    margin-top: 10px;
+}
