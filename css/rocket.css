@@ -96,39 +96,39 @@
     height: 360px;
     background: 
         linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%),
-        /* Основные горизонтальные линии (редкие) */
+        /* Горизонтальные линии (редкие) */
         linear-gradient(0deg, 
-            transparent 49px, 
-            rgba(64, 156, 255, 0.15) 49px, 
-            rgba(64, 156, 255, 0.15) 50px, 
-            transparent 50px,
-            transparent 99px,
-            rgba(64, 156, 255, 0.1) 99px,
-            rgba(64, 156, 255, 0.1) 100px,
-            transparent 100px
+            transparent 74px, 
+            rgba(64, 156, 255, 0.15) 74px, 
+            rgba(64, 156, 255, 0.15) 75px, 
+            transparent 75px,
+            transparent 149px,
+            rgba(64, 156, 255, 0.12) 149px,
+            rgba(64, 156, 255, 0.12) 150px,
+            transparent 150px
         ),
-        /* Основные вертикальные линии (редкие) */
+        /* Вертикальные линии (редкие) */
         linear-gradient(90deg, 
-            transparent 49px, 
-            rgba(64, 156, 255, 0.15) 49px, 
-            rgba(64, 156, 255, 0.15) 50px, 
-            transparent 50px,
-            transparent 99px,
-            rgba(64, 156, 255, 0.1) 99px,
-            rgba(64, 156, 255, 0.1) 100px,
-            transparent 100px
+            transparent 74px, 
+            rgba(64, 156, 255, 0.15) 74px, 
+            rgba(64, 156, 255, 0.15) 75px, 
+            transparent 75px,
+            transparent 149px,
+            rgba(64, 156, 255, 0.12) 149px,
+            rgba(64, 156, 255, 0.12) 150px,
+            transparent 150px
         ),
-        /* Диагональные линии (тоже реже) */
+        /* Слабые диагональные линии */
         linear-gradient(45deg, 
             transparent 47%, 
-            rgba(64, 156, 255, 0.05) 47%, 
-            rgba(64, 156, 255, 0.05) 53%, 
+            rgba(64, 156, 255, 0.04) 47%, 
+            rgba(64, 156, 255, 0.04) 53%, 
             transparent 53%
         );
     background-size: 
         100% 100%,
-        100px 100px,
-        100px 100px,
+        150px 150px,
+        150px 150px,
         200px 200px;
     border-radius: 15px;
     margin-bottom: 20px;
@@ -137,7 +137,7 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-/* Анимация движения сетки для эффекта полета */
+/* Анимация движения сетки */
 .rocket-canvas::before {
     content: '';
     position: absolute;
@@ -147,27 +147,33 @@
     bottom: 0;
     background: 
         linear-gradient(0deg, 
-            transparent 49px, 
-            rgba(64, 200, 255, 0.2) 49px, 
-            rgba(64, 200, 255, 0.2) 50px, 
-            transparent 50px
+            transparent 74px, 
+            rgba(64, 200, 255, 0.2) 74px, 
+            rgba(64, 200, 255, 0.2) 75px, 
+            transparent 75px
+        ),
+        linear-gradient(90deg, 
+            transparent 74px, 
+            rgba(64, 200, 255, 0.2) 74px, 
+            rgba(64, 200, 255, 0.2) 75px, 
+            transparent 75px
         );
-    background-size: 100px 100px;
-    animation: gridMove 20s linear infinite;
+    background-size: 150px 150px, 150px 150px;
+    animation: gridMove 25s linear infinite;
     pointer-events: none;
     z-index: 1;
 }
 
 @keyframes gridMove {
     0% {
-        background-position: 0 0;
+        background-position: 0 0, 0 0;
     }
     100% {
-        background-position: 0 100px;
+        background-position: 0 150px, 150px 0;
     }
 }
 
-/* Дополнительные звезды на фоне */
+/* Звезды на фоне */
 .rocket-canvas::after {
     content: '';
     position: absolute;
@@ -176,11 +182,14 @@
     right: 0;
     bottom: 0;
     background: 
-        radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.3) 50%, transparent 50%),
-        radial-gradient(2px 2px at 40% 70%, rgba(255,255,255,0.3) 50%, transparent 50%),
-        radial-gradient(2px 2px at 60% 20%, rgba(255,255,255,0.3) 50%, transparent 50%),
-        radial-gradient(2px 2px at 80% 50%, rgba(255,255,255,0.3) 50%, transparent 50%),
-        radial-gradient(2px 2px at 30% 80%, rgba(255,255,255,0.3) 50%, transparent 50%);
+        radial-gradient(2px 2px at 15% 25%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 35% 65%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 55% 15%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 75% 45%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 25% 75%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 65% 85%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(1px 1px at 85% 35%, rgba(255,255,255,0.2) 50%, transparent 50%),
+        radial-gradient(1px 1px at 45% 95%, rgba(255,255,255,0.2) 50%, transparent 50%);
     background-repeat: no-repeat;
     pointer-events: none;
     z-index: 2;
@@ -190,7 +199,7 @@
     position: absolute;
     bottom: 100px;
     left: 50%;
-    transform: translateX(-46%) rotate(-46deg);
+    transform: translateX(-44%) rotate(-44deg);
     transition: bottom 0.1s linear;
     z-index: 10;
     width: 130px;
