@@ -15,7 +15,7 @@
         
         .rocket-canvas {
             width: 100%;
-            height: 600px; /* Увеличил высоту в 2 раза */
+            height: 400px; /* Увеличил высоту поля */
             background: linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%);
             border-radius: 15px;
             margin-bottom: 20px;
@@ -23,15 +23,21 @@
             overflow: hidden;
         }
         
-        .rocket-image {
+        .rocket {
             position: absolute;
             bottom: 50px;
             left: 50%;
-            transform: translateX(-50%) rotate(-45deg);
-            width: 80px;
-            height: 80px;
+            transform: translateX(-50%) rotate(45deg); /* Поворот на 45 градусов */
             transition: bottom 0.1s linear;
             z-index: 10;
+            width: 60px; /* Размер ракетки */
+            height: 60px;
+        }
+        
+        .rocket img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
         
         .multiplier-display {
@@ -44,51 +50,6 @@
             color: #00b894;
             text-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
             z-index: 10;
-        }
-        
-        .multiplier-scale {
-            position: absolute;
-            right: 20px;
-            top: 50px;
-            bottom: 50px;
-            width: 60px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            z-index: 5;
-        }
-        
-        .multiplier-markers {
-            position: absolute;
-            right: 25px;
-            top: 50px;
-            bottom: 50px;
-            width: 50px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        
-        .multiplier-marker {
-            color: white;
-            font-weight: bold;
-            text-align: right;
-            padding: 5px;
-            font-size: 14px;
-        }
-        
-        .multiplier-marker.active {
-            color: #00b894;
-            background: rgba(0, 184, 148, 0.2);
-            border-radius: 5px;
-        }
-        
-        .current-multiplier-line {
-            position: absolute;
-            right: 20px;
-            width: 60px;
-            height: 2px;
-            background: #00b894;
-            z-index: 6;
         }
         
         .betting-panel {
@@ -251,4 +212,38 @@
             width: 4px;
             background: linear-gradient(to top, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%);
             z-index: 1;
+        }
+        
+        .back-button {
+            background: linear-gradient(135deg, #667eea, #5a6fd8);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .demo-badge {
+            background: #fdcb6e;
+            color: #2d3436;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .balance {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f0f0f0;
+            margin-top: 10px;
         }
