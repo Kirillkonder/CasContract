@@ -169,17 +169,20 @@ let ws = null;
     }
 
     function updateRocketPosition(multiplier) {
-        const rocketElement = document.getElementById('rocket');
-        const trailElement = document.getElementById('rocketTrail');
-        
-        // Вычисляем новую позицию ракеты (от 80px до 380px - увеличенный диапазон)
-        const newPosition = 80 + (multiplier * 3); // Увеличил множитель для большего движения
-        rocketElement.style.bottom = `${newPosition}px`;
-        
-        // Обновляем след ракеты
-        trailElement.style.height = `${newPosition - 120}px`;
-    }
-
+    const rocketElement = document.getElementById('rocket');
+    const trailElement = document.getElementById('rocketTrail');
+    
+    // Вычисляем новую позицию ракеты (от 80px до 380px - увеличенный диапазон)
+    const newPosition = 80 + (multiplier * 3); // Увеличил множитель для большего движения
+    rocketElement.style.bottom = `${newPosition}px`;
+    
+    // Обновляем след ракеты
+    trailElement.style.height = `${newPosition - 120}px`;
+    
+    // Гарантируем, что ракета всегда по центру
+    rocketElement.style.left = '50%';
+    rocketElement.style.transform = 'translateX(-50%) rotate(-46deg)';
+}
     function showExplosion() {
         const canvas = document.getElementById('rocketCanvas');
         const explosion = document.createElement('div');
