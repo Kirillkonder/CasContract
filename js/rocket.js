@@ -73,7 +73,7 @@ let ws = null;
         };
     }
 
-  function updateGameState(gameState) {
+   function updateGameState(gameState) {
     // Обновляем глобальную переменную игры
     rocketGame = gameState;
     
@@ -144,7 +144,6 @@ let ws = null;
     updateBettingUI();
 }
 
-
    function startCountdown(endTime) {
     clearCountdown();
     
@@ -168,6 +167,7 @@ let ws = null;
     updateCountdown();
     countdownInterval = setInterval(updateCountdown, 1000);
 }
+
 
     function clearCountdown() {
         if (countdownInterval) {
@@ -228,15 +228,24 @@ function showExplosion() {
     // Запускаем эффект улетающей ракеты
     rocketElement.classList.add('blast-off');
     
-    // ВОССТАНАВЛИВАЕМ ВЗРЫВ
-    const explosion = document.createElement('div');
-    explosion.className = 'explosion';
-    canvas.appendChild(explosion);
+    // Создаем текст "УЛЕТЕЛ"
+    const blastOffText = document.createElement('div');
+    blastOffText.className = 'blast-off-text';
+    blastOffText.textContent = 'УЛЕТЕЛ!';
+    canvas.appendChild(blastOffText);
+    
+    // УДАЛИТЬ создание взрыва
+    // const explosion = document.createElement('div');
+    // explosion.className = 'explosion';
+    // canvas.appendChild(explosion);
     
     setTimeout(() => {
-        // Убираем взрыв
-        if (explosion.parentNode) {
-            canvas.removeChild(explosion);
+        // Убираем взрыв и текст
+        // if (explosion.parentNode) {
+        //     canvas.removeChild(explosion);
+        // }
+        if (blastOffText.parentNode) {
+            canvas.removeChild(blastOffText);
         }
         // Возвращаем ракету в исходное состояние
         rocketElement.classList.remove('blast-off');
@@ -409,7 +418,103 @@ function showExplosion() {
         }
     }
 
-    function updateBettingUI() {
+   javascript
+function startCountdown(endTime) {
+    clearCountdown();
+    
+    function updateCountdown() {
+        const now = Date.now();
+        const timeLeft = Math.max(0, Math.ceil((endTime - now) / 1000));
+        
+        // Обновляем текст в статусе игры
+        document.getElementById('statusText').textContent = `Прием ставок: ${timeLeft}с`;
+        document.getElementById('placeBetButton').textContent = `Поставить (${timeLeft}с)`;
+        
+        if (timeLeft <= 0) {
+            clearCountdown();
+            document.getElementById('statusText').textContent = 'Время ставок закончилось';
+            document.getElementById('placeBetButton').textContent = 'Время вышло';
+            document.getElementById('placeBetButton').disabled = true;
+            updateBettingUI();
+        }
+    }
+    
+    updateCountdown();
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+function updateGameState(gameState) {
+    // Обновляем глобальную переменную игры
+    rocketGame = gameState;
+    
+    // Обновляем статус игры
+    const statusElement = document.getElementById('statusText');
+    const countdownElement = document.getElementById('countdown');
+    const statusClass = `status-${gameState.status}`;
+    
+    document.getElementById('gameStatus').className = `game-status ${statusClass}`;
+    
+    switch(gameState.status) {
+        case 'waiting':
+            statusElement.textContent = 'Ожидание начала игры...';
+            countdownElement.textContent = '';
+            clearCountdown();
+            resetBettingUI();
+            break;
+            
+        case 'counting':
+            statusElement.textContent = 'Прием ставок: ';
+            startCountdown(gameState.endBetTime);
+            updateBettingUI();
+            break;
+            
+        case 'flying':
+            statusElement.textContent = 'Ракета взлетает!';
+            countdownElement.textContent = '';
+            clearCountdown();
+            updateRocketPosition(gameState.multiplier);
+            break;
+            
+        case 'crashed':
+            statusElement.textContent = `Ракета взорвалась на ${gameState.crashPoint.toFixed(2)}x!`;
+            countdownElement.textContent = '';
+            clearCountdown();
+            showExplosion();
+            break;
+    }
+    
+    // Обновляем множитель
+    document.getElementById('multiplierDisplay').textContent = gameState.multiplier.toFixed(2) + 'x';
+    
+    // Находим нашего игрока
+    userPlayer = gameState.players.find(p => p.userId == currentUser.id && !p.isBot);
+    
+    if (userPlayer) {
+        userBet = userPlayer.betAmount;
+        userCashedOut = userPlayer.cashedOut;
+        document.getElementById('userBet').textContent = userBet.toFixed(2);
+        
+        if (userCashedOut) {
+            document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2);
+        }
+    }
+    
+    // Обновляем список игроков
+    updatePlayersList(gameState.players);
+    
+    // Обновляем историю
+    updateHistory(gameState.history);
+    
+    // Обновляем потенциальный выигрыш
+    if (userBet > 0 && !userCashedOut && gameState.status === 'flying') {
+        const potentialWin = userBet * gameState.multiplier;
+        document.getElementById('potentialWin').textContent = potentialWin.toFixed(2);
+    }
+    
+    updateBettingUI();
+}
+
+function updateBettingUI() {
     const betButton = document.getElementById('placeBetButton');
     const cashoutButton = document.getElementById('cashoutButton');
     
