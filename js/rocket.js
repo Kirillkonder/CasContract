@@ -147,23 +147,16 @@ let ws = null;
 function startCountdown(endTime) {
     clearCountdown();
     
-    // ДЕБАГ: посмотрим какое время пришло с сервера
-    console.log('Server endTime:', new Date(endTime).toISOString());
-    console.log('Current time:', new Date().toISOString());
-    console.log('Time difference (ms):', endTime - Date.now());
-    console.log('Time difference (sec):', (endTime - Date.now()) / 1000);
-    
     function updateCountdown() {
         const now = Date.now();
         const timeLeft = Math.max(0, Math.ceil((endTime - now) / 1000));
         
-        // Ограничиваем максимальное время 10 секундами (на случай ошибки сервера)
-        const displayTimeLeft = Math.min(timeLeft, 10);
+        // Обновляем счетчик в статусе игры (элемент #countdown)
+        document.getElementById('countdown').textContent = `${timeLeft}с`;
+        // Обновляем кнопку ставки
+        document.getElementById('placeBetButton').textContent = `Поставить (${timeLeft}с)`;
         
-        document.getElementById('countdown').textContent = `${displayTimeLeft}с`;
-        document.getElementById('placeBetButton').textContent = `Поставить (${displayTimeLeft}с)`;
-        
-        if (displayTimeLeft <= 0) {
+        if (timeLeft <= 0) {
             clearCountdown();
             document.getElementById('countdown').textContent = '';
             document.getElementById('placeBetButton').textContent = 'Время вышло';
