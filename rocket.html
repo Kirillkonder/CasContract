@@ -13,22 +13,18 @@
         <button class="back-button" onclick="goBack()">← Назад</button>
         
         <div class="rocket-header">
-            <h1>🚀 Rocket Game</h1>
             <div class="balance">
                 Баланс: <span id="balance">0</span> TON
                 <span id="demo-badge" class="demo-badge">TESTNET</span>
             </div>
         </div>
 
-        <div class="game-status" id="gameStatus">
-            <span id="statusText">Ожидание начала игры...</span>
-            <span id="countdown"></span>
-        </div>
-
+        <!-- Убрали блок game-status -->
+        
         <div class="rocket-canvas" id="rocketCanvas">
             <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
             <div class="rocket" id="rocket">
-                <img src="Rocket.png" alt="Rocket"> <!-- Ваша PNG ракетка -->
+                <img src="Rocket.png" alt="Rocket">
             </div>
             <div class="trail" id="rocketTrail"></div>
         </div>
@@ -47,14 +43,15 @@
             </div>
         </div>
 
+        <!-- Переносим историю ставок на место game-status -->
+        <div class="history-container" style="margin-top: 0;">
+            <!-- Убираем заголовок "История игр" -->
+            <div class="history-items" id="historyItems"></div>
+        </div>
+
         <div class="players-list">
             <h3>Игроки в этом раунде (<span id="playersCount">0</span>)</h3>
             <div id="playersList"></div>
-        </div>
-
-        <div class="history-container">
-            <h3>История игр</h3>
-            <div class="history-items" id="historyItems"></div>
         </div>
     </div>
 
