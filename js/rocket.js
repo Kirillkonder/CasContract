@@ -92,13 +92,13 @@ function updateGameState(gameState) {
             resetBettingUI();
             break;
             
-        case 'counting':
-            statusElement.textContent = 'Прием ставок: '; // Только текст без времени
-            countdownElement.textContent = ''; // Очищаем
-            startCountdown(gameState.endBetTime);
+       case 'counting':
+            statusElement.textContent = 'Прием ставок: ';
+            countdownElement.textContent = `${gameState.timeLeft}с`; // ФИКС: Берем время с сервера
+            startCountdown(gameState.timeLeft);
             updateBettingUI();
             break;
-            
+                    
         case 'flying':
             statusElement.textContent = 'Ракета взлетает!';
             countdownElement.textContent = '';
@@ -145,14 +145,11 @@ function updateGameState(gameState) {
     updateBettingUI();
 }
 
-function startCountdown(endTime) {
+function startCountdown(timeLeft) {
     clearCountdown();
     
     function updateCountdown() {
-        const now = Date.now();
-        const timeLeft = Math.max(0, Math.ceil((endTime - now) / 1000));
-        
-        // ФИКС: Только один элемент обновляет текст времени
+        // ФИКС: Используем переданное время, а не вычисляем
         document.getElementById('countdown').textContent = `${timeLeft}с`;
         document.getElementById('placeBetButton').textContent = timeLeft > 0 ? `Поставить (${timeLeft}с)` : 'Время вышло';
         
@@ -163,6 +160,7 @@ function startCountdown(endTime) {
             document.getElementById('placeBetButton').disabled = true;
             updateBettingUI();
         }
+        timeLeft--; // Уменьшаем время
     }
     
     updateCountdown();

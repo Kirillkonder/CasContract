@@ -390,9 +390,15 @@ function processRocketGameEnd() {
 }
 
 function broadcastRocketUpdate() {
+    // ФИКС: Правильно рассчитываем оставшееся время для клиента
+    const gameData = {
+        ...rocketGame,
+        timeLeft: Math.max(0, Math.ceil((rocketGame.endBetTime - Date.now()) / 1000))
+    };
+    
     const data = JSON.stringify({
         type: 'rocket_update',
-        game: rocketGame
+        game: gameData
     });
 
     wss.clients.forEach(client => {
