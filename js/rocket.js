@@ -1,10 +1,10 @@
- let ws = null;
+let ws = null;
     let currentUser = null;
     let isDemoMode = false;
     let userBet = 0;
     let userCashedOut = false;
     let userPlayer = null;
-    let rocketPosition = 50;
+    let rocketPosition = 80; // Начальная позиция повыше
     let countdownInterval = null;
 
     // Инициализация
@@ -172,12 +172,12 @@
         const rocketElement = document.getElementById('rocket');
         const trailElement = document.getElementById('rocketTrail');
         
-        // Вычисляем новую позицию ракеты (от 50px до 350px - увеличенный диапазон)
-        const newPosition = 50 + (multiplier * 3); // Увеличил множитель для большего движения
+        // Вычисляем новую позицию ракеты (от 80px до 380px - увеличенный диапазон)
+        const newPosition = 80 + (multiplier * 3); // Увеличил множитель для большего движения
         rocketElement.style.bottom = `${newPosition}px`;
         
         // Обновляем след ракеты
-        trailElement.style.height = `${newPosition - 90}px`;
+        trailElement.style.height = `${newPosition - 120}px`;
     }
 
     function showExplosion() {
@@ -404,7 +404,7 @@
         // Сбрасываем позицию ракеты
         const rocketElement = document.getElementById('rocket');
         const trailElement = document.getElementById('rocketTrail');
-        rocketElement.style.bottom = '50px';
+        rocketElement.style.bottom = '80px'; // Выше начальная позиция
         trailElement.style.height = '0px';
     }
 
