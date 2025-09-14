@@ -226,35 +226,6 @@ function showExplosion() {
     }, 1000);
 }
 
-function showBlastOff() {
-    const rocketElement = document.getElementById('rocket');
-    const canvasElement = document.getElementById('rocketCanvas');
-    
-    // Убираем пульсацию
-    rocketElement.classList.remove('pulsating');
-    canvasElement.classList.remove('pulsating');
-    
-    // Добавляем класс для анимации улета
-    rocketElement.classList.add('blast-off');
-    
-    // Создаем текст "УЛЕТЕЛ"
-    const blastOffText = document.createElement('div');
-    blastOffText.className = 'blast-off-text';
-    blastOffText.textContent = 'УЛЕТЕЛ!';
-    canvasElement.appendChild(blastOffText);
-    
-    // Убираем текст через 2 секунды
-    setTimeout(() => {
-        if (blastOffText.parentNode) {
-            blastOffText.parentNode.removeChild(blastOffText);
-        }
-        // Возвращаем ракету в исходное состояние
-        rocketElement.classList.remove('blast-off');
-        rocketElement.style.bottom = '110px';
-        rocketElement.style.opacity = '1';
-    }, 2000);
-}
-
     function updatePlayersList(players) {
         const playersList = document.getElementById('playersList');
         const playersCount = document.getElementById('playersCount');

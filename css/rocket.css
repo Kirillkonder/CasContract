@@ -187,62 +187,6 @@
     }
 }
 
-/* Анимация улетающей ракеты */
-@keyframes rocketBlastOff {
-    0% {
-        transform: translateX(-45%) rotate(-45deg) scale(1);
-        bottom: 110px;
-        filter: brightness(1);
-    }
-    20% {
-        transform: translateX(-45%) rotate(-45deg) scale(1.3);
-        filter: brightness(2) drop-shadow(0 0 20px #ff0000);
-    }
-    100% {
-        transform: translateX(-45%) rotate(-45deg) scale(0.5);
-        bottom: 500px;
-        opacity: 0;
-        filter: brightness(3) drop-shadow(0 0 40px #ff0000);
-    }
-}
-
-.rocket.blast-off {
-    animation: rocketBlastOff 1.5s ease-out forwards;
-    z-index: 20;
-}
-
-/* Стиль для текста "УЛЕТЕЛ" */
-.blast-off-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 48px;
-    font-weight: bold;
-    color: #ff0000;
-    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 
-                 0 0 40px rgba(255, 0, 0, 0.6),
-                 0 0 60px rgba(255, 0, 0, 0.4);
-    z-index: 15;
-    opacity: 0;
-    animation: textAppear 2s ease-in-out forwards;
-}
-
-@keyframes textAppear {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.5);
-    }
-    50% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.2);
-    }
-    100% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-}
-
 .multiplier-display {
     position: absolute;
     top: 20px;
