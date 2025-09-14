@@ -183,6 +183,15 @@ function updateRocketPosition(multiplier) {
         rocketElement.classList.add('pulsating');
         canvasElement.classList.add('pulsating');
         
+        // Ускоряем пульсацию после 3x
+        if (multiplier >= 3) {
+            const speedIntensity = Math.min(0.7, (multiplier - 3) / 10);
+            const pulseSpeed = Math.max(0.3, 1.2 - speedIntensity);
+            document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
+        } else {
+            document.documentElement.style.setProperty('--pulse-speed', '1.2s');
+        }
+        
         // Меняем цвет фона при высоких множителях
         if (multiplier > 5) {
             const redIntensity = Math.min(0.3, (multiplier - 5) / 15);
@@ -195,6 +204,7 @@ function updateRocketPosition(multiplier) {
         rocketElement.classList.remove('pulsating');
         canvasElement.classList.remove('pulsating');
         canvasElement.style.backgroundColor = '';
+        document.documentElement.style.setProperty('--pulse-speed', '1.2s');
     }
 }
 

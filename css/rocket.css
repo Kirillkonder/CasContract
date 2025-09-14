@@ -3,15 +3,6 @@
     --pulse-scale: 1.05;
 }
 
-/* Анимация пульсации для линий фона */
-.rocket-canvas.pulsating::before {
-    animation: gridMove 10s linear infinite, pulse var(--pulse-speed) ease-in-out infinite;
-}
-
-.rocket-canvas.pulsating::after {
-    animation: starPulse calc(var(--pulse-speed) * 1.5) ease-in-out infinite;
-}
-
 .rocket-container {
     max-width: 600px;
     margin: 0 auto;
@@ -95,7 +86,7 @@
             transparent 72px
         );
     background-size: 150px 150px, 150px 150px;
-    animation: gridMove 20s linear infinite;
+    animation: gridMove 15s linear infinite;
     pointer-events: none;
     z-index: 1;
 }
@@ -134,13 +125,13 @@
 /* Стили ракетки */
 .rocket {
     position: absolute;
-    bottom: 110px; /* Фиксированная позиция от низа */
+    bottom: 110px;
     left: 50%;
     transform: translateX(-45%) rotate(-45deg);
     z-index: 10;
     width: 130px;
     height: 130px;
-    transition: transform 0.3s ease-in-out;
+    transition: all 0.3s ease;
 }
 
 .rocket img {
@@ -151,36 +142,36 @@
 
 /* Анимация пульсации для линий фона */
 .rocket-canvas.pulsating::before {
-    animation: gridMove 10s linear infinite, pulse var(--pulse-speed) ease-in-out infinite;
+    animation: gridMove 15s linear infinite, pulse var(--pulse-speed) ease-in-out infinite;
 }
 
 .rocket-canvas.pulsating::after {
-    animation: starPulse 1.2s ease-in-out infinite;
+    animation: starPulse calc(var(--pulse-speed) * 1.5) ease-in-out infinite;
 }
 
 @keyframes pulse {
     0%, 100% {
-        opacity: 0.7;
+        opacity: 0.8;
         transform: scale(1);
     }
     50% {
-        opacity: 0.9;
+        opacity: 1;
         transform: scale(var(--pulse-scale));
     }
 }
 
 @keyframes starPulse {
     0%, 100% {
-        opacity: 0.3;
+        opacity: 0.4;
         transform: scale(1);
     }
     50% {
-        opacity: 0.7;
+        opacity: 0.8;
         transform: scale(1.1);
     }
 }
 
-/* Анимация пульсации для самой ракетки */
+/* Анимация пульсации для ракетки */
 .rocket.pulsating {
     animation: rocketPulse var(--pulse-speed) ease-in-out infinite;
 }
@@ -191,10 +182,11 @@
         filter: brightness(1);
     }
     50% {
-        transform: translateX(-45%) rotate(-45deg) scale(var(--pulse-scale));
-        filter: brightness(calc(1 + (var(--pulse-scale) - 1) * 2));
+        transform: translateX(-45%) rotate(-45deg) scale(1.15);
+        filter: brightness(1.4);
     }
 }
+
 .multiplier-display {
     position: absolute;
     top: 20px;
@@ -207,7 +199,6 @@
     z-index: 10;
 }
 
-/* Остальные стили без изменений */
 .betting-panel {
     background: rgba(25, 30, 42, 0.95);
     border-radius: 15px;
