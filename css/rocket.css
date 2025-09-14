@@ -338,31 +338,23 @@
 }
 
 .history-container {
-    margin-top: 0;
-    margin-bottom: 20px;
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary-medium));
-    border-radius: 15px;
-    padding: 15px;
+    margin-top: 20px;
 }
-
 
 .history-items {
     display: flex;
-    gap: 8px;
+    gap: 5px;
     flex-wrap: wrap;
     justify-content: center;
-    min-height: 40px;
-    align-items: center;
 }
 
 .history-item {
-    padding: 6px 12px;
-    border-radius: 10px;
-    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 12px;
     font-weight: bold;
-    min-width: 50px;
-    text-align: center;
 }
+
 .history-win {
     background: rgba(0, 216, 167, 0.2);
     color: var(--success);
