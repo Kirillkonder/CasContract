@@ -1,13 +1,15 @@
 :root {
     --pulse-speed: 1.2s;
     --pulse-scale: 1.05;
-    --primary-color: #667eea;
-    --success-color: #00b894;
-    --danger-color: #ff6b6b;
-    --warning-color: #fdcb6e;
-    --bg-dark: #0d1117;
-    --bg-card: rgba(25, 30, 42, 0.95);
-    --text-light: #f0f0f0;
+    --primary-color: #3a7bfd;
+    --success-color: #00c851;
+    --danger-color: #ff3547;
+    --warning-color: #ffbb33;
+    --bg-dark: #0f1525;
+    --bg-card: rgba(20, 27, 45, 0.95);
+    --text-light: #ffffff;
+    --text-secondary: #8c9db5;
+    --border-color: rgba(140, 157, 181, 0.2);
 }
 
 * {
@@ -19,8 +21,9 @@
 body {
     background: var(--bg-dark);
     color: var(--text-light);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
 }
 
 .container {
@@ -31,18 +34,20 @@ body {
 
 .back-button {
     background: transparent;
-    color: var(--text-light);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
     padding: 10px 16px;
     border-radius: 12px;
     cursor: pointer;
     margin-bottom: 16px;
     font-weight: 500;
     transition: all 0.2s ease;
+    font-size: 14px;
 }
 
 .back-button:hover {
     background: rgba(255, 255, 255, 0.05);
+    color: var(--text-light);
 }
 
 .rocket-header {
@@ -51,6 +56,7 @@ body {
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
 }
 
 .header-content {
@@ -59,9 +65,20 @@ body {
     align-items: center;
 }
 
-.header-content h1 {
-    font-size: 28px;
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-title h1 {
+    font-size: 24px;
     font-weight: 700;
+    color: var(--text-light);
+}
+
+.rocket-icon {
+    font-size: 28px;
 }
 
 .header-info {
@@ -71,15 +88,29 @@ body {
     gap: 6px;
 }
 
-.balance {
+.balance-display {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 16px;
+    font-size: 15px;
+    background: rgba(58, 123, 253, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
 }
 
 .balance-label {
-    opacity: 0.8;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.balance-amount {
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.currency {
+    color: var(--text-secondary);
+    font-size: 13px;
 }
 
 .demo-badge {
@@ -87,7 +118,7 @@ body {
     color: #2d3436;
     padding: 4px 10px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
 }
 
@@ -98,7 +129,12 @@ body {
     border-radius: 12px;
     margin-bottom: 20px;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
 }
 
 .status-waiting {
@@ -117,8 +153,12 @@ body {
     color: var(--danger-color);
 }
 
-#countdown {
-    margin-left: 8px;
+.countdown-timer {
+    background: rgba(58, 123, 253, 0.1);
+    color: var(--primary-color);
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 13px;
     font-weight: bold;
 }
 
@@ -163,6 +203,7 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
 }
 
 .rocket-canvas::before {
@@ -364,6 +405,7 @@ body {
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
 }
 
 .bet-input-container {
@@ -374,16 +416,18 @@ body {
     width: 100%;
     padding: 14px;
     background: rgba(35, 40, 52, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     color: white;
     font-size: 16px;
     text-align: center;
+    transition: all 0.2s ease;
 }
 
 .bet-input:focus {
     outline: none;
     border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(58, 123, 253, 0.2);
 }
 
 .action-buttons {
@@ -409,12 +453,12 @@ body {
 }
 
 .bet-button:hover:not(:disabled) {
-    background: #5a6fd8;
+    background: #2d6de9;
     transform: translateY(-2px);
 }
 
 .bet-button:disabled {
-    background: rgba(102, 126, 234, 0.5);
+    background: rgba(58, 123, 253, 0.5);
     cursor: not-allowed;
     transform: none;
 }
@@ -425,12 +469,12 @@ body {
 }
 
 .cashout-button:hover:not(:disabled) {
-    background: #008066;
+    background: #00b344;
     transform: translateY(-2px);
 }
 
 .cashout-button:disabled {
-    background: rgba(0, 184, 148, 0.5);
+    background: rgba(0, 200, 81, 0.5);
     cursor: not-allowed;
     transform: none;
 }
@@ -439,7 +483,7 @@ body {
     display: flex;
     justify-content: space-between;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-secondary);
 }
 
 .players-container {
@@ -448,18 +492,20 @@ body {
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
 }
 
-.players-header {
+.section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
 }
 
-.players-header h3 {
+.section-header h3 {
     font-size: 18px;
     font-weight: 600;
+    color: var(--text-light);
 }
 
 .players-count {
@@ -480,7 +526,7 @@ body {
     display: flex;
     justify-content: space-between;
     padding: 10px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .player-item:last-child {
@@ -503,15 +549,7 @@ body {
     border-radius: 16px;
     padding: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-}
-
-.history-header {
-    margin-bottom: 16px;
-}
-
-.history-header h3 {
-    font-size: 18px;
-    font-weight: 600;
+    border: 1px solid var(--border-color);
 }
 
 .history-items {
@@ -530,15 +568,15 @@ body {
 }
 
 .history-win {
-    background: rgba(0, 184, 148, 0.2);
+    background: rgba(0, 200, 81, 0.15);
     color: var(--success-color);
-    border: 1px solid rgba(0, 184, 148, 0.3);
+    border: 1px solid rgba(0, 200, 81, 0.3);
 }
 
 .history-loss {
-    background: rgba(255, 107, 107, 0.2);
+    background: rgba(255, 53, 71, 0.15);
     color: var(--danger-color);
-    border: 1px solid rgba(255, 107, 107, 0.3);
+    border: 1px solid rgba(255, 53, 71, 0.3);
 }
 
 .explosion {

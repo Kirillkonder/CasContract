@@ -145,21 +145,21 @@ let ws = null;
     }
 
     function startCountdown(endTime) {
-        clearCountdown();
+    clearCountdown();
+    
+    function updateCountdown() {
+        const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+        document.getElementById('countdown').textContent = `${timeLeft}с`;
         
-        function updateCountdown() {
-            const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
-            document.getElementById('countdown').textContent = `${timeLeft}с`;
-            
-            if (timeLeft <= 0) {
-                clearCountdown();
-                updateBettingUI();
-            }
+        if (timeLeft <= 0) {
+            clearCountdown();
+            updateBettingUI();
         }
-        
-        updateCountdown();
-        countdownInterval = setInterval(updateCountdown, 1000);
     }
+    
+    updateCountdown();
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
 
     function clearCountdown() {
         if (countdownInterval) {
@@ -247,35 +247,40 @@ function showExplosion() {
     }, 2000);
 }
 
-    function updatePlayersList(players) {
+    
+function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
     
     playersList.innerHTML = '';
-    playersCount.textContent = players.length;
+    // Отображаем всех пользователей на странице, а не только играющих
+    const onlineUsers = getOnlineUsers(); // Нужно реализовать эту функцию
+    playersCount.textContent = onlineUsers.length;
     
-    players.forEach(player => {
+    onlineUsers.forEach(user => {
         const playerItem = document.createElement('div');
         playerItem.className = 'player-item';
         
         const nameSpan = document.createElement('span');
         nameSpan.className = 'player-name';
-        nameSpan.textContent = player.name;
+        nameSpan.textContent = user.name;
         
-        const betSpan = document.createElement('span');
-        betSpan.className = 'player-bet';
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'player-status';
         
-        if (player.cashedOut) {
-            betSpan.textContent = `+${player.winAmount.toFixed(2)} (${player.cashoutMultiplier.toFixed(2)}x)`;
-            betSpan.style.color = '#00b894';
-        } else if (player.isBot) {
-            betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+        // Проверяем, делает ли пользователь ставку в текущей игре
+        const isPlaying = players.some(p => p.userId === user.id);
+        
+        if (isPlaying) {
+            statusSpan.textContent = 'Играет';
+            statusSpan.style.color = 'var(--primary-color)';
         } else {
-            betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+            statusSpan.textContent = 'Онлайн';
+            statusSpan.style.color = 'var(--text-secondary)';
         }
         
         playerItem.appendChild(nameSpan);
-        playerItem.appendChild(betSpan);
+        playerItem.appendChild(statusSpan);
         playersList.appendChild(playerItem);
     });
 }
@@ -409,7 +414,18 @@ function showExplosion() {
         }
     }
 
-   function updateBettingUI() {
+ function getOnlineUsers() {
+    // Эта функция должна получать список онлайн-пользователей с сервера
+    // Временно возвращаем тестовые данные
+    return [
+        { id: 1, name: 'Player1' },
+        { id: 2, name: 'Player2' },
+        { id: 3, name: 'Player3' },
+        { id: 4, name: 'Player4' }
+    ];
+} 
+
+function updateBettingUI() {
     const betButton = document.getElementById('placeBetButton');
     const cashoutButton = document.getElementById('cashoutButton');
     
