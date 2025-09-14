@@ -177,23 +177,15 @@ function updateRocketPosition(multiplier) {
     const trailHeight = Math.max(0, multiplier * 10);
     trailElement.style.height = `${trailHeight}px`;
     
-    // Плавная пульсация с самого начала, усиливающаяся после 3x
-    if (multiplier > 1) {
-        const intensity = Math.min(1, (multiplier - 1) / 10); // Интенсивность от 0 до 1
-        const pulseSpeed = 1.2 - (intensity * 0.7); // Скорость от 1.2s до 0.5s
-        const pulseScale = 1 + (intensity * 0.2); // Масштаб от 1.0 до 1.2
-        
+    // Включаем пульсацию после 1.00x
+    if (multiplier > 1.00) {
         // Добавляем классы пульсации
         rocketElement.classList.add('pulsating');
         canvasElement.classList.add('pulsating');
         
-        // Динамически меняем параметры анимации
-        document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
-        document.documentElement.style.setProperty('--pulse-scale', pulseScale);
-        
         // Меняем цвет фона при высоких множителях
-        if (multiplier > 6) {
-            const redIntensity = Math.min(0.4, (multiplier - 6) / 10);
+        if (multiplier > 5) {
+            const redIntensity = Math.min(0.3, (multiplier - 5) / 15);
             canvasElement.style.backgroundColor = `rgba(255, 50, 50, ${redIntensity})`;
         } else {
             canvasElement.style.backgroundColor = '';
