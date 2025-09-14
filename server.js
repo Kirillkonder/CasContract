@@ -242,10 +242,9 @@ function startRocketGame() {
     rocketGame.multiplier = 1.00;
     rocketGame.crashPoint = generateCrashPoint();
     rocketGame.startTime = Date.now();
-    rocketGame.endBetTime = Date.now() + 10000; // 10 секунд на ставки
+    rocketGame.endBetTime = Date.now() + 5000; // 5 секунд на ставки
     rocketGame.players = [];
 
-    // Добавляем ставки ботов
     rocketBots.forEach(bot => {
         const betAmount = bot.minBet + Math.random() * (bot.maxBet - bot.minBet);
         const autoCashout = bot.risk === 'low' ? 2 + Math.random() * 3 : 
@@ -264,13 +263,14 @@ function startRocketGame() {
 
     broadcastRocketUpdate();
 
-    // 10 секунд на ставки
+    // 5 секунд на ставки
     setTimeout(() => {
         rocketGame.status = 'flying';
         broadcastRocketUpdate();
         startRocketFlight();
-    }, 10000);
+    }, 5000);
 }
+
 
 // server.js - исправленная функция startRocketFlight
 function startRocketFlight() {
