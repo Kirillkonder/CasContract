@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -25,15 +25,10 @@
             <span id="countdown"></span>
         </div>
 
-        <div class="history-container-top">
-            <h3>История</h3>
-            <div class="history-items" id="historyItems"></div>
-        </div>
-
         <div class="rocket-canvas" id="rocketCanvas">
             <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
             <div class="rocket" id="rocket">
-                <img src="Rocket.png" alt="Rocket">
+                <img src="Rocket.png" alt="Rocket"> <!-- Ваша PNG ракетка -->
             </div>
             <div class="trail" id="rocketTrail"></div>
         </div>
@@ -52,10 +47,14 @@
             </div>
         </div>
 
-        <div class="players-section">
+        <div class="players-list">
             <h3>Игроки в этом раунде (<span id="playersCount">0</span>)</h3>
-            <div class="players-avatars" id="playersAvatars"></div>
-            <div class="players-list" id="playersList"></div>
+            <div id="playersList"></div>
+        </div>
+
+        <div class="history-container">
+            <h3>История игр</h3>
+            <div class="history-items" id="historyItems"></div>
         </div>
     </div>
 
