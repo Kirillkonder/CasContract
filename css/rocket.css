@@ -4,26 +4,25 @@
 }
 
 .rocket-container {
-    max-width: 600px;
+    max-width: 100%;
     margin: 0 auto;
-    padding: 20px;
+    padding: 15px;
 }
 
 .rocket-header {
     text-align: center;
-    margin-bottom: 20px;
-    padding: 15px;
+    margin-bottom: 15px;
+    padding: 12px;
     background: rgba(25, 30, 42, 0.95);
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .rocket-canvas {
     width: 100%;
-    height: 360px;
+    height: 280px;
     background: 
         linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%),
-        /* Горизонтальные линии (толстые и редкие) */
         linear-gradient(0deg, 
             transparent 69px, 
             rgba(64, 156, 255, 0.2) 69px, 
@@ -34,7 +33,6 @@
             rgba(64, 156, 255, 0.18) 147px,
             transparent 147px
         ),
-        /* Вертикальные линии (толстые и редкие) */
         linear-gradient(90deg, 
             transparent 69px, 
             rgba(64, 156, 255, 0.2) 69px, 
@@ -45,7 +43,6 @@
             rgba(64, 156, 255, 0.18) 147px,
             transparent 147px
         ),
-        /* Слабые диагональные линии */
         linear-gradient(45deg, 
             transparent 47%, 
             rgba(64, 156, 255, 0.06) 47%, 
@@ -57,11 +54,11 @@
         150px 150px,
         150px 150px,
         200px 200px;
-    border-radius: 15px;
-    margin-bottom: 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 /* Анимация движения сетки */
@@ -129,8 +126,8 @@
     left: 50%;
     transform: translateX(-45%) rotate(-45deg);
     z-index: 10;
-    width: 130px;
-    height: 130px;
+    width: 100px;
+    height: 100px;
     transition: all 0.3s ease;
 }
 
@@ -254,47 +251,48 @@
 
 .multiplier-display {
     position: absolute;
-    top: 20px;
+    top: 15px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 32px;
+    font-size: 28px;
     font-weight: bold;
     color: #00b894;
-    text-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
+    text-shadow: 0 0 8px rgba(0, 184, 148, 0.5);
     z-index: 10;
 }
 
 .betting-panel {
     background: rgba(25, 30, 42, 0.95);
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
 }
 
 .bet-controls {
     display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .bet-input {
     flex: 1;
-    padding: 12px;
+    padding: 10px;
     background: rgba(35, 40, 52, 0.8);
     border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    border-radius: 10px;
     color: white;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .bet-button {
-    padding: 12px 20px;
+    padding: 10px 16px;
     background: linear-gradient(135deg, #667eea, #5a6fd8);
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: bold;
+    font-size: 14px;
 }
 
 .bet-button:disabled {
@@ -303,14 +301,14 @@
 }
 
 .cashout-button {
-    padding: 15px 30px;
+    padding: 12px 24px;
     background: linear-gradient(135deg, #00b894, #008066);
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 18px;
+    font-size: 16px;
     width: 100%;
 }
 
@@ -319,19 +317,35 @@
     cursor: not-allowed;
 }
 
+.game-info-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
 .players-list {
     background: rgba(25, 30, 42, 0.95);
-    border-radius: 15px;
-    padding: 20px;
-    max-height: 200px;
+    border-radius: 12px;
+    padding: 15px;
+    max-height: 180px;
     overflow-y: auto;
+}
+
+
+.players-list h3,
+.history-container h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #f0f0f0;
+    text-align: center;
 }
 
 .player-item {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
+    padding: 6px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 12px;
 }
 
 .player-item:last-child {
@@ -347,19 +361,11 @@
     font-weight: bold;
 }
 
-.game-status {
-    text-align: center;
-    padding: 10px;
-    background: rgba(25, 30, 42, 0.95);
-    border-radius: 10px;
-    margin-bottom: 15px;
-    font-weight: bold;
-}
+
 
 .status-waiting {
     color: #fdcb6e;
 }
-
 .status-counting {
     color: #74b9ff;
 }
@@ -373,7 +379,16 @@
 }
 
 .history-container {
-    margin-top: 20px;
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    justify-content: center;
 }
 
 .history-items {
@@ -384,20 +399,37 @@
 }
 
 .history-item {
-    padding: 5px 10px;
-    border-radius: 8px;
-    font-size: 12px;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: bold;
+    text-align: center;
 }
 
 .history-win {
-    background: rgba(0, 184, 148, 0.2);
+    background: rgba(0, 184, 148, 0.3);
     color: #00b894;
+    border: 1px solid rgba(0, 184, 148, 0.5);
 }
 
 .history-loss {
-    background: rgba(255, 107, 107, 0.2);
+    background: rgba(255, 107, 107, 0.3);
     color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.5);
+}
+
+.game-status {
+    text-align: center;
+    padding: 8px;
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-weight: bold;
+    font-size: 14px;
 }
 
 .explosion {
@@ -435,32 +467,34 @@
     background: linear-gradient(135deg, #667eea, #5a6fd8);
     color: white;
     border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
     cursor: pointer;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     font-weight: bold;
+    font-size: 14px;
 }
+
 
 .demo-badge {
     background: #fdcb6e;
     color: #2d3436;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
     font-weight: bold;
-    margin-left: 8px;
+    margin-left: 6px;
 }
 
 .container {
-    max-width: 600px;
+    max-width: 100%;
     margin: 0 auto;
-    padding: 20px;
+    padding: 15px;
 }
 
 .balance {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     color: #f0f0f0;
-    margin-top: 10px;
+    margin-top: 8px;
 }

@@ -173,17 +173,19 @@ function updateRocketPosition(multiplier) {
     const trailElement = document.getElementById('rocketTrail');
     const canvasElement = document.getElementById('rocketCanvas');
     
+    // Обновляем позицию ракеты (движение вверх)
+    const newPosition = 100 + (multiplier * 15); // Более плавное движение
+    rocketElement.style.bottom = `${Math.min(newPosition, 500)}px`;
+    
     // Обновляем след
-    const trailHeight = Math.max(0, multiplier * 10);
+    const trailHeight = Math.max(0, multiplier * 8);
     trailElement.style.height = `${trailHeight}px`;
     
     // Включаем пульсацию после 1.00x
     if (multiplier > 1.00) {
-        // Добавляем классы пульсации
         rocketElement.classList.add('pulsating');
         canvasElement.classList.add('pulsating');
         
-        // Ускоряем пульсацию после 3x
         if (multiplier >= 3) {
             const speedIntensity = Math.min(0.7, (multiplier - 3) / 10);
             const pulseSpeed = Math.max(0.3, 1.2 - speedIntensity);
@@ -192,7 +194,6 @@ function updateRocketPosition(multiplier) {
             document.documentElement.style.setProperty('--pulse-speed', '1.2s');
         }
         
-        // Меняем цвет фона при высоких множителях
         if (multiplier > 5) {
             const redIntensity = Math.min(0.3, (multiplier - 5) / 15);
             canvasElement.style.backgroundColor = `rgba(255, 50, 50, ${redIntensity})`;
@@ -200,7 +201,6 @@ function updateRocketPosition(multiplier) {
             canvasElement.style.backgroundColor = '';
         }
     } else {
-        // Убираем пульсацию при множителе 1.00
         rocketElement.classList.remove('pulsating');
         canvasElement.classList.remove('pulsating');
         canvasElement.style.backgroundColor = '';
@@ -247,50 +247,52 @@ function showExplosion() {
     }, 2000);
 }
 
-    function updatePlayersList(players) {
-        const playersList = document.getElementById('playersList');
-        const playersCount = document.getElementById('playersCount');
+    f
+function updatePlayersList(players) {
+    const playersList = document.getElementById('playersList');
+    const playersCount = document.getElementById('playersCount');
+    
+    playersList.innerHTML = '';
+    playersCount.textContent = players.length;
+    
+    // Показываем только последних 5 игроков
+    players.slice(-5).forEach(player => {
+        const playerItem = document.createElement('div');
+        playerItem.className = 'player-item';
         
-        playersList.innerHTML = '';
-        playersCount.textContent = players.length;
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'player-name';
+        nameSpan.textContent = player.name.length > 10 ? player.name.substring(0, 8) + '...' : player.name;
         
-        players.forEach(player => {
-            const playerItem = document.createElement('div');
-            playerItem.className = 'player-item';
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'player-name';
-            nameSpan.textContent = player.name;
-            
-            const betSpan = document.createElement('span');
-            betSpan.className = 'player-bet';
-            
-            if (player.cashedOut) {
-                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
-                betSpan.style.color = '#00b894';
-            } else if (player.isBot) {
-                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-            } else {
-                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-            }
-            
-            playerItem.appendChild(nameSpan);
-            playerItem.appendChild(betSpan);
-            playersList.appendChild(playerItem);
-        });
-    }
+        const betSpan = document.createElement('span');
+        betSpan.className = 'player-bet';
+        
+        if (player.cashedOut) {
+            betSpan.textContent = `+${player.winAmount.toFixed(1)}`;
+            betSpan.style.color = '#00b894';
+        } else if (player.isBot) {
+            betSpan.textContent = `${player.betAmount.toFixed(1)}`;
+        } else {
+            betSpan.textContent = `${player.betAmount.toFixed(1)}`;
+        }
+        
+        playerItem.appendChild(nameSpan);
+        playerItem.appendChild(betSpan);
+        playersList.appendChild(playerItem);
+    });
+}
 
     function updateHistory(history) {
-        const historyContainer = document.getElementById('historyItems');
-        historyContainer.innerHTML = '';
-        
-        history.slice(0, 10).forEach(item => {
-            const historyItem = document.createElement('div');
-            historyItem.className = `history-item ${item.multiplier >= 2 ? 'history-win' : 'history-loss'}`;
-            historyItem.textContent = `${item.multiplier.toFixed(2)}x`;
-            historyContainer.appendChild(historyItem);
-        });
-    }
+    const historyContainer = document.getElementById('historyItems');
+    historyContainer.innerHTML = '';
+    
+    history.slice(0, 16).forEach(item => {
+        const historyItem = document.createElement('div');
+        historyItem.className = `history-item ${item.multiplier >= 2 ? 'history-win' : 'history-loss'}`;
+        historyItem.textContent = `${item.multiplier.toFixed(1)}x`;
+        historyContainer.appendChild(historyItem);
+    });
+}
 
     async function placeBet() {
         const betAmount = parseFloat(document.getElementById('betAmount').value);
