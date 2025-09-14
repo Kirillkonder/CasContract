@@ -14,15 +14,11 @@
         
         <div class="rocket-header">
             <div class="header-content">
-                <div class="header-title">
-                    <span class="rocket-icon">🚀</span>
-                    <h1>Rocket</h1>
-                </div>
+                <h1>🚀 Rocket</h1>
                 <div class="header-info">
-                    <div class="balance-display">
+                    <div class="balance">
                         <span class="balance-label">Баланс:</span>
-                        <span class="balance-amount" id="balance">0</span>
-                        <span class="currency">TON</span>
+                        <span id="balance">0</span> TON
                     </div>
                     <span id="demo-badge" class="demo-badge">TESTNET</span>
                 </div>
@@ -31,7 +27,7 @@
 
         <div class="game-status" id="gameStatus">
             <span id="statusText">Ожидание начала игры...</span>
-            <div id="countdown" class="countdown-timer"></div>
+            <span id="countdown"></span>
         </div>
 
         <div class="rocket-canvas" id="rocketCanvas">
@@ -53,13 +49,13 @@
             </div>
             
             <div class="bet-info">
-                <div class="bet-amount">Ставка: <span id="userBet">0</span> TON</div>
-                <div class="potential-win">Выигрыш: <span id="potentialWin">0</span> TON</div>
+                <div class="bet-amount">Ваша ставка: <span id="userBet">0</span> TON</div>
+                <div class="potential-win">Потенциальный выигрыш: <span id="potentialWin">0</span> TON</div>
             </div>
         </div>
 
         <div class="players-container">
-            <div class="section-header">
+            <div class="players-header">
                 <h3>Игроки онлайн</h3>
                 <span class="players-count" id="playersCount">0</span>
             </div>
@@ -67,7 +63,7 @@
         </div>
 
         <div class="history-container">
-            <div class="section-header">
+            <div class="history-header">
                 <h3>История игр</h3>
             </div>
             <div class="history-items" id="historyItems"></div>
