@@ -404,7 +404,7 @@ let ws = null;
         // Сбрасываем позицию ракеты
         const rocketElement = document.getElementById('rocket');
         const trailElement = document.getElementById('rocketTrail');
-        rocketElement.style.bottom = '80px'; // Выше начальная позиция
+        rocketElement.style.bottom = '100px'; // Выше начальная позиция
         trailElement.style.height = '0px';
     }
 
