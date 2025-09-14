@@ -27,11 +27,11 @@
             position: absolute;
             bottom: 100px; /* Поднял выше начальную позицию */
             left: 50%;
-            transform: translateX(-45%) rotate(-45deg); /* Поворот на -50 градусов */
+            transform: translateX(-47%) rotate(-47deg); /* Поворот на -50 градусов */
             transition: bottom 0.1s linear;
             z-index: 10;
-            width: 150px; /* Увеличил размер ракетки */
-            height: 150px;
+            width: 130px; /* Увеличил размер ракетки */
+            height: 130px;
         }
         
         .rocket img {
