@@ -363,7 +363,10 @@ function updateBettingUI() {
     const cashoutButton = document.getElementById('cashoutButton');
     
     if (rocketGame.status === 'counting') {
-        const timeLeft = rocketGame.endBetTime ? Math.ceil((rocketGame.endBetTime - Date.now()) / 1000) : 0;
+        // ФИКС: Используем timeLeft из gameState или вычисляем правильно
+        const timeLeft = rocketGame.timeLeft || 
+                        (rocketGame.endBetTime ? Math.max(0, Math.ceil((rocketGame.endBetTime - Date.now()) / 1000)) : 0);
+        
         const canBet = timeLeft > 0;
         
         betButton.disabled = userBet > 0 || !canBet;
@@ -374,6 +377,7 @@ function updateBettingUI() {
         } else if (!canBet) {
             betButton.textContent = 'Время вышло';
         } else {
+            // ФИКС: Правильное отображение времени на кнопке
             betButton.textContent = `Поставить (${timeLeft}с)`;
         }
     } else if (rocketGame.status === 'flying') {
