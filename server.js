@@ -390,10 +390,15 @@ function processRocketGameEnd() {
 }
 
 function broadcastRocketUpdate() {
-    // ФИКС: Правильно рассчитываем оставшееся время для клиента
+    // ФИКС: Правильно рассчитываем оставшееся время
+    let timeLeft = 0;
+    if (rocketGame.status === 'counting') {
+        timeLeft = Math.max(0, Math.ceil((rocketGame.endBetTime - Date.now()) / 1000));
+    }
+    
     const gameData = {
         ...rocketGame,
-        timeLeft: Math.max(0, Math.ceil((rocketGame.endBetTime - Date.now()) / 1000))
+        timeLeft: timeLeft
     };
     
     const data = JSON.stringify({

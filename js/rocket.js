@@ -136,24 +136,23 @@ function updateGameState(gameState) {
     updateBettingUI();
 }
 
-function startCountdown(endTime) {
+function startCountdown(timeLeft) {
     clearCountdown();
     
+    let currentTime = timeLeft;
+    
     function updateCountdown() {
-        const now = Date.now();
-        const timeLeft = Math.max(0, Math.ceil((endTime - now) / 1000));
+        document.getElementById('statusText').textContent = `Прием ставок: ${currentTime}с`;
+        document.getElementById('placeBetButton').textContent = currentTime > 0 ? `Поставить (${currentTime}с)` : 'Время вышло';
         
-        // ФИКС: Правильное отображение времени
-        document.getElementById('statusText').textContent = `Прием ставок: ${timeLeft}с`;
-        document.getElementById('placeBetButton').textContent = timeLeft > 0 ? `Поставить (${timeLeft}с)` : 'Время вышло';
-        
-        if (timeLeft <= 0) {
+        if (currentTime <= 0) {
             clearCountdown();
             document.getElementById('statusText').textContent = 'Время ставок закончилось';
             document.getElementById('placeBetButton').textContent = 'Время вышло';
             document.getElementById('placeBetButton').disabled = true;
             updateBettingUI();
         }
+        currentTime--;
     }
     
     updateCountdown();
