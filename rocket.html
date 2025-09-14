@@ -13,10 +13,15 @@
         <button class="back-button" onclick="goBack()">← Назад</button>
         
         <div class="rocket-header">
-            <h1>🚀 Rocket Game</h1>
-            <div class="balance">
-                Баланс: <span id="balance">0</span> TON
-                <span id="demo-badge" class="demo-badge">TESTNET</span>
+            <div class="header-content">
+                <h1>🚀 Rocket</h1>
+                <div class="header-info">
+                    <div class="balance">
+                        <span class="balance-label">Баланс:</span>
+                        <span id="balance">0</span> TON
+                    </div>
+                    <span id="demo-badge" class="demo-badge">TESTNET</span>
+                </div>
             </div>
         </div>
 
@@ -28,32 +33,39 @@
         <div class="rocket-canvas" id="rocketCanvas">
             <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
             <div class="rocket" id="rocket">
-                <img src="Rocket.png" alt="Rocket"> <!-- Ваша PNG ракетка -->
+                <img src="Rocket.png" alt="Rocket">
             </div>
             <div class="trail" id="rocketTrail"></div>
         </div>
 
         <div class="betting-panel">
-            <div class="bet-controls">
+            <div class="bet-input-container">
                 <input type="number" class="bet-input" id="betAmount" min="0.5" max="50" step="0.1" value="1.0" placeholder="Сумма ставки">
-                <button class="bet-button" id="placeBetButton" onclick="placeBet()">Поставить</button>
             </div>
             
-            <button class="cashout-button" id="cashoutButton" onclick="cashout()" disabled>Забрать выигрыш</button>
+            <div class="action-buttons">
+                <button class="bet-button" id="placeBetButton" onclick="placeBet()">Поставить</button>
+                <button class="cashout-button" id="cashoutButton" onclick="cashout()" disabled>Забрать</button>
+            </div>
             
-            <div style="margin-top: 15px; text-align: center;">
-                <div>Ваша ставка: <span id="userBet">0</span> TON</div>
-                <div>Потенциальный выигрыш: <span id="potentialWin">0</span> TON</div>
+            <div class="bet-info">
+                <div class="bet-amount">Ваша ставка: <span id="userBet">0</span> TON</div>
+                <div class="potential-win">Потенциальный выигрыш: <span id="potentialWin">0</span> TON</div>
             </div>
         </div>
 
-        <div class="players-list">
-            <h3>Игроки в этом раунде (<span id="playersCount">0</span>)</h3>
-            <div id="playersList"></div>
+        <div class="players-container">
+            <div class="players-header">
+                <h3>Игроки онлайн</h3>
+                <span class="players-count" id="playersCount">0</span>
+            </div>
+            <div class="players-list" id="playersList"></div>
         </div>
 
         <div class="history-container">
-            <h3>История игр</h3>
+            <div class="history-header">
+                <h3>История игр</h3>
+            </div>
             <div class="history-items" id="historyItems"></div>
         </div>
     </div>
