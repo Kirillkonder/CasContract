@@ -226,6 +226,35 @@ function showExplosion() {
     }, 1000);
 }
 
+function showBlastOff() {
+    const rocketElement = document.getElementById('rocket');
+    const canvasElement = document.getElementById('rocketCanvas');
+    
+    // Убираем пульсацию
+    rocketElement.classList.remove('pulsating');
+    canvasElement.classList.remove('pulsating');
+    
+    // Добавляем класс для анимации улета
+    rocketElement.classList.add('blast-off');
+    
+    // Создаем текст "УЛЕТЕЛ"
+    const blastOffText = document.createElement('div');
+    blastOffText.className = 'blast-off-text';
+    blastOffText.textContent = 'УЛЕТЕЛ!';
+    canvasElement.appendChild(blastOffText);
+    
+    // Убираем текст через 2 секунды
+    setTimeout(() => {
+        if (blastOffText.parentNode) {
+            blastOffText.parentNode.removeChild(blastOffText);
+        }
+        // Возвращаем ракету в исходное состояние
+        rocketElement.classList.remove('blast-off');
+        rocketElement.style.bottom = '110px';
+        rocketElement.style.opacity = '1';
+    }, 2000);
+}
+
     function updatePlayersList(players) {
         const playersList = document.getElementById('playersList');
         const playersCount = document.getElementById('playersCount');
@@ -335,59 +364,62 @@ function showExplosion() {
         }
     }
 
-    async function cashout() {
-        if (userCashedOut) {
-            alert('Вы уже забрали выигрыш!');
-            return;
-        }
-        
-        if (userBet === 0) {
-            alert('Сначала сделайте ставку!');
-            return;
-        }
-        
-        if (rocketGame.status !== 'flying') {
-            alert('Нельзя забрать выигрыш сейчас!');
-            return;
-        }
-        
-        try {
-            const response = await fetch('/api/rocket/cashout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    telegramId: currentUser.id
-                })
-            });
-            
-            if (!response.ok) {
-                const error = await response.json();
-                alert(error.error || 'Ошибка при выводе средств');
-                return;
-            }
-            
-            const result = await response.json();
-            if (result.success) {
-                userCashedOut = true;
-                updateBettingUI();
-                
-                // Обновляем баланс
-                const response = await fetch(`/api/user/balance/${currentUser.id}`);
-                if (response.ok) {
-                    const userData = await response.json();
-                    const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
-                    document.getElementById('balance').textContent = balance.toFixed(2);
-                }
-                
-                alert(`🎉 Вы успешно вывели ${result.winAmount.toFixed(2)} TON на ${result.multiplier.toFixed(2)}x!`);
-            }
-        } catch (error) {
-            console.error('Error cashing out:', error);
-            alert('Ошибка при выводе средств');
-        }
+   async function cashout() {
+    if (userCashedOut) {
+        alert('Вы уже забрали выигрыш!');
+        return;
     }
+    
+    if (userBet === 0) {
+        alert('Сначала сделайте ставку!');
+        return;
+    }
+    
+    if (rocketGame.status !== 'flying') {
+        alert('Нельзя забрать выигрыш сейчас!');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/rocket/cashout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                telegramId: currentUser.id
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            alert(error.error || 'Ошибка при выводе средств');
+            return;
+        }
+        
+        const result = await response.json();
+        if (result.success) {
+            userCashedOut = true;
+            updateBettingUI();
+            
+            // ОБНОВЛЯЕМ БАЛАНС И ПОКАЗЫВАЕМ ЭФФЕКТ УЛЕТА
+            const response = await fetch(`/api/user/balance/${currentUser.id}`);
+            if (response.ok) {
+                const userData = await response.json();
+                const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
+                document.getElementById('balance').textContent = balance.toFixed(2);
+            }
+            
+            // ВОТ ТУТ ДОБАВЛЯЕМ ЭФФЕКТ УЛЕТАЮЩЕЙ РАКЕТЫ
+            showBlastOff();
+            
+            alert(`🎉 Вы успешно вывели ${result.winAmount.toFixed(2)} TON на ${result.multiplier.toFixed(2)}x!`);
+        }
+    } catch (error) {
+        console.error('Error cashing out:', error);
+        alert('Ошибка при выводе средств');
+    }
+}
 
     function updateBettingUI() {
         const betButton = document.getElementById('placeBetButton');
