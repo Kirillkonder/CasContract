@@ -1,28 +1,29 @@
  :root {
             --pulse-speed: 1.2s;
             --pulse-scale: 1.05;
-            --primary-purple: #8A2BE2;
-            --purple-dark: #4B0082;
-            --purple-light: #9370DB;
-            --purple-neon: #BF40BF;
-            --accent-pink: #DA70D6;
-            --gradient-primary: linear-gradient(135deg, var(--purple-dark), var(--primary-purple));
-            --gradient-secondary: linear-gradient(135deg, var(--purple-light), var(--accent-pink));
-            --gradient-background: linear-gradient(180deg, #1A0025 0%, #2D0045 100%);
+            --deep-purple: #2D0B59;
+            --medium-purple: #5E2A9E;
+            --light-purple: #9370DB;
+            --accent-purple: #BF40BF;
+            --bright-purple: #DA70D6;
+            --dark-bg: #1A0025;
+            --medium-bg: #2D0045;
+            --text-light: #F0E6FF;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Roboto', sans-serif;
         }
 
         body {
-            background: var(--gradient-background);
-            color: #f0f0f0;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--medium-bg) 100%);
+            color: var(--text-light);
             min-height: 100vh;
             padding: 20px;
+            background-attachment: fixed;
         }
 
         .container {
@@ -32,23 +33,31 @@
         }
 
         .back-button {
-            background: var(--gradient-secondary);
+            background: linear-gradient(135deg, var(--medium-purple), var(--accent-purple));
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
             cursor: pointer;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(218, 112, 214, 0.3);
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 4px 15px rgba(94, 42, 158, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(94, 42, 158, 0.6);
         }
 
         .balance {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            color: #f0f0f0;
-            margin-top: 10px;
-            text-shadow: 0 0 10px rgba(218, 112, 214, 0.5);
+            color: var(--text-light);
+            margin-top: 15px;
+            text-shadow: 0 0 10px rgba(218, 112, 214, 0.7);
+            font-family: 'Orbitron', sans-serif;
         }
 
         .rocket-container {
@@ -59,46 +68,49 @@
 
         .rocket-header {
             text-align: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(40, 0, 60, 0.95);
+            margin-bottom: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(45, 11, 89, 0.9), rgba(94, 42, 158, 0.9));
             border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(138, 43, 226, 0.3);
-            border: 1px solid rgba(218, 112, 214, 0.2);
+            box-shadow: 0 8px 32px rgba(94, 42, 158, 0.4);
+            border: 1px solid rgba(191, 64, 191, 0.3);
+        }
+
+        .rocket-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            text-shadow: 0 0 15px rgba(191, 64, 191, 0.7);
         }
 
         .rocket-canvas {
             width: 100%;
             height: 360px;
             background: 
-                var(--gradient-background),
-                /* Горизонтальные линии (толстые и редкие) */
+                linear-gradient(135deg, var(--dark-bg) 0%, var(--medium-bg) 100%),
                 linear-gradient(0deg, 
                     transparent 69px, 
-                    rgba(147, 112, 219, 0.25) 69px, 
-                    rgba(147, 112, 219, 0.25) 72px, 
+                    rgba(147, 112, 219, 0.3) 69px, 
+                    rgba(147, 112, 219, 0.3) 72px, 
                     transparent 72px,
                     transparent 144px,
-                    rgba(147, 112, 219, 0.22) 144px,
-                    rgba(147, 112, 219, 0.22) 147px,
+                    rgba(147, 112, 219, 0.25) 144px,
+                    rgba(147, 112, 219, 0.25) 147px,
                     transparent 147px
                 ),
-                /* Вертикальные линии (толстые и редкие) */
                 linear-gradient(90deg, 
                     transparent 69px, 
-                    rgba(147, 112, 219, 0.25) 69px, 
-                    rgba(147, 112, 219, 0.25) 72px, 
+                    rgba(147, 112, 219, 0.3) 69px, 
+                    rgba(147, 112, 219, 0.3) 72px, 
                     transparent 72px,
                     transparent 144px,
-                    rgba(147, 112, 219, 0.22) 144px,
-                    rgba(147, 112, 219, 0.22) 147px,
+                    rgba(147, 112, 219, 0.25) 144px,
+                    rgba(147, 112, 219, 0.25) 147px,
                     transparent 147px
                 ),
-                /* Слабые диагональные линии */
                 linear-gradient(45deg, 
                     transparent 47%, 
-                    rgba(147, 112, 219, 0.1) 47%, 
-                    rgba(147, 112, 219, 0.1) 53%, 
+                    rgba(147, 112, 219, 0.15) 47%, 
+                    rgba(147, 112, 219, 0.15) 53%, 
                     transparent 53%
                 );
             background-size: 
@@ -106,12 +118,12 @@
                 150px 150px,
                 150px 150px,
                 200px 200px;
-            border-radius: 15px;
-            margin-bottom: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(138, 43, 226, 0.4);
-            border: 1px solid rgba(218, 112, 214, 0.3);
+            box-shadow: 0 10px 40px rgba(94, 42, 158, 0.5);
+            border: 1px solid rgba(191, 64, 191, 0.4);
         }
 
         /* Анимация движения сетки */
@@ -125,14 +137,14 @@
             background: 
                 linear-gradient(0deg, 
                     transparent 69px, 
-                    rgba(191, 64, 191, 0.3) 69px, 
-                    rgba(191, 64, 191, 0.3) 72px, 
+                    rgba(191, 64, 191, 0.35) 69px, 
+                    rgba(191, 64, 191, 0.35) 72px, 
                     transparent 72px
                 ),
                 linear-gradient(90deg, 
                     transparent 69px, 
-                    rgba(191, 64, 191, 0.3) 69px, 
-                    rgba(191, 64, 191, 0.3) 72px, 
+                    rgba(191, 64, 191, 0.35) 69px, 
+                    rgba(191, 64, 191, 0.35) 72px, 
                     transparent 72px
                 );
             background-size: 150px 150px, 150px 150px;
@@ -159,14 +171,14 @@
             right: 0;
             bottom: 0;
             background: 
-                radial-gradient(3px 3px at 15% 25%, rgba(218, 112, 214, 0.6) 50%, transparent 50%),
-                radial-gradient(3px 3px at 35% 65%, rgba(218, 112, 214, 0.6) 50%, transparent 50%),
-                radial-gradient(3px 3px at 55% 15%, rgba(218, 112, 214, 0.6) 50%, transparent 50%),
-                radial-gradient(3px 3px at 75% 45%, rgba(218, 112, 214, 0.6) 50%, transparent 50%),
-                radial-gradient(3px 3px at 25% 75%, rgba(218, 112, 214, 0.6) 50%, transparent 50%),
-                radial-gradient(2px 2px at 65% 85%, rgba(218, 112, 214, 0.5) 50%, transparent 50%),
-                radial-gradient(2px 2px at 85% 35%, rgba(218, 112, 214, 0.5) 50%, transparent 50%),
-                radial-gradient(2px 2px at 45% 95%, rgba(218, 112, 214, 0.5) 50%, transparent 50%);
+                radial-gradient(3px 3px at 15% 25%, rgba(218, 112, 214, 0.8) 50%, transparent 50%),
+                radial-gradient(3px 3px at 35% 65%, rgba(218, 112, 214, 0.8) 50%, transparent 50%),
+                radial-gradient(3px 3px at 55% 15%, rgba(218, 112, 214, 0.8) 50%, transparent 50%),
+                radial-gradient(3px 3px at 75% 45%, rgba(218, 112, 214, 0.8) 50%, transparent 50%),
+                radial-gradient(3px 3px at 25% 75%, rgba(218, 112, 214, 0.8) 50%, transparent 50%),
+                radial-gradient(2px 2px at 65% 85%, rgba(218, 112, 214, 0.6) 50%, transparent 50%),
+                radial-gradient(2px 2px at 85% 35%, rgba(218, 112, 214, 0.6) 50%, transparent 50%),
+                radial-gradient(2px 2px at 45% 95%, rgba(218, 112, 214, 0.6) 50%, transparent 50%);
             background-repeat: no-repeat;
             pointer-events: none;
             z-index: 2;
@@ -182,7 +194,7 @@
             width: 130px;
             height: 130px;
             transition: all 0.3s ease;
-            filter: drop-shadow(0 0 15px rgba(191, 64, 191, 0.7));
+            filter: drop-shadow(0 0 20px rgba(191, 64, 191, 0.8));
         }
 
         .rocket img {
@@ -247,13 +259,13 @@
             }
             20% {
                 transform: translateX(-45%) rotate(-45deg) scale(1.5);
-                filter: brightness(2.5) drop-shadow(0 0 30px var(--purple-neon));
+                filter: brightness(2.5) drop-shadow(0 0 30px var(--accent-purple));
             }
             100% {
                 transform: translateX(-45%) rotate(-45deg) scale(0.3);
                 bottom: 600px;
                 opacity: 0;
-                filter: brightness(4) drop-shadow(0 0 50px var(--purple-neon));
+                filter: brightness(4) drop-shadow(0 0 50px var(--accent-purple));
             }
         }
 
@@ -270,7 +282,7 @@
             transform: translate(-50%, -50%);
             font-size: 52px;
             font-weight: bold;
-            color: var(--purple-neon);
+            color: var(--accent-purple);
             text-shadow: 
                 0 0 25px rgba(191, 64, 191, 0.9), 
                 0 0 50px rgba(191, 64, 191, 0.7),
@@ -278,6 +290,7 @@
             z-index: 20;
             opacity: 0;
             animation: textAppear 1.5s ease-in-out forwards;
+            font-family: 'Orbitron', sans-serif;
         }
 
         @keyframes textAppear {
@@ -310,51 +323,60 @@
             transform: translateX(-50%);
             font-size: 32px;
             font-weight: bold;
-            color: var(--accent-pink);
-            text-shadow: 0 0 10px rgba(218, 112, 214, 0.7);
+            color: var(--bright-purple);
+            text-shadow: 0 0 10px rgba(218, 112, 214, 0.8);
             z-index: 10;
+            font-family: 'Orbitron', sans-serif;
         }
 
         .betting-panel {
-            background: rgba(40, 0, 60, 0.95);
+            background: linear-gradient(135deg, rgba(45, 11, 89, 0.9), rgba(94, 42, 158, 0.9));
             border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(218, 112, 214, 0.2);
-            box-shadow: 0 8px 32px rgba(138, 43, 226, 0.2);
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(191, 64, 191, 0.3);
+            box-shadow: 0 8px 32px rgba(94, 42, 158, 0.3);
         }
 
         .bet-controls {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .bet-input {
             flex: 1;
-            padding: 12px;
+            padding: 15px;
             background: rgba(60, 0, 90, 0.8);
-            border: 2px solid rgba(218, 112, 214, 0.3);
+            border: 2px solid rgba(218, 112, 214, 0.4);
             border-radius: 12px;
             color: white;
             font-size: 16px;
+            font-family: 'Orbitron', sans-serif;
         }
 
         .bet-input:focus {
             outline: none;
-            border-color: var(--accent-pink);
-            box-shadow: 0 0 10px rgba(218, 112, 214, 0.5);
+            border-color: var(--bright-purple);
+            box-shadow: 0 0 15px rgba(218, 112, 214, 0.6);
         }
 
         .bet-button {
-            padding: 12px 20px;
-            background: var(--gradient-secondary);
+            padding: 15px 25px;
+            background: linear-gradient(135deg, var(--medium-purple), var(--accent-purple));
             color: white;
             border: none;
             border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(218, 112, 214, 0.3);
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 4px 15px rgba(94, 42, 158, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .bet-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(94, 42, 158, 0.6);
         }
 
         .bet-button:disabled {
@@ -364,16 +386,23 @@
         }
 
         .cashout-button {
-            padding: 15px 30px;
-            background: var(--gradient-primary);
+            padding: 18px 30px;
+            background: linear-gradient(135deg, var(--medium-purple), var(--accent-purple));
             color: white;
             border: none;
             border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 20px;
             width: 100%;
-            box-shadow: 0 4px 20px rgba(138, 43, 226, 0.4);
+            box-shadow: 0 4px 20px rgba(94, 42, 158, 0.5);
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .cashout-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(94, 42, 158, 0.7);
         }
 
         .cashout-button:disabled {
@@ -383,20 +412,20 @@
         }
 
         .players-list {
-            background: rgba(40, 0, 60, 0.95);
+            background: linear-gradient(135deg, rgba(45, 11, 89, 0.9), rgba(94, 42, 158, 0.9));
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px;
             max-height: 200px;
             overflow-y: auto;
-            border: 1px solid rgba(218, 112, 214, 0.2);
-            box-shadow: 0 8px 32px rgba(138, 43, 226, 0.2);
+            border: 1px solid rgba(191, 64, 191, 0.3);
+            box-shadow: 0 8px 32px rgba(94, 42, 158, 0.3);
         }
 
         .player-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(218, 112, 214, 0.2);
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(218, 112, 214, 0.3);
         }
 
         .player-item:last-child {
@@ -404,73 +433,86 @@
         }
 
         .player-name {
-            color: #f0f0f0;
+            color: var(--text-light);
+            font-weight: 500;
         }
 
         .player-bet {
-            color: var(--accent-pink);
+            color: var(--bright-purple);
             font-weight: bold;
-            text-shadow: 0 0 5px rgba(218, 112, 214, 0.5);
+            text-shadow: 0 0 5px rgba(218, 112, 214, 0.7);
         }
 
         .game-status {
             text-align: center;
-            padding: 10px;
-            background: rgba(40, 0, 60, 0.95);
-            border-radius: 10px;
-            margin-bottom: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(45, 11, 89, 0.9), rgba(94, 42, 158, 0.9));
+            border-radius: 12px;
+            margin-bottom: 20px;
             font-weight: bold;
-            border: 1px solid rgba(218, 112, 214, 0.2);
+            border: 1px solid rgba(191, 64, 191, 0.3);
+            font-family: 'Orbitron', sans-serif;
         }
 
         .status-waiting {
             color: #E6E6FA;
-            text-shadow: 0 0 5px rgba(230, 230, 250, 0.7);
+            text-shadow: 0 0 5px rgba(230, 230, 250, 0.8);
         }
 
         .status-counting {
-            color: var(--purple-light);
-            text-shadow: 0 0 5px rgba(147, 112, 219, 0.7);
+            color: var(--light-purple);
+            text-shadow: 0 0 5px rgba(147, 112, 219, 0.8);
         }
 
         .status-flying {
-            color: var(--accent-pink);
-            text-shadow: 0 0 5px rgba(218, 112, 214, 0.7);
+            color: var(--bright-purple);
+            text-shadow: 0 0 5px rgba(218, 112, 214, 0.8);
         }
 
         .status-crashed {
             color: #FF00FF;
-            text-shadow: 0 0 5px rgba(255, 0, 255, 0.7);
+            text-shadow: 0 0 5px rgba(255, 0, 255, 0.8);
         }
 
         .history-container {
-            margin-top: 20px;
+            margin-top: 25px;
+        }
+
+        .history-container h3 {
+            margin-bottom: 15px;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-light);
+            text-shadow: 0 0 10px rgba(218, 112, 214, 0.6);
         }
 
         .history-items {
             display: flex;
-            gap: 5px;
+            gap: 10px;
             flex-wrap: wrap;
             justify-content: center;
         }
 
         .history-item {
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 12px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 14px;
             font-weight: bold;
+            font-family: 'Orbitron', sans-serif;
         }
 
         .history-win {
-            background: rgba(218, 112, 214, 0.2);
-            color: var(--accent-pink);
-            border: 1px solid rgba(218, 112, 214, 0.3);
+            background: rgba(218, 112, 214, 0.25);
+            color: var(--bright-purple);
+            border: 1px solid rgba(218, 112, 214, 0.4);
+            box-shadow: 0 0 10px rgba(218, 112, 214, 0.3);
         }
 
         .history-loss {
-            background: rgba(255, 0, 255, 0.2);
+            background: rgba(255, 0, 255, 0.25);
             color: #FF00FF;
-            border: 1px solid rgba(255, 0, 255, 0.3);
+            border: 1px solid rgba(255, 0, 255, 0.4);
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
         }
 
         .explosion {
@@ -504,12 +546,13 @@
         }
 
         .demo-badge {
-            background: var(--purple-light);
-            color: #1A0025;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
+            background: var(--light-purple);
+            color: var(--dark-bg);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: bold;
-            margin-left: 8px;
-            box-shadow: 0 0 10px rgba(147, 112, 219, 0.5);
+            margin-left: 10px;
+            box-shadow: 0 0 15px rgba(147, 112, 219, 0.6);
+            font-family: 'Orbitron', sans-serif;
         }
