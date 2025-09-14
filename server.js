@@ -1278,4 +1278,4 @@ async function startServer() {
     console.log(`TON Casino Server started on port ${PORT}`);
 }
 
-startServer();
+startServer();  
