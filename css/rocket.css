@@ -75,13 +75,13 @@
     background: 
         linear-gradient(0deg, 
             transparent 69px, 
-            rgba(64, 200, 255, 极速线条, 0.25) 69px, 
+            rgba(64, 200, 255, 0.25) 69px, 
             rgba(64, 200, 255, 0.25) 72px, 
             transparent 72px
         ),
         linear-gradient(90deg, 
             transparent 69px, 
-            rgba(64, 200, 255, 0.25) 极速线条, 69px, 
+            rgba(64, 200, 255, 0.25) 69px, 
             rgba(64, 200, 255, 0.25) 72px, 
             transparent 72px
         );
@@ -112,10 +112,10 @@
         radial-gradient(3px 3px at 15% 25%, rgba(255,255,255,0.4) 50%, transparent 50%),
         radial-gradient(3px 3px at 35% 65%, rgba(255,255,255,0.4) 50%, transparent 50%),
         radial-gradient(3px 3px at 55% 15%, rgba(255,255,255,0.4) 50%, transparent 50%),
-        radial-gradient(3px 极速星星, 3px at 75% 45%, rgba(255,255,255,0.4) 50%, transparent 50%),
+        radial-gradient(3px 3px at 75% 45%, rgba(255,255,255,0.4) 50%, transparent 50%),
         radial-gradient(3px 3px at 25% 75%, rgba(255,255,255,0.4) 50%, transparent 50%),
-        radial-gradient(2px 2px at 极速星空, 65% 85%, rgba(255,255,255,0.3) 50%, transparent 50%),
-        radial-gradient(2px 2px at 85% 35%, rgba(255,255,255,0.3) 50%, transparent 极速效果, 50%),
+        radial-gradient(2px 2px at 65% 85%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 85% 35%, rgba(255,255,255,0.3) 50%, transparent 50%),
         radial-gradient(2px 2px at 45% 95%, rgba(255,255,255,0.3) 50%, transparent 50%);
     background-repeat: no-repeat;
     pointer-events: none;
@@ -284,7 +284,7 @@
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     color: white;
-   极速输入框: 16px;
+    font-size: 16px;
 }
 
 .bet-button {
@@ -351,7 +351,7 @@
     text-align: center;
     padding: 10px;
     background: rgba(25, 30, 42, 0.95);
-    border-radius: 极速状态栏, 10px;
+    border-radius: 10px;
     margin-bottom: 15px;
     font-weight: bold;
 }
@@ -384,7 +384,7 @@
 }
 
 .history-item {
-    padding: 5px 极速历史, 10px;
+    padding: 5px 10px;
     border-radius: 8px;
     font-size: 12px;
     font-weight: bold;
