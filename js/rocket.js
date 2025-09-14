@@ -228,24 +228,15 @@ function showExplosion() {
     // Запускаем эффект улетающей ракеты
     rocketElement.classList.add('blast-off');
     
-    // Создаем текст "УЛЕТЕЛ"
-    const blastOffText = document.createElement('div');
-    blastOffText.className = 'blast-off-text';
-    blastOffText.textContent = 'УЛЕТЕЛ!';
-    canvas.appendChild(blastOffText);
-    
-    // УДАЛИТЬ создание взрыва
-    // const explosion = document.createElement('div');
-    // explosion.className = 'explosion';
-    // canvas.appendChild(explosion);
+    // ВОССТАНАВЛИВАЕМ ВЗРЫВ
+    const explosion = document.createElement('div');
+    explosion.className = 'explosion';
+    canvas.appendChild(explosion);
     
     setTimeout(() => {
-        // Убираем взрыв и текст
-        // if (explosion.parentNode) {
-        //     canvas.removeChild(explosion);
-        // }
-        if (blastOffText.parentNode) {
-            canvas.removeChild(blastOffText);
+        // Убираем взрыв
+        if (explosion.parentNode) {
+            canvas.removeChild(explosion);
         }
         // Возвращаем ракету в исходное состояние
         rocketElement.classList.remove('blast-off');
