@@ -23,7 +23,6 @@
     height: 360px;
     background: 
         linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%),
-        /* Горизонтальные линии (толстые и редкие) */
         linear-gradient(0deg, 
             transparent 69px, 
             rgba(64, 156, 255, 0.2) 69px, 
@@ -34,7 +33,6 @@
             rgba(64, 156, 255, 0.18) 147px,
             transparent 147px
         ),
-        /* Вертикальные линии (толстые и редкие) */
         linear-gradient(90deg, 
             transparent 69px, 
             rgba(64, 156, 255, 0.2) 69px, 
@@ -45,7 +43,6 @@
             rgba(64, 156, 255, 0.18) 147px,
             transparent 147px
         ),
-        /* Слабые диагональные линии */
         linear-gradient(45deg, 
             transparent 47%, 
             rgba(64, 156, 255, 0.06) 47%, 
@@ -319,10 +316,72 @@
     cursor: not-allowed;
 }
 
-.players-list {
+.players-section {
     background: rgba(25, 30, 42, 0.95);
     border-radius: 15px;
     padding: 20px;
+    margin-bottom: 20px;
+}
+
+.players-avatars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+
+.player-avatar {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.avatar-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #5a6fd8;
+    object-fit: cover;
+    margin-bottom: 5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.avatar-emoji {
+    position: absolute;
+    top: -10px;
+    right: -5px;
+    font-size: 18px;
+    animation: float 3s ease-in-out infinite;
+}
+
+.player-rating {
+    font-size: 14px;
+    color: #f0f0f0;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.rating-diamond {
+    color: #00b894;
+}
+
+.rating-high {
+    color: #00b894;
+}
+
+.rating-medium {
+    color: #fdcb6e;
+}
+
+.rating-low {
+    color: #ff6b6b;
+}
+
+.players-list {
     max-height: 200px;
     overflow-y: auto;
 }
@@ -372,8 +431,18 @@
     color: #ff6b6b;
 }
 
-.history-container {
-    margin-top: 20px;
+.history-container-top {
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.history-container-top h3 {
+    margin-top: 0;
+    color: #f0f0f0;
+    margin-bottom: 10px;
 }
 
 .history-items {
@@ -406,61 +475,79 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle, 
-        rgba(255, 50, 50, 0.9) 0%, 
-        rgba(255, 100, 100, 0.7) 30%,
-        rgba(255, 150, 150, 0.4) 60%,
-        rgba(255, 200, 200, 0) 90%);
-    animation: explode 1.5s ease-out;
+    pointer-events: none;
     z-index: 15;
 }
 
+.explosion-particle {
+    position: absolute;
+    background: radial-gradient(circle, #ff0000, #ff5500, transparent 70%);
+    border-radius: 50%;
+    opacity: 0;
+}
 
-@keyframes explode {
-    0% { 
-        transform: scale(0); 
-        opacity: 1; 
+@keyframes explosionAnimation {
+    0% {
+        transform: scale(0);
+        opacity: 1;
     }
-    50% { 
-        transform: scale(1.5); 
-        opacity: 0.8;
-    }
-    100% { 
-        transform: scale(2.5); 
-        opacity: 0; 
+    100% {
+        transform: scale(1);
+        opacity: 0;
     }
 }
 
-.back-button {
-    background: linear-gradient(135deg, #667eea, #5a6fd8);
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-bottom: 15px;
-    font-weight: bold;
+/* Анимация парящих эмодзи */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
 }
 
-.demo-badge {
-    background: #fdcb6e;
-    color: #2d3436;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-left: 8px;
+/* Анимация появления игроков */
+@keyframes playerAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
-.container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
+.player-avatar {
+    animation: playerAppear 0.5s ease-out forwards;
 }
 
-.balance {
-    font-size: 18px;
-    font-weight: bold;
-    color: #f0f0f0;
-    margin-top: 10px;
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .rocket-canvas {
+        height: 300px;
+    }
+    
+    .rocket {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .multiplier-display {
+        font-size: 28px;
+    }
+    
+    .bet-controls {
+        flex-direction: column;
+    }
+    
+    .players-avatars {
+        gap: 10px;
+    }
+    
+    .avatar-image {
+        width: 50px;
+        height: 50px;
+    }
 }
