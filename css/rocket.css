@@ -21,16 +21,16 @@
         repeating-linear-gradient(
             90deg,
             transparent,
-            transparent 20px,
-            rgba(74, 144, 226, 0.15) 20px,
-            rgba(74, 144, 226, 0.15) 22px
+            transparent 19px,
+            rgba(74, 144, 226, 0.2) 19px,
+            rgba(74, 144, 226, 0.2) 20px
         ),
         repeating-linear-gradient(
             0deg,
             transparent,
-            transparent 20px,
-            rgba(74, 144, 226, 0.15) 20px,
-            rgba(74, 144, 226, 0.15) 22px
+            transparent 19px,
+            rgba(74, 144, 226, 0.2) 19px,
+            rgba(74, 144, 226, 0.2) 20px
         );
     border-radius: 15px;
     margin-bottom: 20px;
@@ -42,7 +42,7 @@
     position: absolute;
     bottom: 100px;
     left: 50%;
-    transform: translateX(-47%) rotate(-47deg);
+    transform: translateX(-46%) rotate(-46deg);
     transition: bottom 0.1s linear;
     z-index: 10;
     width: 130px;
@@ -219,7 +219,15 @@
     100% { transform: scale(2); opacity: 0; }
 }
 
-
+.trail {
+    position: absolute;
+    bottom: 140px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    background: linear-gradient(to top, rgba(255,165,0,0.8) 0%, rgba(255,165,0,0) 100%);
+    z-index: 1;
+}
 
 .back-button {
     background: linear-gradient(135deg, #667eea, #5a6fd8);
