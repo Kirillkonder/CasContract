@@ -147,13 +147,11 @@ let ws = null;
 function startCountdown(endTime) {
     clearCountdown();
     
+    // ИГНОРИРУЕМ время с сервера, всегда 10 секунд
+    let timeLeft = 10;
+    
     function updateCountdown() {
-        const now = Date.now();
-        const timeLeft = Math.max(0, Math.ceil((endTime - now) / 1000));
-        
-        // Обновляем счетчик в статусе игры (элемент #countdown)
         document.getElementById('countdown').textContent = `${timeLeft}с`;
-        // Обновляем кнопку ставки
         document.getElementById('placeBetButton').textContent = `Поставить (${timeLeft}с)`;
         
         if (timeLeft <= 0) {
@@ -163,6 +161,8 @@ function startCountdown(endTime) {
             document.getElementById('placeBetButton').disabled = true;
             updateBettingUI();
         }
+        
+        timeLeft--;
     }
     
     updateCountdown();
@@ -431,6 +431,13 @@ function updateBettingUI() {
         betButton.disabled = userBet > 0 || !canBet;
         cashoutButton.disabled = true;
         
+        if (rocketGame.status === 'counting') {
+        // В режиме ставок - всегда показываем 10 секунд
+        betButton.disabled = userBet > 0;
+        cashoutButton.disabled = true;
+
+            }
+
         if (userBet > 0) {
             betButton.textContent = 'Ставка сделана';
         } else if (!canBet) {
