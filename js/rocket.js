@@ -73,19 +73,6 @@ let ws = null;
         };
     }
 
-    function updateMiniHistory(history) {
-    const miniHistoryContainer = document.getElementById('miniHistoryItems');
-    miniHistoryContainer.innerHTML = '';
-    
-    // Берем последние 6 результатов
-    history.slice(0, 6).forEach(item => {
-        const historyItem = document.createElement('div');
-        historyItem.className = `mini-history-item ${item.multiplier >= 2 ? 'mini-history-win' : 'mini-history-loss'}`;
-        historyItem.textContent = `${item.multiplier.toFixed(2)}x`;
-        miniHistoryContainer.appendChild(historyItem);
-    });
-}
-
     function updateGameState(gameState) {
         // Обновляем глобальную переменную игры
         rocketGame = gameState;
@@ -97,8 +84,6 @@ let ws = null;
         
         document.getElementById('gameStatus').className = `game-status ${statusClass}`;
         
-       
-
         switch(gameState.status) {
             case 'waiting':
                 statusElement.textContent = 'Ожидание начала игры...';
@@ -128,7 +113,6 @@ let ws = null;
                 break;
         }
         
-        updateMiniHistory(gameState.history);
         // Обновляем множитель
         document.getElementById('multiplierDisplay').textContent = gameState.multiplier.toFixed(2) + 'x';
         
@@ -296,18 +280,17 @@ function showExplosion() {
         });
     }
 
-    
-function updateHistory(history) {
-    const historyContainer = document.getElementById('historyItems');
-    historyContainer.innerHTML = '';
-    
-    history.slice(0, 15).forEach(item => {
-        const historyItem = document.createElement('div');
-        historyItem.className = `history-item ${item.multiplier >= 2 ? 'history-win' : 'history-loss'}`;
-        historyItem.textContent = `${item.multiplier.toFixed(2)}x`;
-        historyContainer.appendChild(historyItem);
-    });
-}
+    function updateHistory(history) {
+        const historyContainer = document.getElementById('historyItems');
+        historyContainer.innerHTML = '';
+        
+        history.slice(0, 10).forEach(item => {
+            const historyItem = document.createElement('div');
+            historyItem.className = `history-item ${item.multiplier >= 2 ? 'history-win' : 'history-loss'}`;
+            historyItem.textContent = `${item.multiplier.toFixed(2)}x`;
+            historyContainer.appendChild(historyItem);
+        });
+    }
 
     async function placeBet() {
         const betAmount = parseFloat(document.getElementById('betAmount').value);
