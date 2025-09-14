@@ -151,9 +151,9 @@ function startCountdown(endTime) {
         const now = Date.now();
         const timeLeft = Math.max(0, Math.ceil((endTime - now) / 1000));
         
-        // Обновляем текст в статусе игры - ФИКС: показываем корректное время
+        // ФИКС: Правильное отображение времени
         document.getElementById('statusText').textContent = `Прием ставок: ${timeLeft}с`;
-        document.getElementById('placeBetButton').textContent = `Поставить (${timeLeft}с)`;
+        document.getElementById('placeBetButton').textContent = timeLeft > 0 ? `Поставить (${timeLeft}с)` : 'Время вышло';
         
         if (timeLeft <= 0) {
             clearCountdown();
