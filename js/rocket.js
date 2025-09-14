@@ -144,27 +144,22 @@ let ws = null;
         updateBettingUI();
     }
 
-   function startCountdown(endTime) {
-    clearCountdown();
-    
-    function updateCountdown() {
-        const totalTime = 10; // 10 секунд на ставки
-        const elapsed = Math.max(0, Math.ceil((Date.now() - (endTime - totalTime * 1000)) / 1000));
-        const timeLeft = Math.max(0, totalTime - elapsed);
+    function startCountdown(endTime) {
+        clearCountdown();
         
-        document.getElementById('placeBetButton').textContent = `Поставить (${timeLeft}с)`;
-        
-        if (timeLeft <= 0) {
-            clearCountdown();
-            document.getElementById('placeBetButton').textContent = 'Время вышло';
-            document.getElementById('placeBetButton').disabled = true;
-            updateBettingUI();
+        function updateCountdown() {
+            const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+            document.getElementById('countdown').textContent = `${timeLeft}с`;
+            
+            if (timeLeft <= 0) {
+                clearCountdown();
+                updateBettingUI();
+            }
         }
+        
+        updateCountdown();
+        countdownInterval = setInterval(updateCountdown, 1000);
     }
-    
-    updateCountdown();
-    countdownInterval = setInterval(updateCountdown, 1000);
-}
 
     function clearCountdown() {
         if (countdownInterval) {
