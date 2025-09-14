@@ -12,16 +12,22 @@
     <div class="container">
         <div class="header-container">
             <button class="back-button" onclick="goBack()">←</button>
-            <div class="wallet-badge">
-                <span class="wallet-icon">💰</span>
-                <span id="balance">0</span> TON
-                <span id="demo-badge" class="demo-badge">TEST</span>
+            <div class="balance-display">
+                <span id="balance">1000.00</span> TON
+                <span id="demo-badge" class="demo-badge">ДЕМО РЕЖИМ</span>
             </div>
         </div>
 
-        <div class="game-status" id="gameStatus">
-            <span id="statusText">Ожидание начала игры...</span>
-            <span id="countdown"></span>
+        <div class="game-info">
+            <div class="history-container">
+                <div class="history-label">История:</div>
+                <div class="history-items" id="historyItems"></div>
+            </div>
+            
+            <div class="players-container">
+                <div class="players-label">Игроки: <span id="playersCount">0</span></div>
+                <div class="players-list" id="playersList"></div>
+            </div>
         </div>
 
         <div class="rocket-canvas" id="rocketCanvas">
@@ -32,23 +38,20 @@
             <div class="trail" id="rocketTrail"></div>
         </div>
 
+        <div class="game-status" id="gameStatus">
+            <span id="statusText">Ожидание начала игры...</span>
+        </div>
+
         <div class="betting-panel">
             <div class="bet-controls">
                 <input type="number" class="bet-input" id="betAmount" min="0.5" max="50" step="0.1" value="1.0" placeholder="Сумма ставки">
-                <button class="bet-button" id="placeBetButton" onclick="placeBet()">Поставить</button>
+                <button class="bet-button" id="placeBetButton" onclick="placeBet()">
+                    <span class="button-text">Поставить</span>
+                    <span class="countdown" id="buttonCountdown"></span>
+                </button>
             </div>
             
             <button class="cashout-button" id="cashoutButton" onclick="cashout()" disabled>Забрать</button>
-        </div>
-
-        <div class="history-container">
-            <h3>История</h3>
-            <div class="history-items" id="historyItems"></div>
-        </div>
-
-        <div class="players-list">
-            <h3>Игроки (<span id="playersCount">0</span>)</h3>
-            <div id="playersList"></div>
         </div>
     </div>
 
