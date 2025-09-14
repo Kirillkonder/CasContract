@@ -219,15 +219,7 @@
     100% { transform: scale(2); opacity: 0; }
 }
 
-.trail {
-    position: absolute;
-    bottom: 140px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 6px;
-    background: linear-gradient(to top, rgba(255,165,0,0.8) 0%, rgba(255,165,0,0) 100%);
-    z-index: 1;
-}
+
 
 .back-button {
     background: linear-gradient(135deg, #667eea, #5a6fd8);
