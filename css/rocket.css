@@ -173,7 +173,6 @@
     }
 }
 
-
 /* Звезды на фоне */
 .rocket-canvas::after {
     content: '';
@@ -196,11 +195,12 @@
     z-index: 2;
 }
 
+/* Возвращаем оригинальные стили ракетки */
 .rocket {
     position: absolute;
-    bottom: 100px; /* Начальная позиция */
+    bottom: 110px; /* Фиксированная позиция от низа */
     left: 50%;
-    transform: translateX(-50%) rotate(-46deg); /* Центрирование по горизонтали */
+    transform: translateX(-45%) rotate(-45deg);
     transition: bottom 0.1s linear;
     z-index: 10;
     width: 130px;
@@ -211,7 +211,6 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    transform: rotate(45deg); /* Дополнительный поворот для правильной ориентации */
 }
 
 .multiplier-display {
@@ -226,7 +225,7 @@
     z-index: 10;
 }
 
-/* Остальные стили остаются без изменений */
+/* Остальные стили без изменений */
 .betting-panel {
     background: rgba(25, 30, 42, 0.95);
     border-radius: 15px;

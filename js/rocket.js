@@ -168,7 +168,7 @@ let ws = null;
         }
     }
 
-    function updateRocketPosition(multiplier) {
+   function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const trailElement = document.getElementById('rocketTrail');
     
@@ -178,10 +178,6 @@ let ws = null;
     
     // Обновляем след ракеты
     trailElement.style.height = `${newPosition - 120}px`;
-    
-    // Гарантируем, что ракета всегда по центру
-    rocketElement.style.left = '50%';
-    rocketElement.style.transform = 'translateX(-50%) rotate(-46deg)';
 }
     function showExplosion() {
         const canvas = document.getElementById('rocketCanvas');
