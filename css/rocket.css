@@ -99,23 +99,23 @@
         /* Горизонтальные линии (редкие) */
         linear-gradient(0deg, 
             transparent 74px, 
-            rgba(64, 156, 255, 0.15) 74px, 
-            rgba(64, 156, 255, 0.15) 75px, 
+            rgb(52, 150, 255) 74px, 
+            rgba(52, 150, 255) 75px, 
             transparent 75px,
             transparent 149px,
-            rgba(64, 156, 255, 0.12) 149px,
-            rgba(64, 156, 255, 0.12) 150px,
+            rgba(52, 150, 255) 149px,
+            rgba(52, 150, 255) 150px,
             transparent 150px
         ),
         /* Вертикальные линии (редкие) */
         linear-gradient(90deg, 
             transparent 74px, 
-            rgba(64, 156, 255, 0.15) 74px, 
-            rgba(64, 156, 255, 0.15) 75px, 
+            rgba(52, 150, 255) 74px, 
+            rgba(52, 150, 255) 75px, 
             transparent 75px,
             transparent 149px,
-            rgba(64, 156, 255, 0.12) 149px,
-            rgba(64, 156, 255, 0.12) 150px,
+            rgba(52, 150, 255) 149px,
+            rgba(52, 150, 255) 150px,
             transparent 150px
         ),
         /* Слабые диагональные линии */
@@ -199,7 +199,7 @@
     position: absolute;
     bottom: 100px;
     left: 50%;
-    transform: translateX(-44%) rotate(-44deg);
+    transform: translateX(-45%) rotate(-45deg);
     transition: bottom 0.1s linear;
     z-index: 10;
     width: 130px;
