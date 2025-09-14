@@ -168,13 +168,38 @@ let ws = null;
         }
     }
 
- function updateRocketPosition(multiplier) {
-    // Ракетка не двигается, только обновляем множитель
+function updateRocketPosition(multiplier) {
+    const rocketElement = document.getElementById('rocket');
     const trailElement = document.getElementById('rocketTrail');
+    const canvasElement = document.getElementById('rocketCanvas');
     
-    // Можно оставить только след если нужно, но ракетка на месте
+    // Обновляем след
     const trailHeight = Math.max(0, multiplier * 10);
     trailElement.style.height = `${trailHeight}px`;
+    
+    // Включаем пульсацию после 3x
+    if (multiplier >= 3) {
+        const intensity = Math.min(1, (multiplier - 3) / 10); // Интенсивность от 0 до 1
+        const pulseSpeed = 0.8 - (intensity * 0.5); // Скорость от 0.8s до 0.3s
+        
+        // Добавляем классы пульсации
+        rocketElement.classList.add('pulsating');
+        canvasElement.classList.add('pulsating');
+        
+        // Динамически меняем скорость анимации в зависимости от множителя
+        document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
+        
+        // Меняем цвет фона при высоких множителях
+        if (multiplier > 8) {
+            const redIntensity = Math.min(0.3, (multiplier - 8) / 10);
+            canvasElement.style.backgroundColor = `rgba(255, 50, 50, ${redIntensity})`;
+        }
+    } else {
+        // Убираем пульсацию
+        rocketElement.classList.remove('pulsating');
+        canvasElement.classList.remove('pulsating');
+        canvasElement.style.backgroundColor = '';
+    }
 }
 
     function showExplosion() {
