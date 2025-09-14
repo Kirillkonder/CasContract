@@ -77,7 +77,7 @@ function updateGameState(gameState) {
     rocketGame = gameState;
     
     const statusElement = document.getElementById('statusText');
-    const countdownElement = document.getElementById('countdown');
+    const multiplierInfoElement = document.getElementById('multiplierInfo');
     const statusClass = `status-${gameState.status}`;
     
     document.getElementById('gameStatus').className = `game-status ${statusClass}`;
@@ -85,13 +85,14 @@ function updateGameState(gameState) {
     switch(gameState.status) {
         case 'waiting':
             statusElement.textContent = 'Ожидание начала игры...';
-            countdownElement.textContent = '';
+            multiplierInfoElement.textContent = '';
             clearCountdown();
             resetBettingUI();
             break;
             
        case 'counting':
-            statusElement.textContent = 'Прием ставок: ';
+            statusElement.textContent = 'Прием ставок';
+            multiplierInfoElement.textContent = `Множитель: ${gameState.multiplier.toFixed(2)}x`;
             // ФИКС: Передаем timeLeft, а не endBetTime
             startCountdown(gameState.timeLeft || Math.max(0, Math.ceil((gameState.endBetTime - Date.now()) / 1000)));
             updateBettingUI();
@@ -99,14 +100,14 @@ function updateGameState(gameState) {
             
         case 'flying':
             statusElement.textContent = 'Ракета взлетает!';
-            countdownElement.textContent = '';
+            multiplierInfoElement.textContent = `Текущий множитель: ${gameState.multiplier.toFixed(2)}x`;
             clearCountdown();
             updateRocketPosition(gameState.multiplier);
             break;
             
         case 'crashed':
             statusElement.textContent = `Ракета взорвалась на ${gameState.crashPoint.toFixed(2)}x!`;
-            countdownElement.textContent = '';
+            multiplierInfoElement.textContent = `Финальный множитель: ${gameState.crashPoint.toFixed(2)}x`;
             clearCountdown();
             showExplosion();
             break;
@@ -140,7 +141,6 @@ function updateGameState(gameState) {
 function startCountdown(timeLeft) {
     clearCountdown();
     
-    document.getElementById('statusText').textContent = `Прием ставок: ${timeLeft}с`;
     document.getElementById('placeBetButton').textContent = timeLeft > 0 ? `Поставить (${timeLeft}с)` : 'Время вышло';
     
     if (timeLeft <= 0) {
