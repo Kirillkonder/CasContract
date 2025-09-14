@@ -91,6 +91,53 @@
 }
 
 /* Анимация движения сетки для эффекта полета */
+.rocket-canvas {
+    width: 100%;
+    height: 360px;
+    background: 
+        linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%),
+        /* Основные горизонтальные линии (редкие) */
+        linear-gradient(0deg, 
+            transparent 49px, 
+            rgba(64, 156, 255, 0.15) 49px, 
+            rgba(64, 156, 255, 0.15) 50px, 
+            transparent 50px,
+            transparent 99px,
+            rgba(64, 156, 255, 0.1) 99px,
+            rgba(64, 156, 255, 0.1) 100px,
+            transparent 100px
+        ),
+        /* Основные вертикальные линии (редкие) */
+        linear-gradient(90deg, 
+            transparent 49px, 
+            rgba(64, 156, 255, 0.15) 49px, 
+            rgba(64, 156, 255, 0.15) 50px, 
+            transparent 50px,
+            transparent 99px,
+            rgba(64, 156, 255, 0.1) 99px,
+            rgba(64, 156, 255, 0.1) 100px,
+            transparent 100px
+        ),
+        /* Диагональные линии (тоже реже) */
+        linear-gradient(45deg, 
+            transparent 47%, 
+            rgba(64, 156, 255, 0.05) 47%, 
+            rgba(64, 156, 255, 0.05) 53%, 
+            transparent 53%
+        );
+    background-size: 
+        100% 100%,
+        100px 100px,
+        100px 100px,
+        200px 200px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Анимация движения сетки для эффекта полета */
 .rocket-canvas::before {
     content: '';
     position: absolute;
@@ -99,30 +146,24 @@
     right: 0;
     bottom: 0;
     background: 
-        linear-gradient(90deg, 
-            transparent 24px, 
-            rgba(64, 156, 255, 0.2) 24px, 
-            rgba(64, 156, 255, 0.2) 25px, 
-            transparent 25px
-        ),
         linear-gradient(0deg, 
-            transparent 9px, 
-            rgba(64, 180, 255, 0.15) 9px, 
-            rgba(64, 180, 255, 0.15) 10px, 
-            transparent 10px
+            transparent 49px, 
+            rgba(64, 200, 255, 0.2) 49px, 
+            rgba(64, 200, 255, 0.2) 50px, 
+            transparent 50px
         );
-    background-size: 50px 50px, 25px 25px;
-    animation: gridMove 15s linear infinite;
+    background-size: 100px 100px;
+    animation: gridMove 20s linear infinite;
     pointer-events: none;
     z-index: 1;
 }
 
 @keyframes gridMove {
     0% {
-        background-position: 0 0, 0 0;
+        background-position: 0 0;
     }
     100% {
-        background-position: 50px 50px, 25px 25px;
+        background-position: 0 100px;
     }
 }
 
@@ -139,11 +180,7 @@
         radial-gradient(2px 2px at 40% 70%, rgba(255,255,255,0.3) 50%, transparent 50%),
         radial-gradient(2px 2px at 60% 20%, rgba(255,255,255,0.3) 50%, transparent 50%),
         radial-gradient(2px 2px at 80% 50%, rgba(255,255,255,0.3) 50%, transparent 50%),
-        radial-gradient(2px 2px at 30% 80%, rgba(255,255,255,0.3) 50%, transparent 50%),
-        radial-gradient(2px 2px at 70% 10%, rgba(255,255,255,0.3) 50%, transparent 50%),
-        radial-gradient(1px 1px at 10% 40%, rgba(255,255,255,0.2) 50%, transparent 50%),
-        radial-gradient(1px 1px at 50% 90%, rgba(255,255,255,0.2) 50%, transparent 50%),
-        radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,0.2) 50%, transparent 50%);
+        radial-gradient(2px 2px at 30% 80%, rgba(255,255,255,0.3) 50%, transparent 50%);
     background-repeat: no-repeat;
     pointer-events: none;
     z-index: 2;
