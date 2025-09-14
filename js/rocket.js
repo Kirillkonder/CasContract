@@ -168,16 +168,13 @@ let ws = null;
         }
     }
 
-   function updateRocketPosition(multiplier) {
-    const rocketElement = document.getElementById('rocket');
+ function updateRocketPosition(multiplier) {
+    // Ракетка не двигается, только обновляем множитель
     const trailElement = document.getElementById('rocketTrail');
     
-    // Вычисляем новую позицию ракеты (от 80px до 380px - увеличенный диапазон)
-    const newPosition = 80 + (multiplier * 3); // Увеличил множитель для большего движения
-    rocketElement.style.bottom = `${newPosition}px`;
-    
-    // Обновляем след ракеты
-    trailElement.style.height = `${newPosition - 120}px`;
+    // Можно оставить только след если нужно, но ракетка на месте
+    const trailHeight = Math.max(0, multiplier * 10);
+    trailElement.style.height = `${trailHeight}px`;
 }
     function showExplosion() {
         const canvas = document.getElementById('rocketCanvas');
