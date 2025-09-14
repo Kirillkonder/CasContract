@@ -145,11 +145,14 @@ function updateGameState(gameState) {
     updateBettingUI();
 }
 
-function startCountdown(timeLeft) {
+function startCountdown(endTime) {
     clearCountdown();
     
     function updateCountdown() {
-        // ФИКС: Используем переданное время, а не вычисляем
+        const now = Date.now();
+        const timeLeft = Math.max(0, Math.ceil((endTime - now) / 1000));
+        
+        // ФИКС: Правильное отображение времени
         document.getElementById('countdown').textContent = `${timeLeft}с`;
         document.getElementById('placeBetButton').textContent = timeLeft > 0 ? `Поставить (${timeLeft}с)` : 'Время вышло';
         
@@ -160,18 +163,11 @@ function startCountdown(timeLeft) {
             document.getElementById('placeBetButton').disabled = true;
             updateBettingUI();
         }
-        timeLeft--; // Уменьшаем время
     }
     
+    // ФИКС: Немедленное обновление при запуске
     updateCountdown();
     countdownInterval = setInterval(updateCountdown, 1000);
-}
-
-function clearCountdown() {
-    if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-    }
 }
 
 function updateRocketPosition(multiplier) {
