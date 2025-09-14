@@ -42,7 +42,7 @@
     position: absolute;
     bottom: 100px;
     left: 50%;
-    transform: translateX(-46%) rotate(-46deg);
+    transform: translateX(-47%) rotate(-47deg);
     transition: bottom 0.1s linear;
     z-index: 10;
     width: 130px;
