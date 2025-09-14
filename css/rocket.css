@@ -19,6 +19,7 @@
 }
 
 .rocket-canvas {
+    flex: 1;
     width: 100%;
     height: 360px;
     background: 
@@ -62,6 +63,43 @@
     position: relative;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+
+
+
+.history-mini {
+    background: rgba(25, 30, 42, 0.95);
+    border-radius: 12px;
+    padding: 15px;
+    width: 120px;
+    min-width: 120px;
+}
+
+.history-mini h3 {
+    font-size: 14px;
+    margin: 0 0 10px 0;
+    text-align: center;
+    color: #f0f0f0;
+}
+
+.mini-history-items {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+}
+
+.mini-history-win {
+    background: rgba(0, 184, 148, 0.25);
+    color: #00b894;
+    border: 1px solid rgba(0, 184, 148, 0.4);
+}
+
+.mini-history-loss {
+    background: rgba(255, 107, 107, 0.25);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.4);
 }
 
 /* Анимация движения сетки */
@@ -345,6 +383,12 @@
 .player-bet {
     color: #00b894;
     font-weight: bold;
+}
+.game-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: flex-start;
 }
 
 .game-status {
