@@ -25,34 +25,13 @@
             <span id="countdown"></span>
         </div>
 
-       <div class="rocket-canvas" id="rocketCanvas">
-    <!-- Существующие элементы -->
-    <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
-    <div class="rocket" id="rocket">
-        <img src="Rocket.png" alt="Rocket">
-    </div>
-    <div class="trail" id="rocketTrail"></div>
-    
-    <!-- Новые элементы -->
-    <div class="graph-line"></div>
-    <div class="big-multiplier" id="bigMultiplier">1.00x</div>
-    <div class="fire-trail" id="fireTrail"></div>
-    
-    <!-- Координатные цифры -->
-    <div class="graph-numbers x-axis" style="left: 24px;">1</div>
-    <div class="graph-numbers x-axis" style="left: 99px;">2</div>
-    <div class="graph-numbers x-axis" style="left: 174px;">3</div>
-    <div class="graph-numbers x-axis" style="left: 249px;">4</div>
-    <div class="graph-numbers x-axis" style="left: 324px;">5</div>
-    <div class="graph-numbers x-axis" style="left: 399px;">6</div>
-    <div class="graph-numbers x-axis" style="left: 474px;">7</div>
-    <div class="graph-numbers x-axis" style="left: 549px;">8</div>
-    
-    <div class="graph-numbers y-axis" style="bottom: 75px;">0</div>
-    <div class="graph-numbers y-axis" style="bottom: 150px;">5</div>
-    <div class="graph-numbers y-axis" style="bottom: 225px;">10</div>
-    <div class="graph-numbers y-axis" style="bottom: 300px;">15</div>
-</div>
+        <div class="rocket-canvas" id="rocketCanvas">
+            <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
+            <div class="rocket" id="rocket">
+                <img src="Rocket.png" alt="Rocket"> <!-- Ваша PNG ракетка -->
+            </div>
+            <div class="trail" id="rocketTrail"></div>
+        </div>
 
         <div class="betting-panel">
             <div class="bet-controls">
@@ -69,9 +48,10 @@
         </div>
 
         <div class="players-list">
-    <h3>Игроки в этом раунде (<span id="playersCount">0</span>)</h3>
-    <div class="players-grid" id="playersGrid"></div>
-</div>
+            <h3>Игроки в этом раунде (<span id="playersCount">0</span>)</h3>
+            <div id="playersList"></div>
+        </div>
+
         <div class="history-container">
             <h3>История игр</h3>
             <div class="history-items" id="historyItems"></div>
