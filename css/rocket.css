@@ -18,7 +18,7 @@
     height: 360px;
     background: 
         linear-gradient(180deg, #0d1117 0%, #1a1f2e 100%),
-        /* Горизонтальные линии */
+        /* Горизонтальные линии (основные) */
         linear-gradient(90deg, 
             transparent 24px, 
             rgba(64, 156, 255, 0.1) 24px, 
@@ -52,13 +52,37 @@
             rgba(64, 156, 255, 0.05) 47%, 
             rgba(64, 156, 255, 0.05) 53%, 
             transparent 53%
+        ),
+        /* Дополнительные горизонтальные линии (более частые) */
+        linear-gradient(0deg, 
+            transparent 9px, 
+            rgba(64, 180, 255, 0.08) 9px, 
+            rgba(64, 180, 255, 0.08) 10px, 
+            transparent 10px,
+            transparent 19px,
+            rgba(64, 180, 255, 0.06) 19px,
+            rgba(64, 180, 255, 0.06) 20px,
+            transparent 20px
+        ),
+        /* Горизонтальные линии-указатели (более яркие) */
+        linear-gradient(0deg, 
+            transparent 74px, 
+            rgba(64, 200, 255, 0.2) 74px, 
+            rgba(64, 200, 255, 0.2) 75px, 
+            transparent 75px,
+            transparent 149px,
+            rgba(64, 200, 255, 0.25) 149px,
+            rgba(64, 200, 255, 0.25) 150px,
+            transparent 150px
         );
     background-size: 
         100% 100%,
         50px 50px,
         50px 50px,
         100px 100px,
-        100px 100px;
+        100px 100px,
+        25px 25px,
+        150px 150px;
     border-radius: 15px;
     margin-bottom: 20px;
     position: relative;
@@ -80,18 +104,25 @@
             rgba(64, 156, 255, 0.2) 24px, 
             rgba(64, 156, 255, 0.2) 25px, 
             transparent 25px
+        ),
+        linear-gradient(0deg, 
+            transparent 9px, 
+            rgba(64, 180, 255, 0.15) 9px, 
+            rgba(64, 180, 255, 0.15) 10px, 
+            transparent 10px
         );
-    background-size: 50px 50px;
-    animation: gridMove 20s linear infinite;
+    background-size: 50px 50px, 25px 25px;
+    animation: gridMove 15s linear infinite;
     pointer-events: none;
+    z-index: 1;
 }
 
 @keyframes gridMove {
     0% {
-        background-position: 0 0;
+        background-position: 0 0, 0 0;
     }
     100% {
-        background-position: 50px 50px;
+        background-position: 50px 50px, 25px 25px;
     }
 }
 
@@ -109,9 +140,13 @@
         radial-gradient(2px 2px at 60% 20%, rgba(255,255,255,0.3) 50%, transparent 50%),
         radial-gradient(2px 2px at 80% 50%, rgba(255,255,255,0.3) 50%, transparent 50%),
         radial-gradient(2px 2px at 30% 80%, rgba(255,255,255,0.3) 50%, transparent 50%),
-        radial-gradient(2px 2px at 70% 10%, rgba(255,255,255,0.3) 50%, transparent 50%);
+        radial-gradient(2px 2px at 70% 10%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(1px 1px at 10% 40%, rgba(255,255,255,0.2) 50%, transparent 50%),
+        radial-gradient(1px 1px at 50% 90%, rgba(255,255,255,0.2) 50%, transparent 50%),
+        radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,0.2) 50%, transparent 50%);
     background-repeat: no-repeat;
     pointer-events: none;
+    z-index: 2;
 }
 
 .rocket {
