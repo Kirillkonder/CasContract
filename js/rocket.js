@@ -168,26 +168,65 @@ let ws = null;
         }
     }
 
+
+function createFlashEffect() {
+    const canvas = document.getElementById('rocketCanvas');
+    const flash = document.createElement('div');
+    flash.className = 'flash-effect';
+    canvas.appendChild(flash);
+    
+    setTimeout(() => {
+        if (flash.parentNode) {
+            canvas.removeChild(flash);
+        }
+    }, 500);
+}
+
 function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const trailElement = document.getElementById('rocketTrail');
     const canvasElement = document.getElementById('rocketCanvas');
+    const fireTrailElement = document.getElementById('fireTrail');
+    const bigMultiplierElement = document.getElementById('bigMultiplier');
+    
+    // Обновляем позицию ракеты
+    const rocketHeight = Math.min(300, Math.max(80, 80 + (multiplier - 1) * 20));
+    rocketElement.style.bottom = `${rocketHeight}px`;
     
     // Обновляем след
     const trailHeight = Math.max(0, multiplier * 10);
     trailElement.style.height = `${trailHeight}px`;
     
-    // Включаем пульсацию после 1.00x
+    // Обновляем большой множитель
+    bigMultiplierElement.textContent = multiplier.toFixed(2) + 'x';
+    
+    // Включаем пульсацию и эффекты после 1.00x
     if (multiplier > 1.00) {
+        // Показываем большой множитель при высоких значениях
+        if (multiplier >= 2.0) {
+            bigMultiplierElement.classList.add('visible');
+        } else {
+            bigMultiplierElement.classList.remove('visible');
+        }
+        
         // Добавляем классы пульсации
         rocketElement.classList.add('pulsating');
         canvasElement.classList.add('pulsating');
+        
+        // Огненный след
+        fireTrailElement.classList.add('visible');
+        fireTrailElement.style.height = `${Math.min(100, multiplier * 15)}px`;
         
         // Ускоряем пульсацию после 3x
         if (multiplier >= 3) {
             const speedIntensity = Math.min(0.7, (multiplier - 3) / 10);
             const pulseSpeed = Math.max(0.3, 1.2 - speedIntensity);
             document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
+            
+            // Эффект вспышки при высоких множителях
+            if (multiplier % 1 === 0) {
+                createFlashEffect();
+            }
         } else {
             document.documentElement.style.setProperty('--pulse-speed', '1.2s');
         }
@@ -200,22 +239,28 @@ function updateRocketPosition(multiplier) {
             canvasElement.style.backgroundColor = '';
         }
     } else {
-        // Убираем пульсацию при множителе 1.00
+        // Убираем эффекты при множителе 1.00
         rocketElement.classList.remove('pulsating');
         canvasElement.classList.remove('pulsating');
+        fireTrailElement.classList.remove('visible');
+        bigMultiplierElement.classList.remove('visible');
         canvasElement.style.backgroundColor = '';
         document.documentElement.style.setProperty('--pulse-speed', '1.2s');
     }
 }
 
+
 function showExplosion() {
     const canvas = document.getElementById('rocketCanvas');
     const rocketElement = document.getElementById('rocket');
+    const fireTrailElement = document.getElementById('fireTrail');
+    const bigMultiplierElement = document.getElementById('bigMultiplier');
     
-    // Убираем пульсацию перед взрывом
+    // Убираем все эффекты перед взрывом
     rocketElement.classList.remove('pulsating');
     canvas.classList.remove('pulsating');
-    canvas.style.backgroundColor = '';
+    fireTrailElement.classList.remove('visible');
+    bigMultiplierElement.classList.remove('visible');
     
     // Запускаем эффект улетающей ракеты
     rocketElement.classList.add('blast-off');
@@ -231,14 +276,19 @@ function showExplosion() {
     explosion.className = 'explosion';
     canvas.appendChild(explosion);
     
+    // Большая красная цифра с множителем краха
+    const crashMultiplier = document.createElement('div');
+    crashMultiplier.className = 'big-multiplier visible';
+    crashMultiplier.textContent = rocketGame.crashPoint.toFixed(2) + 'x';
+    crashMultiplier.style.color = '#ff0000';
+    canvas.appendChild(crashMultiplier);
+    
     setTimeout(() => {
-        // Убираем взрыв и текст
-        if (explosion.parentNode) {
-            canvas.removeChild(explosion);
-        }
-        if (blastOffText.parentNode) {
-            canvas.removeChild(blastOffText);
-        }
+        // Убираем все эффекты
+        if (explosion.parentNode) canvas.removeChild(explosion);
+        if (blastOffText.parentNode) canvas.removeChild(blastOffText);
+        if (crashMultiplier.parentNode) canvas.removeChild(crashMultiplier);
+        
         // Возвращаем ракету в исходное состояние
         rocketElement.classList.remove('blast-off');
         rocketElement.style.bottom = '110px';
@@ -247,38 +297,42 @@ function showExplosion() {
     }, 2000);
 }
 
-    function updatePlayersList(players) {
-        const playersList = document.getElementById('playersList');
-        const playersCount = document.getElementById('playersCount');
+   function updatePlayersList(players) {
+    const playersGrid = document.getElementById('playersGrid');
+    const playersCount = document.getElementById('playersCount');
+    
+    playersGrid.innerHTML = '';
+    playersCount.textContent = players.length;
+    
+    const emojis = ['🚀', '⭐', '🔥', '💎', '🎯', '💰', '🏆', '👑'];
+    
+    players.forEach((player, index) => {
+        const playerCard = document.createElement('div');
+        playerCard.className = 'player-card';
         
-        playersList.innerHTML = '';
-        playersCount.textContent = players.length;
+        const avatar = document.createElement('div');
+        avatar.className = 'player-avatar';
         
-        players.forEach(player => {
-            const playerItem = document.createElement('div');
-            playerItem.className = 'player-item';
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'player-name';
-            nameSpan.textContent = player.name;
-            
-            const betSpan = document.createElement('span');
-            betSpan.className = 'player-bet';
-            
-            if (player.cashedOut) {
-                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
-                betSpan.style.color = '#00b894';
-            } else if (player.isBot) {
-                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-            } else {
-                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-            }
-            
-            playerItem.appendChild(nameSpan);
-            playerItem.appendChild(betSpan);
-            playersList.appendChild(playerItem);
-        });
-    }
+        // Используем первую букву имени или иконку по умолчанию
+        const avatarText = player.name.charAt(0).toUpperCase();
+        avatar.textContent = avatarText;
+        
+        // Случайный эмодзи для игрока
+        const emoji = document.createElement('div');
+        emoji.className = 'player-emoji';
+        emoji.textContent = emojis[index % emojis.length];
+        
+        const balance = document.createElement('div');
+        balance.className = 'player-balance';
+        balance.textContent = player.betAmount.toFixed(1);
+        
+        avatar.appendChild(emoji);
+        playerCard.appendChild(avatar);
+        playerCard.appendChild(balance);
+        playersGrid.appendChild(playerCard);
+    });
+}
+
 
     function updateHistory(history) {
         const historyContainer = document.getElementById('historyItems');
@@ -411,41 +465,46 @@ function showExplosion() {
     }
 
     function updateBettingUI() {
-        const betButton = document.getElementById('placeBetButton');
-        const cashoutButton = document.getElementById('cashoutButton');
+    const betButton = document.getElementById('placeBetButton');
+    const cashoutButton = document.getElementById('cashoutButton');
+    
+    if (rocketGame.status === 'counting') {
+        // В режиме ставок
+        const timeLeft = rocketGame.endBetTime ? Math.ceil((rocketGame.endBetTime - Date.now()) / 1000) : 0;
+        const canBet = timeLeft > 0;
         
-        if (rocketGame.status === 'counting') {
-            // В режиме ставок
-            const timeLeft = rocketGame.endBetTime ? Math.ceil((rocketGame.endBetTime - Date.now()) / 1000) : 0;
-            const canBet = timeLeft > 0;
-            
-            betButton.disabled = userBet > 0 || !canBet;
-            cashoutButton.disabled = true;
-            
-            if (userBet > 0) {
-                betButton.textContent = 'Ставка сделана';
-            } else if (!canBet) {
-                betButton.textContent = 'Время вышло';
-            } else {
-                betButton.textContent = `Поставить (${timeLeft}с)`;
-            }
-        } else if (rocketGame.status === 'flying') {
-            // В полете
-            betButton.disabled = true;
-            betButton.textContent = 'Полёт...';
-            cashoutButton.disabled = userCashedOut || userBet === 0;
-            
-            if (!userCashedOut && userBet > 0) {
-                cashoutButton.textContent = `Забрать ${rocketGame.multiplier.toFixed(2)}x`;
-            }
+        betButton.disabled = userBet > 0 || !canBet;
+        cashoutButton.disabled = true;
+        
+        if (userBet > 0) {
+            betButton.textContent = '✅ Ставка сделана';
+        } else if (!canBet) {
+            betButton.textContent = '⏰ Время вышло';
         } else {
-            // Ожидание или краш
-            betButton.disabled = rocketGame.status !== 'waiting';
-            cashoutButton.disabled = true;
-            betButton.textContent = 'Поставить';
-            cashoutButton.textContent = 'Забрать выигрыш';
+            betButton.textContent = `🎯 Поставить (${timeLeft}с)`;
+        }
+    } else if (rocketGame.status === 'flying') {
+        // В полете
+        betButton.disabled = true;
+        betButton.textContent = '🚀 Полёт...';
+        cashoutButton.disabled = userCashedOut || userBet === 0;
+        
+        if (!userCashedOut && userBet > 0) {
+            cashoutButton.textContent = `💰 Забрать ${rocketGame.multiplier.toFixed(2)}x`;
+            cashoutButton.style.background = 'linear-gradient(135deg, #00b894, #008066)';
+        }
+    } else {
+        // Ожидание или краш
+        betButton.disabled = rocketGame.status !== 'waiting';
+        cashoutButton.disabled = true;
+        
+        if (rocketGame.status === 'waiting') {
+            betButton.textContent = '🎯 Сделать ставку';
+        } else {
+            betButton.textContent = '⏳ Ожидание...';
         }
     }
+}
 
     function resetBettingUI() {
         userBet = 0;
