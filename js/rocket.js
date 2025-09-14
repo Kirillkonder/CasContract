@@ -335,62 +335,59 @@ function showExplosion() {
         }
     }
 
-   async function cashout() {
-    if (userCashedOut) {
-        alert('Вы уже забрали выигрыш!');
-        return;
-    }
-    
-    if (userBet === 0) {
-        alert('Сначала сделайте ставку!');
-        return;
-    }
-    
-    if (rocketGame.status !== 'flying') {
-        alert('Нельзя забрать выигрыш сейчас!');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/rocket/cashout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                telegramId: currentUser.id
-            })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            alert(error.error || 'Ошибка при выводе средств');
+    async function cashout() {
+        if (userCashedOut) {
+            alert('Вы уже забрали выигрыш!');
             return;
         }
         
-        const result = await response.json();
-        if (result.success) {
-            userCashedOut = true;
-            updateBettingUI();
+        if (userBet === 0) {
+            alert('Сначала сделайте ставку!');
+            return;
+        }
+        
+        if (rocketGame.status !== 'flying') {
+            alert('Нельзя забрать выигрыш сейчас!');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/rocket/cashout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    telegramId: currentUser.id
+                })
+            });
             
-            // ОБНОВЛЯЕМ БАЛАНС И ПОКАЗЫВАЕМ ЭФФЕКТ УЛЕТА
-            const response = await fetch(`/api/user/balance/${currentUser.id}`);
-            if (response.ok) {
-                const userData = await response.json();
-                const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
-                document.getElementById('balance').textContent = balance.toFixed(2);
+            if (!response.ok) {
+                const error = await response.json();
+                alert(error.error || 'Ошибка при выводе средств');
+                return;
             }
             
-            // ВОТ ТУТ ДОБАВЛЯЕМ ЭФФЕКТ УЛЕТАЮЩЕЙ РАКЕТЫ
-            showBlastOff();
-            
-            alert(`🎉 Вы успешно вывели ${result.winAmount.toFixed(2)} TON на ${result.multiplier.toFixed(2)}x!`);
+            const result = await response.json();
+            if (result.success) {
+                userCashedOut = true;
+                updateBettingUI();
+                
+                // Обновляем баланс
+                const response = await fetch(`/api/user/balance/${currentUser.id}`);
+                if (response.ok) {
+                    const userData = await response.json();
+                    const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
+                    document.getElementById('balance').textContent = balance.toFixed(2);
+                }
+                
+                alert(`🎉 Вы успешно вывели ${result.winAmount.toFixed(2)} TON на ${result.multiplier.toFixed(2)}x!`);
+            }
+        } catch (error) {
+            console.error('Error cashing out:', error);
+            alert('Ошибка при выводе средств');
         }
-    } catch (error) {
-        console.error('Error cashing out:', error);
-        alert('Ошибка при выводе средств');
     }
-}
 
     function updateBettingUI() {
         const betButton = document.getElementById('placeBetButton');
