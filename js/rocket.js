@@ -154,12 +154,12 @@ function startCountdown(endTime) {
         const timeLeft = Math.max(0, Math.ceil((endTime - now) / 1000));
         
         document.getElementById('statusText').textContent = `Прием ставок: ${timeLeft}с`;
-        document.getElementById('placeBetButton').innerHTML = `<span class="button-text">${timeLeft > 0 ? `Поставить (${timeLeft}с)` : 'Время вышло'}</span>`;
+        document.getElementById('placeBetButton').textContent = timeLeft > 0 ? `Поставить (${timeLeft}с)` : 'Время вышло';
         
         if (timeLeft <= 0) {
             clearCountdown();
             document.getElementById('statusText').textContent = 'Время ставок закончилось';
-            document.getElementById('placeBetButton').innerHTML = '<span class="button-text">Время вышло</span>';
+            document.getElementById('placeBetButton').textContent = 'Время вышло';
             document.getElementById('placeBetButton').disabled = true;
             updateBettingUI();
         }
@@ -327,7 +327,7 @@ async function placeBet() {
             document.getElementById('balance').textContent = result.new_balance.toFixed(2);
             
             document.getElementById('placeBetButton').disabled = true;
-            document.getElementById('placeBetButton').innerHTML = '<span class="button-text">Ставка сделана</span>';
+            document.getElementById('placeBetButton').textContent = 'Ставка сделана';
         }
     } catch (error) {
         console.error('Error placing bet:', error);
@@ -339,7 +339,7 @@ function showWinNotification(winAmount) {
     const notification = document.getElementById('winNotification');
     const winAmountElement = document.getElementById('winAmount');
     
-    winAmountElement.textContent = `Выигрыш: ${winAmount.toFixed(2)} TON`;
+    winAmountElement.textContent = `+${winAmount.toFixed(2)} TON`;
     
     // Показываем уведомление
     notification.classList.add('show');
@@ -412,25 +412,25 @@ function updateBettingUI() {
         cashoutButton.disabled = true;
         
         if (userBet > 0) {
-            betButton.innerHTML = '<span class="button-text">Ставка сделана</span>';
+            betButton.textContent = 'Ставка сделана';
         } else if (!canBet) {
-            betButton.innerHTML = '<span class="button-text">Время вышло</span>';
+            betButton.textContent = 'Время вышло';
         } else {
-            betButton.innerHTML = `<span class="button-text">Поставить (${timeLeft}с)</span>`;
+            betButton.textContent = `Поставить (${timeLeft}с)`;
         }
     } else if (rocketGame.status === 'flying') {
         betButton.disabled = true;
-        betButton.innerHTML = '<span class="button-text">Полёт...</span>';
+        betButton.textContent = 'Полёт...';
         cashoutButton.disabled = userCashedOut || userBet === 0;
         
         if (!userCashedOut && userBet > 0) {
-            cashoutButton.innerHTML = `<span class="cashout-icon">💰</span><span class="button-text">Забрать ${rocketGame.multiplier.toFixed(2)}x</span>`;
+            cashoutButton.innerHTML = `<span class="cashout-multiplier">Забрать ${rocketGame.multiplier.toFixed(2)}x</span>`;
         }
     } else {
         betButton.disabled = rocketGame.status !== 'waiting';
         cashoutButton.disabled = true;
-        betButton.innerHTML = '<span class="button-text">Поставить</span>';
-        cashoutButton.innerHTML = '<span class="cashout-icon">💰</span><span class="button-text">Забрать выигрыш</span>';
+        betButton.textContent = 'Поставить';
+        cashoutButton.innerHTML = '<span class="cashout-multiplier">Забрать 1.00x</span>';
     }
 }
 
@@ -441,12 +441,12 @@ function resetBettingUI() {
     document.getElementById('userBet').textContent = '0';
     document.getElementById('potentialWin').textContent = '0';
     document.getElementById('placeBetButton').disabled = false;
-    document.getElementById('placeBetButton').innerHTML = '<span class="button-text">Поставить</span>';
+    document.getElementById('placeBetButton').textContent = 'Поставить';
     updateBettingUI();
     
     const rocketElement = document.getElementById('rocket');
     const trailElement = document.getElementById('rocketTrail');
-    rocketElement.style.bottom = '120px';
+    rocketElement.style.bottom = '80px';
     if (trailElement) {
         trailElement.style.height = '0px';
     }
