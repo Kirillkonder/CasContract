@@ -92,13 +92,12 @@ function updateGameState(gameState) {
             resetBettingUI();
             break;
             
-       case 'counting':
+        case 'counting':
             statusElement.textContent = 'Прием ставок: ';
-            countdownElement.textContent = `${gameState.timeLeft}с`; // ФИКС: Берем время с сервера
-            startCountdown(gameState.timeLeft);
+            startCountdown(gameState.endBetTime);
             updateBettingUI();
             break;
-                    
+            
         case 'flying':
             statusElement.textContent = 'Ракета взлетает!';
             countdownElement.textContent = '';
@@ -145,6 +144,7 @@ function updateGameState(gameState) {
     updateBettingUI();
 }
 
+
 function startCountdown(endTime) {
     clearCountdown();
     
@@ -153,7 +153,7 @@ function startCountdown(endTime) {
         const timeLeft = Math.max(0, Math.ceil((endTime - now) / 1000));
         
         // ФИКС: Правильное отображение времени
-        document.getElementById('countdown').textContent = `${timeLeft}с`;
+        document.getElementById('statusText').textContent = `Прием ставок: ${timeLeft}с`;
         document.getElementById('placeBetButton').textContent = timeLeft > 0 ? `Поставить (${timeLeft}с)` : 'Время вышло';
         
         if (timeLeft <= 0) {
@@ -165,9 +165,15 @@ function startCountdown(endTime) {
         }
     }
     
-    // ФИКС: Немедленное обновление при запуске
     updateCountdown();
     countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+function clearCountdown() {
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+    }
 }
 
 function updateRocketPosition(multiplier) {
