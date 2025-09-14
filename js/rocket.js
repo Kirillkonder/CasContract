@@ -90,9 +90,10 @@ function updateGameState(gameState) {
             resetBettingUI();
             break;
             
-        case 'counting':
+       case 'counting':
             statusElement.textContent = 'Прием ставок: ';
-            startCountdown(gameState.endBetTime);
+            // ФИКС: Передаем timeLeft, а не endBetTime
+            startCountdown(gameState.timeLeft || Math.max(0, Math.ceil((gameState.endBetTime - Date.now()) / 1000)));
             updateBettingUI();
             break;
             
