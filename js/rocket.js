@@ -139,24 +139,14 @@ function updateGameState(gameState) {
 function startCountdown(timeLeft) {
     clearCountdown();
     
-    let currentTime = timeLeft;
+    document.getElementById('statusText').textContent = `Прием ставок: ${timeLeft}с`;
+    document.getElementById('placeBetButton').textContent = timeLeft > 0 ? `Поставить (${timeLeft}с)` : 'Время вышло';
     
-    function updateCountdown() {
-        document.getElementById('statusText').textContent = `Прием ставок: ${currentTime}с`;
-        document.getElementById('placeBetButton').textContent = currentTime > 0 ? `Поставить (${currentTime}с)` : 'Время вышло';
-        
-        if (currentTime <= 0) {
-            clearCountdown();
-            document.getElementById('statusText').textContent = 'Время ставок закончилось';
-            document.getElementById('placeBetButton').textContent = 'Время вышло';
-            document.getElementById('placeBetButton').disabled = true;
-            updateBettingUI();
-        }
-        currentTime--;
+    if (timeLeft <= 0) {
+        document.getElementById('statusText').textContent = 'Время ставок закончилось';
+        document.getElementById('placeBetButton').textContent = 'Время вышло';
+        document.getElementById('placeBetButton').disabled = true;
     }
-    
-    updateCountdown();
-    countdownInterval = setInterval(updateCountdown, 1000);
 }
 
 function clearCountdown() {

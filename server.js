@@ -245,6 +245,7 @@ function startRocketGame() {
     rocketGame.endBetTime = Date.now() + 5000; // 5 секунд на ставки
     rocketGame.players = [];
 
+    // Добавляем ставки ботов
     rocketBots.forEach(bot => {
         const betAmount = bot.minBet + Math.random() * (bot.maxBet - bot.minBet);
         const autoCashout = bot.risk === 'low' ? 2 + Math.random() * 3 : 
@@ -261,14 +262,28 @@ function startRocketGame() {
         });
     });
 
+    // ФИКС: Отправляем начальное значение 5 секунд
+    rocketGame.timeLeft = 5;
     broadcastRocketUpdate();
 
-    // 5 секунд на ставки
-    setTimeout(() => {
-        rocketGame.status = 'flying';
+    // Запускаем синхронизацию времени каждую секунду
+    const syncInterval = setInterval(() => {
+        if (rocketGame.status !== 'counting') {
+            clearInterval(syncInterval);
+            return;
+        }
+        
+        const timeLeft = Math.max(0, Math.ceil((rocketGame.endBetTime - Date.now()) / 1000));
+        rocketGame.timeLeft = timeLeft;
         broadcastRocketUpdate();
-        startRocketFlight();
-    }, 5000);
+        
+        if (timeLeft <= 0) {
+            clearInterval(syncInterval);
+            rocketGame.status = 'flying';
+            broadcastRocketUpdate();
+            startRocketFlight();
+        }
+    }, 1000);
 }
 
 
@@ -390,20 +405,9 @@ function processRocketGameEnd() {
 }
 
 function broadcastRocketUpdate() {
-    // ФИКС: Правильно рассчитываем оставшееся время
-    let timeLeft = 0;
-    if (rocketGame.status === 'counting') {
-        timeLeft = Math.max(0, Math.ceil((rocketGame.endBetTime - Date.now()) / 1000));
-    }
-    
-    const gameData = {
-        ...rocketGame,
-        timeLeft: timeLeft
-    };
-    
     const data = JSON.stringify({
         type: 'rocket_update',
-        game: gameData
+        game: rocketGame
     });
 
     wss.clients.forEach(client => {
@@ -412,7 +416,6 @@ function broadcastRocketUpdate() {
         }
     });
 }
-
 // WebSocket обработчик
 wss.on('connection', function connection(ws) {
   console.log('Rocket game client connected');
