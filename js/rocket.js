@@ -145,37 +145,28 @@ let ws = null;
     }
 
     function startCountdown(endTime) {
-    clearCountdown();
-    
-    function updateCountdown() {
-        const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
-        const countdownElement = document.getElementById('buttonCountdown');
+        clearCountdown();
         
-        if (countdownElement) {
-            countdownElement.textContent = `${timeLeft}с`;
+        function updateCountdown() {
+            const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+            document.getElementById('countdown').textContent = `${timeLeft}с`;
+            
+            if (timeLeft <= 0) {
+                clearCountdown();
+                updateBettingUI();
+            }
         }
         
-        if (timeLeft <= 0) {
-            clearCountdown();
-            updateBettingUI();
-        }
+        updateCountdown();
+        countdownInterval = setInterval(updateCountdown, 1000);
     }
-    
-    updateCountdown();
-    countdownInterval = setInterval(updateCountdown, 1000);
-}
-
 
     function clearCountdown() {
-    if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
     }
-    const countdownElement = document.getElementById('buttonCountdown');
-    if (countdownElement) {
-        countdownElement.textContent = '';
-    }
-}
 
 function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
