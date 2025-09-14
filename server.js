@@ -241,34 +241,35 @@ function startRocketGame() {
     rocketGame.status = 'counting';
     rocketGame.multiplier = 1.00;
     rocketGame.crashPoint = generateCrashPoint();
-    rocketGame.startTime = Date.now();
-    // ФИКС: Правильное время окончания ставок (10 секунд от текущего времени)
-    rocketGame.endBetTime = Date.now() + 10000;
+    rocketGame.startTime = Date.now(); // Записываем время начала
+    rocketGame.endBetTime = Date.now() + 10000; // Время окончания ставок
     rocketGame.players = [];
 
-    rocketBots.forEach(bot => {
-        const betAmount = bot.minBet + Math.random() * (bot.maxBet - bot.minBet);
-        const autoCashout = bot.risk === 'low' ? 2 + Math.random() * 3 : 
-                           bot.risk === 'medium' ? 5 + Math.random() * 10 : 
-                           10 + Math.random() * 30;
-        
-        rocketGame.players.push({
-            name: bot.name,
-            betAmount: parseFloat(betAmount.toFixed(2)),
-            autoCashout: parseFloat(autoCashout.toFixed(2)),
-            isBot: true,
-            cashedOut: false,
-            winAmount: 0
-        });
+  // Добавляем ставки ботов
+  rocketBots.forEach(bot => {
+    const betAmount = bot.minBet + Math.random() * (bot.maxBet - bot.minBet);
+    const autoCashout = bot.risk === 'low' ? 2 + Math.random() * 3 : 
+                       bot.risk === 'medium' ? 5 + Math.random() * 10 : 
+                       10 + Math.random() * 30;
+    
+    rocketGame.players.push({
+      name: bot.name,
+      betAmount: parseFloat(betAmount.toFixed(2)),
+      autoCashout: parseFloat(autoCashout.toFixed(2)),
+      isBot: true,
+      cashedOut: false,
+      winAmount: 0
     });
+  });
 
+  broadcastRocketUpdate();
+
+  // 10 секунд на ставки
+  setTimeout(() => {
+    rocketGame.status = 'flying';
     broadcastRocketUpdate();
-
-    setTimeout(() => {
-        rocketGame.status = 'flying';
-        broadcastRocketUpdate();
-        startRocketFlight();
-    }, 10000);
+    startRocketFlight();
+  }, 10000);
 }
 
 // server.js - исправленная функция startRocketFlight
