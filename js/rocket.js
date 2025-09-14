@@ -73,7 +73,8 @@ let ws = null;
         };
     }
 
-  function updateGameState(gameState) {
+    
+function updateGameState(gameState) {
     // Обновляем глобальную переменную игры
     rocketGame = gameState;
     
@@ -94,7 +95,6 @@ let ws = null;
             
         case 'counting':
             statusElement.textContent = 'Прием ставок: ';
-            countdownElement.textContent = ''; // Очищаем перед началом нового отсчета
             startCountdown(gameState.endBetTime);
             updateBettingUI();
             break;
@@ -144,25 +144,25 @@ let ws = null;
     
     updateBettingUI();
 }
-function startCountdown(endTime) {
+
+    function startCountdown(endTime) {
     clearCountdown();
     
-    // ИГНОРИРУЕМ время с сервера, всегда 10 секунд
-    let timeLeft = 10;
-    
     function updateCountdown() {
-        document.getElementById('countdown').textContent = `${timeLeft}с`;
+        const now = Date.now();
+        const timeLeft = Math.max(0, Math.ceil((endTime - now) / 1000));
+        
+        // Обновляем текст в статусе игры
+        document.getElementById('statusText').textContent = `Прием ставок: ${timeLeft}с`;
         document.getElementById('placeBetButton').textContent = `Поставить (${timeLeft}с)`;
         
         if (timeLeft <= 0) {
             clearCountdown();
-            document.getElementById('countdown').textContent = '';
+            document.getElementById('statusText').textContent = 'Время ставок закончилось';
             document.getElementById('placeBetButton').textContent = 'Время вышло';
             document.getElementById('placeBetButton').disabled = true;
             updateBettingUI();
         }
-        
-        timeLeft--;
     }
     
     updateCountdown();
@@ -418,8 +418,7 @@ function showExplosion() {
         }
     }
 
-    
-function updateBettingUI() {
+    function updateBettingUI() {
     const betButton = document.getElementById('placeBetButton');
     const cashoutButton = document.getElementById('cashoutButton');
     
@@ -431,13 +430,6 @@ function updateBettingUI() {
         betButton.disabled = userBet > 0 || !canBet;
         cashoutButton.disabled = true;
         
-        if (rocketGame.status === 'counting') {
-        // В режиме ставок - всегда показываем 10 секунд
-        betButton.disabled = userBet > 0;
-        cashoutButton.disabled = true;
-
-            }
-
         if (userBet > 0) {
             betButton.textContent = 'Ставка сделана';
         } else if (!canBet) {
