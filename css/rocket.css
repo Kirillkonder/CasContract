@@ -200,7 +200,7 @@
     position: absolute;
     bottom: 110px; /* Фиксированная позиция от низа */
     left: 50%;
-    transform: translateX(-46%) rotate(-46deg);
+    transform: translateX(-45%) rotate(-45deg);
     z-index: 10;
     width: 130px;
     height: 130px;

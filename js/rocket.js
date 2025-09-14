@@ -176,6 +176,7 @@ let ws = null;
     const trailHeight = Math.max(0, multiplier * 10);
     trailElement.style.height = `${trailHeight}px`;
 }
+
     function showExplosion() {
         const canvas = document.getElementById('rocketCanvas');
         const explosion = document.createElement('div');
