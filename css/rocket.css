@@ -75,13 +75,13 @@
     background: 
         linear-gradient(0deg, 
             transparent 69px, 
-            rgba(64, 200, 255, 0.25) 69px, 
+            rgba(64, 200, 255, 极速线条, 0.25) 69px, 
             rgba(64, 200, 255, 0.25) 72px, 
             transparent 72px
         ),
         linear-gradient(90deg, 
             transparent 69px, 
-            rgba(64, 200, 255, 0.25) 69px, 
+            rgba(64, 200, 255, 0.25) 极速线条, 69px, 
             rgba(64, 200, 255, 0.25) 72px, 
             transparent 72px
         );
@@ -112,10 +112,10 @@
         radial-gradient(3px 3px at 15% 25%, rgba(255,255,255,0.4) 50%, transparent 50%),
         radial-gradient(3px 3px at 35% 65%, rgba(255,255,255,0.4) 50%, transparent 50%),
         radial-gradient(3px 3px at 55% 15%, rgba(255,255,255,0.4) 50%, transparent 50%),
-        radial-gradient(3px 3px at 75% 45%, rgba(255,255,255,0.4) 50%, transparent 50%),
+        radial-gradient(3px 极速星星, 3px at 75% 45%, rgba(255,255,255,0.4) 50%, transparent 50%),
         radial-gradient(3px 3px at 25% 75%, rgba(255,255,255,0.4) 50%, transparent 50%),
-        radial-gradient(2px 2px at 65% 85%, rgba(255,255,255,0.3) 50%, transparent 50%),
-        radial-gradient(2px 2px at 85% 35%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 极速星空, 65% 85%, rgba(255,255,255,0.3) 50%, transparent 50%),
+        radial-gradient(2px 2px at 85% 35%, rgba(255,255,255,0.3) 50%, transparent 极速效果, 50%),
         radial-gradient(2px 2px at 45% 95%, rgba(255,255,255,0.3) 50%, transparent 50%);
     background-repeat: no-repeat;
     pointer-events: none;
@@ -187,6 +187,71 @@
     }
 }
 
+/* Анимация улетающей ракеты при взрыве */
+@keyframes rocketBlastOff {
+    0% {
+        transform: translateX(-45%) rotate(-45deg) scale(1);
+        bottom: 110px;
+        filter: brightness(1);
+    }
+    20% {
+        transform: translateX(-45%) rotate(-45deg) scale(1.5);
+        filter: brightness(2.5) drop-shadow(0 0 30px #ff0000);
+    }
+    100% {
+        transform: translateX(-45%) rotate(-45deg) scale(0.3);
+        bottom: 600px;
+        opacity: 0;
+        filter: brightness(4) drop-shadow(0 0 50px #ff0000);
+    }
+}
+
+.rocket.blast-off {
+    animation: rocketBlastOff 1.2s ease-out forwards;
+    z-index: 25;
+}
+
+/* Стиль для текста "УЛЕТЕЛ" */
+.blast-off-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 52px;
+    font-weight: bold;
+    color: #ff0000;
+    text-shadow: 
+        0 0 25px rgba(255, 0, 0, 0.9), 
+        0 0 50px rgba(255, 0, 0, 0.7),
+        0 0 75px rgba(255, 0, 0, 0.5);
+    z-index: 20;
+    opacity: 0;
+    animation: textAppear 1.5s ease-in-out forwards;
+}
+
+@keyframes textAppear {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.3);
+        filter: blur(10px);
+    }
+    40% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.3);
+        filter: blur(0);
+    }
+    60% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.3);
+        filter: blur(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.5);
+        filter: blur(5px);
+    }
+}
+
 .multiplier-display {
     position: absolute;
     top: 20px;
@@ -219,7 +284,7 @@
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     color: white;
-    font-size: 16px;
+   极速输入框: 16px;
 }
 
 .bet-button {
@@ -286,7 +351,7 @@
     text-align: center;
     padding: 10px;
     background: rgba(25, 30, 42, 0.95);
-    border-radius: 10px;
+    border-radius: 极速状态栏, 10px;
     margin-bottom: 15px;
     font-weight: bold;
 }
@@ -319,7 +384,7 @@
 }
 
 .history-item {
-    padding: 5px 10px;
+    padding: 5px 极速历史, 10px;
     border-radius: 8px;
     font-size: 12px;
     font-weight: bold;
@@ -341,14 +406,28 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle, rgba(255,0,0,0.8) 0%, rgba(255,0,0,0) 70%);
-    animation: explode 1s ease-out;
-    z-index: 5;
+    background: radial-gradient(circle, 
+        rgba(255, 50, 50, 0.9) 0%, 
+        rgba(255, 100, 100, 0.7) 30%,
+        rgba(255, 150, 150, 0.4) 60%,
+        rgba(255, 200, 200, 0) 90%);
+    animation: explode 1.5s ease-out;
+    z-index: 15;
 }
 
 @keyframes explode {
-    0% { transform: scale(0); opacity: 1; }
-    100% { transform: scale(2); opacity: 0; }
+    0% { 
+        transform: scale(0); 
+        opacity: 1; 
+    }
+    50% { 
+        transform: scale(1.5); 
+        opacity: 0.8;
+    }
+    100% { 
+        transform: scale(2.5); 
+        opacity: 0; 
+    }
 }
 
 .back-button {

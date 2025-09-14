@@ -217,13 +217,34 @@ function showExplosion() {
     canvas.classList.remove('pulsating');
     canvas.style.backgroundColor = '';
     
+    // Запускаем эффект улетающей ракеты
+    rocketElement.classList.add('blast-off');
+    
+    // Создаем текст "УЛЕТЕЛ"
+    const blastOffText = document.createElement('div');
+    blastOffText.className = 'blast-off-text';
+    blastOffText.textContent = 'УЛЕТЕЛ!';
+    canvas.appendChild(blastOffText);
+    
+    // Создаем взрыв
     const explosion = document.createElement('div');
     explosion.className = 'explosion';
     canvas.appendChild(explosion);
     
     setTimeout(() => {
-        canvas.removeChild(explosion);
-    }, 1000);
+        // Убираем взрыв и текст
+        if (explosion.parentNode) {
+            canvas.removeChild(explosion);
+        }
+        if (blastOffText.parentNode) {
+            canvas.removeChild(blastOffText);
+        }
+        // Возвращаем ракету в исходное состояние
+        rocketElement.classList.remove('blast-off');
+        rocketElement.style.bottom = '110px';
+        rocketElement.style.opacity = '1';
+        rocketElement.style.filter = 'none';
+    }, 2000);
 }
 
     function updatePlayersList(players) {
