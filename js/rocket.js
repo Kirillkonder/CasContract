@@ -78,9 +78,6 @@ function updateGameState(gameState) {
     
     const statusElement = document.getElementById('statusText');
     const countdownElement = document.getElementById('countdown');
-    const statusClass = `status-${gameState.status}`;
-    
-    document.getElementById('gameStatus').className = `game-status ${statusClass}`;
     
     switch(gameState.status) {
         case 'waiting':
@@ -90,9 +87,8 @@ function updateGameState(gameState) {
             resetBettingUI();
             break;
             
-       case 'counting':
+        case 'counting':
             statusElement.textContent = 'Прием ставок: ';
-            // ФИКС: Передаем timeLeft, а не endBetTime
             startCountdown(gameState.timeLeft || Math.max(0, Math.ceil((gameState.endBetTime - Date.now()) / 1000)));
             updateBettingUI();
             break;
@@ -123,6 +119,8 @@ function updateGameState(gameState) {
         
         if (userCashedOut) {
             document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2);
+            // Обновляем баланс сразу после выигрыша
+            updateBalanceAfterWin(userPlayer.winAmount);
         }
     }
     
@@ -135,6 +133,19 @@ function updateGameState(gameState) {
     }
     
     updateBettingUI();
+}
+
+async function updateBalanceAfterWin(winAmount) {
+    try {
+        const response = await fetch(`/api/user/balance/${currentUser.id}`);
+        if (response.ok) {
+            const userData = await response.json();
+            const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
+            document.getElementById('balance').textContent = balance.toFixed(2);
+        }
+    } catch (error) {
+        console.error('Error updating balance:', error);
+    }
 }
 
 function startCountdown(timeLeft) {
@@ -346,12 +357,8 @@ async function cashout() {
             userCashedOut = true;
             updateBettingUI();
             
-            const response = await fetch(`/api/user/balance/${currentUser.id}`);
-            if (response.ok) {
-                const userData = await response.json();
-                const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
-                document.getElementById('balance').textContent = balance.toFixed(2);
-            }
+            // Обновляем баланс сразу после вывода
+            updateBalanceAfterWin(result.winAmount || 0);
         }
     } catch (error) {
         console.error('Error cashing out:', error);

@@ -353,30 +353,8 @@
     font-weight: bold;
 }
 
-.game-status {
-    text-align: center;
-    padding: 10px;
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary-medium));
-    border-radius: 10px;
-    margin-bottom: 15px;
-    font-weight: bold;
-}
 
-.status-waiting {
-    color: #fdcb6e;
-}
 
-.status-counting {
-    color: #a97bff;
-}
-
-.status-flying {
-    color: var(--success);
-}
-
-.status-crashed {
-    color: var(--accent-pink);
-}
 
 .history-container {
     margin-top: 20px;
