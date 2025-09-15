@@ -1,187 +1,399 @@
+ * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #000;
+    color: #fff;
+    overflow-x: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.game-container {
+    max-width: 390px;
+    margin: 0 auto;
     min-height: 100vh;
+    background: #000;
+    position: relative;
+}
+
+/* Верхняя панель */
+.top-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 10;
+}
+
+.close-btn {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 20px;
-    margin: 0;
+    gap: 8px;
+    font-size: 14px;
+    color: #999;
 }
 
-.container {
-    width: 100%;
-    max-width: 400px;
+.close-btn i {
+    font-size: 18px;
 }
 
-.main-card {
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+.balance {
+    background: linear-gradient(135deg, #00ff00, #32cd32);
+    color: #000;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 14px;
 }
 
-.card-header {
-    background-color: #6c5ce7;
-    color: white;
-    text-align: center;
-    padding: 15px;
-}
-
-.card-header h2 {
-    margin: 0;
-    font-weight: 600;
-}
-
-.card-body {
-    padding: 0;
-}
-
-.expectation-section, .bet-section {
-    padding: 20px;
-}
-
-.expectation-section h3, .bet-section h3 {
-    color: #6c5ce7;
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-weight: 600;
-    font-size: 1.2rem;
-}
-
-.expectation-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
-
-.expectation-list li {
-    background-color: #f8f9fa;
-    padding: 10px;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: 500;
-    color: #495057;
-}
-
-.rocket-container {
+.timer-section {
     display: flex;
-    justify-content: center;
     align-items: center;
-    padding: 20px 0;
-    background-color: #f1f3f5;
+    gap: 8px;
+    font-size: 14px;
 }
 
-.rocket {
-    width: 60px;
-    height: 100px;
-    animation: float 3s ease-in-out infinite;
+.timer-section i:first-child {
+    color: #00bfff;
 }
 
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0px); }
+.timer-section i:last-child {
+    color: #666;
 }
 
-.divider {
-    height: 2px;
-    background: linear-gradient(to right, transparent, #dee2e6, transparent);
-    margin: 0 20px;
-}
-
-.bettors {
+.options {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 12px;
 }
 
-.bettor {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 8px;
+.options i {
+    font-size: 16px;
+    color: #999;
+}
+
+/* Игровое поле */
+.game-field {
+    height: 320px;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+    display: flex;
     align-items: center;
-    padding: 10px;
-    background-color: #f8f9fa;
+    justify-content: center;
+}
+
+.grid-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(rgba(0, 100, 255, 0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 100, 255, 0.3) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: gridPulse 2s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+}
+
+.rocket-container {
+    position: relative;
+    z-index: 5;
+}
+
+.rocket {
+    width: 80px;
+    height: 80px;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+    transition: transform 1s ease-in-out;
+    animation: rocketFloat 3s ease-in-out infinite;
+}
+
+@keyframes rocketFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(2deg); }
+}
+
+/* Коэффициенты */
+.coefficients {
+    display: flex;
+    gap: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.coefficients::-webkit-scrollbar {
+    display: none;
+}
+
+.coeff-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
-}
-
-.bettor .name {
-    font-weight: 500;
-    color: #495057;
-}
-
-.bettor .bet, .bettor .multiplier, .bettor .odds {
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+    min-width: 60px;
     text-align: center;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUp 0.6s ease forwards;
+}
+
+.coeff-item:nth-child(1) { animation-delay: 0s; }
+.coeff-item:nth-child(2) { animation-delay: 0.1s; }
+.coeff-item:nth-child(3) { animation-delay: 0.2s; }
+.coeff-item:nth-child(4) { animation-delay: 0.3s; }
+.coeff-item:nth-child(5) { animation-delay: 0.4s; }
+.coeff-item:nth-child(6) { animation-delay: 0.5s; }
+.coeff-item:nth-child(7) { animation-delay: 0.6s; }
+
+@keyframes slideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.coeff-item.active {
+    background: #1a5490;
+    border-color: #2668b3;
+    color: #fff;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.coeff-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Кнопка ставки */
+.bet-button-container {
+    padding: 16px;
+}
+
+.bet-button {
+    width: 100%;
+    background: linear-gradient(135deg, #1e5cb8, #2668b3);
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(30, 92, 184, 0.3);
+}
+
+.bet-button:hover {
+    background: linear-gradient(135deg, #2668b3, #1e5cb8);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(30, 92, 184, 0.4);
+}
+
+.bet-button:active {
+    transform: translateY(0);
+}
+
+/* Список игроков */
+.players-list {
+    padding: 0 16px 16px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.player-item:nth-child(1) { animation-delay: 0.1s; }
+.player-item:nth-child(2) { animation-delay: 0.2s; }
+.player-item:nth-child(3) { animation-delay: 0.3s; }
+.player-item:nth-child(4) { animation-delay: 0.4s; }
+.player-item:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #666, #999);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.player-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.player-name {
+    font-size: 14px;
     font-weight: 500;
 }
 
-.bettor .multiplier {
-    color: #6c5ce7;
+.player-bet {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
 }
 
-.bettor .odds {
-    color: #e74c3c;
+.player-bet i {
+    color: #00bfff;
+    font-size: 8px;
 }
 
-/* Адаптация для Telegram Mini App */
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-    
-    .container {
+.win-amount {
+    color: #00ff00;
+    font-weight: bold;
+}
+
+.player-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.player-stats i {
+    color: #00bfff;
+}
+
+.player-icon {
+    font-size: 16px;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+}
+
+/* Адаптация для Telegram Mini Apps */
+@media (max-width: 390px) {
+    .game-container {
         max-width: 100%;
     }
     
-    .expectation-list {
-        grid-template-columns: repeat(2, 1fr);
+    .top-panel {
+        padding: 8px 12px;
+    }
+    
+    .game-field {
+        height: 280px;
+    }
+    
+    .rocket {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .coefficients {
+        padding: 12px;
+        gap: 6px;
+    }
+    
+    .coeff-item {
+        min-width: 50px;
+        padding: 6px 8px;
+        font-size: 11px;
+    }
+    
+    .bet-button-container {
+        padding: 12px;
+    }
+    
+    .bet-button {
+        padding: 14px;
+        font-size: 15px;
+    }
+    
+    .players-list {
+        padding: 0 12px 12px;
     }
 }
 
-/* Анимация появления */
-.main-card {
-    animation: fadeIn 0.5s ease-out;
+/* Дополнительные анимации */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+.bet-button:hover {
+    animation: pulse 1s infinite;
 }
 
-/* Анимация для элементов списка */
-.expectation-list li {
-    animation: slideIn 0.5s ease-out;
-    animation-fill-mode: both;
+/* Плавные переходы для всех интерактивных элементов */
+* {
+    transition: all 0.3s ease;
 }
 
-.expectation-list li:nth-child(1) { animation-delay: 0.1s; }
-.expectation-list li:nth-child(2) { animation-delay: 0.2s; }
-.expectation-list li:nth-child(3) { animation-delay: 0.3s; }
-.expectation-list li:nth-child(4) { animation-delay: 0.4s; }
-.expectation-list li:nth-child(5) { animation-delay: 0.5s; }
-.expectation-list li:nth-child(6) { animation-delay: 0.6s; }
-
-@keyframes slideIn {
-    from { opacity: 0; transform: translateX(-20px); }
-    to { opacity: 1; transform: translateX(0); }
+/* Стили для скроллбара */
+.players-list::-webkit-scrollbar {
+    width: 4px;
 }
 
-/* Анимация для ставок */
-.bettor {
-    animation: slideInRight 0.5s ease-out;
-    animation-fill-mode: both;
+.players-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
 }
 
-.bettor:nth-child(1) { animation-delay: 0.1s; }
-.bettor:nth-child(2) { animation-delay: 0.2s; }
-.bettor:nth-child(3) { animation-delay: 0.3s; }
-.bettor:nth-child(4) { animation-delay: 0.4s; }
-.bettor:nth-child(5) { animation-delay: 0.5s; }
+.players-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
 
-@keyframes slideInRight {
-    from { opacity: 0; transform: translateX(20px); }
-    to { opacity: 1; transform: translateX(0); }
+.players-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Дополнительные эффекты для мобильных устройств */
+@media (hover: none) and (pointer: coarse) {
+    .coeff-item:hover,
+    .bet-button:hover {
+        transform: none;
+    }
+    
+    .coeff-item:active {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(0.95);
+    }
+    
+    .bet-button:active {
+        transform: scale(0.98);
+    }
 }
