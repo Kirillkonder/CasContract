@@ -1,4 +1,4 @@
- * {
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -28,8 +28,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.9);
     position: relative;
     z-index: 10;
 }
@@ -37,53 +36,59 @@ body {
 .close-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     font-size: 14px;
-    color: #999;
+    color: #fff;
+    font-weight: 500;
 }
 
 .close-btn i {
-    font-size: 18px;
+    font-size: 16px;
 }
 
-.balance {
-    background: linear-gradient(135deg, #00ff00, #32cd32);
-    color: #000;
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.timer-section {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-}
-
-.timer-section i:first-child {
-    color: #00bfff;
-}
-
-.timer-section i:last-child {
-    color: #666;
-}
-
-.options {
+.top-right {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.options i {
-    font-size: 16px;
+.balance {
+    background: linear-gradient(135deg, #00c851, #32cd32);
+    color: #000;
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.balance i {
+    font-size: 12px;
+}
+
+.timer-section {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #fff;
+}
+
+.timer-section i {
+    color: #00bfff;
+    font-size: 10px;
+}
+
+.top-right > i {
     color: #999;
+    font-size: 16px;
 }
 
 /* Игровое поле */
 .game-field {
-    height: 320px;
+    height: 300px;
     background: #000;
     position: relative;
     overflow: hidden;
@@ -99,15 +104,15 @@ body {
     right: 0;
     bottom: 0;
     background-image: 
-        linear-gradient(rgba(0, 100, 255, 0.3) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 100, 255, 0.3) 1px, transparent 1px);
-    background-size: 30px 30px;
+        linear-gradient(rgba(30, 92, 184, 0.6) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30, 92, 184, 0.6) 1px, transparent 1px);
+    background-size: 25px 25px;
     animation: gridPulse 2s ease-in-out infinite;
 }
 
 @keyframes gridPulse {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.6; }
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
 }
 
 .rocket-container {
@@ -116,23 +121,23 @@ body {
 }
 
 .rocket {
-    width: 80px;
-    height: 80px;
-    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+    width: 70px;
+    height: 70px;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2));
     transition: transform 1s ease-in-out;
     animation: rocketFloat 3s ease-in-out infinite;
 }
 
 @keyframes rocketFloat {
     0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-15px) rotate(2deg); }
+    50% { transform: translateY(-12px) rotate(2deg); }
 }
 
 /* Коэффициенты */
 .coefficients {
     display: flex;
-    gap: 8px;
-    padding: 16px;
+    gap: 6px;
+    padding: 12px 16px;
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -145,16 +150,17 @@ body {
 .coeff-item {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    padding: 8px 12px;
+    border-radius: 6px;
+    padding: 6px 10px;
     font-size: 12px;
     white-space: nowrap;
-    min-width: 60px;
+    min-width: 55px;
     text-align: center;
     transition: all 0.3s ease;
     opacity: 0;
-    transform: translateY(20px);
-    animation: slideUp 0.6s ease forwards;
+    transform: translateY(15px);
+    animation: slideUp 0.5s ease forwards;
+    color: #fff;
 }
 
 .coeff-item:nth-child(1) { animation-delay: 0s; }
@@ -173,41 +179,36 @@ body {
 }
 
 .coeff-item.active {
-    background: #1a5490;
+    background: linear-gradient(135deg, #1e5cb8, #2668b3);
     border-color: #2668b3;
     color: #fff;
     opacity: 1;
     transform: translateY(0);
 }
 
-.coeff-item:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-}
-
 /* Кнопка ставки */
 .bet-button-container {
-    padding: 16px;
+    padding: 12px 16px;
 }
 
 .bet-button {
     width: 100%;
     background: linear-gradient(135deg, #1e5cb8, #2668b3);
     border: none;
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 10px;
+    padding: 14px;
     color: #fff;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(30, 92, 184, 0.3);
+    box-shadow: 0 3px 12px rgba(30, 92, 184, 0.3);
 }
 
 .bet-button:hover {
     background: linear-gradient(135deg, #2668b3, #1e5cb8);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(30, 92, 184, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(30, 92, 184, 0.4);
 }
 
 .bet-button:active {
@@ -217,7 +218,7 @@ body {
 /* Список игроков */
 .players-list {
     padding: 0 16px 16px;
-    max-height: 280px;
+    max-height: 260px;
     overflow-y: auto;
 }
 
@@ -225,11 +226,11 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0;
+    padding: 10px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    animation: fadeInUp 0.6s ease forwards;
+    animation: fadeInUp 0.5s ease forwards;
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(15px);
 }
 
 .player-item:nth-child(1) { animation-delay: 0.1s; }
@@ -248,69 +249,70 @@ body {
 .player-info {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .avatar {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #666, #999);
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #87ceeb, #b0e0e6);
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .player-details {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
 }
 
 .player-name {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
+    color: #fff;
 }
 
 .player-bet {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
+    gap: 4px;
+    font-size: 11px;
 }
 
 .player-bet i {
     color: #00bfff;
-    font-size: 8px;
+    font-size: 10px;
 }
 
 .win-amount {
-    color: #00ff00;
+    color: #00c851;
     font-weight: bold;
 }
 
 .player-stats {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
+    gap: 6px;
+    font-size: 11px;
 }
 
 .player-stats i {
     color: #00bfff;
+    font-size: 10px;
 }
 
 .player-icon {
-    font-size: 16px;
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+    font-size: 14px;
 }
 
-/* Адаптация для Telegram Mini Apps */
+/* Адаптация для мобильных устройств */
 @media (max-width: 390px) {
     .game-container {
         max-width: 100%;
     }
     
     .top-panel {
-        padding: 8px 12px;
+        padding: 10px 12px;
     }
     
     .game-field {
@@ -323,23 +325,18 @@ body {
     }
     
     .coefficients {
-        padding: 12px;
-        gap: 6px;
+        padding: 10px 12px;
+        gap: 4px;
     }
     
     .coeff-item {
         min-width: 50px;
-        padding: 6px 8px;
+        padding: 5px 8px;
         font-size: 11px;
     }
     
     .bet-button-container {
-        padding: 12px;
-    }
-    
-    .bet-button {
-        padding: 14px;
-        font-size: 15px;
+        padding: 10px 12px;
     }
     
     .players-list {
@@ -347,24 +344,9 @@ body {
     }
 }
 
-/* Дополнительные анимации */
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-.bet-button:hover {
-    animation: pulse 1s infinite;
-}
-
-/* Плавные переходы для всех интерактивных элементов */
-* {
-    transition: all 0.3s ease;
-}
-
 /* Стили для скроллбара */
 .players-list::-webkit-scrollbar {
-    width: 4px;
+    width: 3px;
 }
 
 .players-list::-webkit-scrollbar-track {
@@ -377,19 +359,10 @@ body {
     border-radius: 2px;
 }
 
-.players-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
-
-/* Дополнительные эффекты для мобильных устройств */
+/* Дополнительные анимации для мобильных устройств */
 @media (hover: none) and (pointer: coarse) {
-    .coeff-item:hover,
-    .bet-button:hover {
-        transform: none;
-    }
-    
     .coeff-item:active {
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.2);
         transform: scale(0.95);
     }
     
