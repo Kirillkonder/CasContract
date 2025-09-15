@@ -299,6 +299,7 @@ async function placeBet() {
     }
 }
 
+// rocket.js - исправленная функция cashout
 async function cashout() {
     if (userCashedOut) {
         return;
@@ -332,12 +333,8 @@ async function cashout() {
             userCashedOut = true;
             updateBettingUI();
             
-            const response = await fetch(`/api/user/balance/${currentUser.id}`);
-            if (response.ok) {
-                const userData = await response.json();
-                const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
-                document.getElementById('balance').textContent = balance.toFixed(2);
-            }
+            // 🔥 ДОБАВЛЕНО: Запрашиваем обновленный баланс после выигрыша
+            await loadUserData();
         }
     } catch (error) {
         console.error('Error cashing out:', error);
