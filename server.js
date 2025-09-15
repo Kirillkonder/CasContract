@@ -325,7 +325,6 @@ function startRocketFlight() {
 }
 
 
-// server.js - исправленная функция processRocketGameEnd
 function processRocketGameEnd() {
   // Сохраняем игру в историю
   const gameRecord = rocketGames.insert({
@@ -340,9 +339,9 @@ function processRocketGameEnd() {
 
   // Обрабатываем выплаты для реальных игроков
   rocketGame.players.forEach(player => {
-    if (!player.isBot && player.cashedOut) {
+    if (!player.isBot) {
       const user = users.findOne({ telegram_id: parseInt(player.userId) });
-      if (user) {
+      if (user && player.cashedOut) {
         const winAmount = player.betAmount * player.cashoutMultiplier;
         
         if (player.demoMode) {
