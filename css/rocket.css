@@ -39,9 +39,6 @@ body {
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
 }
-.history-container-inside::-webkit-scrollbar {
-    display: none;
-}
 
 .history-container-inside {
     -ms-overflow-style: none;
@@ -90,7 +87,7 @@ body {
         150px 150px,
         200px 200px;
     border-radius: 0;
-    margin-bottom: 10px;
+    margin-bottom: 0;
     position: relative;
     overflow: hidden;
     box-shadow: none;
