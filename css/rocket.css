@@ -35,18 +35,74 @@ body {
     border-radius: 10px;
     padding: 10px;
     border: 1px solid rgba(140, 82, 255, 0.3);
-    overflow-x: auto;
+    overflow: hidden;
     white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
     z-index: 30;
+    height: 40px;
+    display: flex;
+    align-items: center;
 }
 
-.history-container-inside::-webkit-scrollbar {
-    display: none;
+.history-items {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    position: relative;
 }
 
+.history-item {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    background: rgba(45, 27, 78, 0.8);
+    border: 1px solid rgba(140, 82, 255, 0.2);
+    white-space: nowrap;
+    animation: slideIn 0.3s ease-out;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.history-item.slide-out {
+    animation: slideOut 0.3s ease-in forwards;
+}
+
+.history-win {
+    color: #00d8a7;
+    border-color: rgba(0, 216, 167, 0.3);
+}
+
+.history-loss {
+    color: #ff2a85;
+    border-color: rgba(255, 42, 133, 0.3);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+}
 
 .rocket-canvas {
     width: 100vw;
@@ -380,44 +436,6 @@ body {
     font-weight: bold;
 }
 
-
-
-.history-container {
-    margin-top: 20px;
-}
-
-.history-items {
-    display: flex;
-    gap: 5px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-
-.history-item {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: bold;
-    background: rgba(45, 27, 78, 0.8);
-    border: 1px solid rgba(140, 82, 255, 0.2);
-    margin-right: 8px;
-    white-space: nowrap;
-
-}
-
-.history-win {
-    color: #00d8a7;
-    border-color: rgba(0, 216, 167, 0.3);
-}
-
-.history-loss {
-    color: #ff2a85;
-    border-color: rgba(255, 42, 133, 0.3);
-}
-
-
 .explosion {
     position: absolute;
     top: 0;
@@ -459,7 +477,6 @@ body {
     font-weight: bold;
 }
 
-
 .balance-container {
     text-align: left;
     margin-bottom: 15px;
@@ -480,7 +497,6 @@ body {
     color: #00d8a7 !important; /* голубой/бирюзовый цвет для TON */
     font-weight: normal;
 }
-
 
 .demo-badge {
     display: none !important;

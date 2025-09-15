@@ -9,30 +9,22 @@
 </head>
 <body>
     <div class="container">
-        
-        
-       
-
-       
-
         <div class="rocket-canvas" id="rocketCanvas">
-             <div class="balance-container">
-            <span id="balance">0</span> <span class="ton-text">TON</span>
-            <span id="demo-badge" class="demo-badge">TESTNET</span>
+            <div class="balance-container">
+                <span id="balance">0</span> <span class="ton-text">TON</span>
+                <span id="demo-badge" class="demo-badge">TESTNET</span>
+            </div>
+            <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
+            <div class="rocket" id="rocket">
+                <img src="Rocket.png" alt="Rocket">
+            </div>
+            <div class="trail" id="rocketTrail"></div>
+            
+            <!-- История ставок внутри canvas внизу -->
+            <div class="history-container-inside">
+                <div class="history-items" id="historyItems"></div>
+            </div>
         </div>
-    <div class="multiplier-display" id="multiplierDisplay">1.00x</div>
-    <div class="rocket" id="rocket">
-        <img src="Rocket.png" alt="Rocket">
-    </div>
-    <div class="trail" id="rocketTrail"></div>
-    
-    <!-- История ставок внутри canvas внизу -->
-    <div class="history-container-inside">
-        <div class="history-items" id="historyItems"></div>
-    </div>
-</div>
-
-
 
         <div class="betting-panel">
             <div class="bet-controls">
