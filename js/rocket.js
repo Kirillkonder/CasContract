@@ -300,6 +300,7 @@ async function placeBet() {
 }
 
 // rocket.js - исправленная функция cashout
+// rocket.js - исправленная функция cashout
 async function cashout() {
     if (userCashedOut) {
         return;
@@ -331,10 +332,21 @@ async function cashout() {
         const result = await response.json();
         if (result.success) {
             userCashedOut = true;
+            
+            // 🔥 НЕМЕДЛЕННО обновляем баланс на клиенте
+            const winAmount = userBet * rocketGame.multiplier;
+            const currentBalance = parseFloat(document.getElementById('balance').textContent);
+            const newBalance = currentBalance + winAmount;
+            document.getElementById('balance').textContent = newBalance.toFixed(2);
+            
+            // Также обновляем интерфейс
+            document.getElementById('potentialWin').textContent = winAmount.toFixed(2);
             updateBettingUI();
             
-            // 🔥 ДОБАВЛЕНО: Запрашиваем обновленный баланс после выигрыша
-            await loadUserData();
+            // 🔥 ДОПОЛНИТЕЛЬНО синхронизируем с сервером
+            setTimeout(() => {
+                loadUserData(); // Запрашиваем актуальный баланс с сервера
+            }, 1000);
         }
     } catch (error) {
         console.error('Error cashing out:', error);
