@@ -7,18 +7,6 @@ let userPlayer = null;
 let rocketPosition = 80;
 let countdownInterval = null;
 
-
-function showButtonLoading(buttonId) {
-    const button = document.getElementById(buttonId);
-    button.classList.add('loading');
-    button.disabled = true;
-}
-
-function hideButtonLoading(buttonId) {
-    const button = document.getElementById(buttonId);
-    button.classList.remove('loading');
-}
-
 // Инициализация
 document.addEventListener('DOMContentLoaded', function() {
     initializeGame();
@@ -50,7 +38,7 @@ async function loadUserData() {
             const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
             document.getElementById('balance').textContent = balance.toFixed(2);
             isDemoMode = userData.demo_mode;
-            document.getElementById('demo-badge').style.display = 'none';
+            document.getElementById('demo-badge').textContent = isDemoMode ? 'TESTNET' : 'MAINNET';
         }
     } catch (error) {
         console.error('Error loading user data:', error);
@@ -88,27 +76,37 @@ function connectWebSocket() {
 function updateGameState(gameState) {
     rocketGame = gameState;
     
-    // Убрали обновление статуса, так как убрали соответствующие элементы
-    clearCountdown();
+    const statusElement = document.getElementById('statusText');
+    const countdownElement = document.getElementById('countdown');
+    const statusClass = `status-${gameState.status}`;
+    
+    document.getElementById('gameStatus').className = `game-status ${statusClass}`;
     
     switch(gameState.status) {
         case 'waiting':
+            statusElement.textContent = 'Ожидание начала игры...';
+            countdownElement.textContent = '';
             clearCountdown();
             resetBettingUI();
             break;
             
-        case 'counting':
+       case 'counting':
+            statusElement.textContent = 'Прием ставок: ';
             // ФИКС: Передаем timeLeft, а не endBetTime
             startCountdown(gameState.timeLeft || Math.max(0, Math.ceil((gameState.endBetTime - Date.now()) / 1000)));
             updateBettingUI();
             break;
             
         case 'flying':
+            statusElement.textContent = 'Ракета взлетает!';
+            countdownElement.textContent = '';
             clearCountdown();
             updateRocketPosition(gameState.multiplier);
             break;
             
         case 'crashed':
+            statusElement.textContent = `Ракета взорвалась на ${gameState.crashPoint.toFixed(2)}x!`;
+            countdownElement.textContent = '';
             clearCountdown();
             showExplosion();
             break;
@@ -142,7 +140,11 @@ function updateGameState(gameState) {
 function startCountdown(timeLeft) {
     clearCountdown();
     
+    document.getElementById('statusText').textContent = `Прием ставок: ${timeLeft}с`;
+    document.getElementById('placeBetButton').textContent = timeLeft > 0 ? `Поставить (${timeLeft}с)` : 'Время вышло';
+    
     if (timeLeft <= 0) {
+        document.getElementById('statusText').textContent = 'Время ставок закончилось';
         document.getElementById('placeBetButton').textContent = 'Время вышло';
         document.getElementById('placeBetButton').disabled = true;
     }
@@ -280,8 +282,6 @@ async function placeBet() {
         return;
     }
     
-    showButtonLoading('placeBetButton');
-    
     try {
         const response = await fetch('/api/rocket/bet', {
             method: 'POST',
@@ -296,7 +296,6 @@ async function placeBet() {
         });
         
         if (!response.ok) {
-            hideButtonLoading('placeBetButton');
             return;
         }
         
@@ -311,13 +310,9 @@ async function placeBet() {
         }
     } catch (error) {
         console.error('Error placing bet:', error);
-    } finally {
-        hideButtonLoading('placeBetButton');
     }
 }
 
-// rocket.js - исправленная функция cashout
-// rocket.js - исправленная функция cashout
 async function cashout() {
     if (userCashedOut) {
         return;
@@ -331,8 +326,6 @@ async function cashout() {
         return;
     }
     
-    showButtonLoading('cashoutButton');
-    
     try {
         const response = await fetch('/api/rocket/cashout', {
             method: 'POST',
@@ -345,30 +338,23 @@ async function cashout() {
         });
         
         if (!response.ok) {
-            hideButtonLoading('cashoutButton');
             return;
         }
         
         const result = await response.json();
         if (result.success) {
             userCashedOut = true;
-            
-            const winAmount = userBet * rocketGame.multiplier;
-            const currentBalance = parseFloat(document.getElementById('balance').textContent);
-            const newBalance = currentBalance + winAmount;
-            document.getElementById('balance').textContent = newBalance.toFixed(2);
-            
-            document.getElementById('potentialWin').textContent = winAmount.toFixed(2);
             updateBettingUI();
             
-            setTimeout(() => {
-                loadUserData();
-            }, 1000);
+            const response = await fetch(`/api/user/balance/${currentUser.id}`);
+            if (response.ok) {
+                const userData = await response.json();
+                const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
+                document.getElementById('balance').textContent = balance.toFixed(2);
+            }
         }
     } catch (error) {
         console.error('Error cashing out:', error);
-    } finally {
-        hideButtonLoading('cashoutButton');
     }
 }
 
