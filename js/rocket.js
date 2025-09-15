@@ -83,6 +83,8 @@ function updateGameState(gameState) {
         case 'waiting':
             clearCountdown();
             resetBettingUI();
+            // ОБНОВЛЕНИЕ: Обновляем баланс при завершении раунда
+            updateUserBalance();
             break;
             
         case 'counting':
@@ -99,6 +101,8 @@ function updateGameState(gameState) {
         case 'crashed':
             clearCountdown();
             showExplosion();
+            // ОБНОВЛЕНИЕ: Обновляем баланс при завершении раунда
+            updateUserBalance();
             break;
     }
     
@@ -381,6 +385,18 @@ function updateBettingUI() {
         cashoutButton.textContent = 'Забрать выигрыш';
     }
 }
+async function updateUserBalance() {
+    try {
+        const response = await fetch(`/api/user/balance/${currentUser.id}`);
+        if (response.ok) {
+            const userData = await response.json();
+            const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
+            document.getElementById('balance').textContent = balance.toFixed(2);
+        }
+    } catch (error) {
+        console.error('Error updating user balance:', error);
+    }
+}
 
 function resetBettingUI() {
     userBet = 0;
@@ -396,6 +412,10 @@ function resetBettingUI() {
     const trailElement = document.getElementById('rocketTrail');
     rocketElement.style.bottom = '100px';
     trailElement.style.height = '0px';
+    
+    // ОБНОВЛЕНИЕ: Обновляем баланс при сбросе UI
+    updateUserBalance();
+
 }
 
 let rocketGame = {
