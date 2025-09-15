@@ -76,37 +76,27 @@ function connectWebSocket() {
 function updateGameState(gameState) {
     rocketGame = gameState;
     
-    const statusElement = document.getElementById('statusText');
-    const countdownElement = document.getElementById('countdown');
-    const statusClass = `status-${gameState.status}`;
-    
-    document.getElementById('gameStatus').className = `game-status ${statusClass}`;
+    // Убрали обновление статуса, так как убрали соответствующие элементы
+    clearCountdown();
     
     switch(gameState.status) {
         case 'waiting':
-            statusElement.textContent = 'Ожидание начала игры...';
-            countdownElement.textContent = '';
             clearCountdown();
             resetBettingUI();
             break;
             
-       case 'counting':
-            statusElement.textContent = 'Прием ставок: ';
+        case 'counting':
             // ФИКС: Передаем timeLeft, а не endBetTime
             startCountdown(gameState.timeLeft || Math.max(0, Math.ceil((gameState.endBetTime - Date.now()) / 1000)));
             updateBettingUI();
             break;
             
         case 'flying':
-            statusElement.textContent = 'Ракета взлетает!';
-            countdownElement.textContent = '';
             clearCountdown();
             updateRocketPosition(gameState.multiplier);
             break;
             
         case 'crashed':
-            statusElement.textContent = `Ракета взорвалась на ${gameState.crashPoint.toFixed(2)}x!`;
-            countdownElement.textContent = '';
             clearCountdown();
             showExplosion();
             break;
