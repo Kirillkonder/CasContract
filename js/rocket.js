@@ -236,16 +236,36 @@ function updatePlayersList(players) {
     });
 }
 
+// Обновленная функция для отображения истории
 function updateHistory(history) {
     const historyContainer = document.getElementById('historyItems');
+    const containerWidth = historyContainer.parentElement.offsetWidth;
+    
+    // Очищаем контейнер
     historyContainer.innerHTML = '';
     
-    history.slice(0, 10).forEach(item => {
+    // Определяем, сколько элементов может поместиться в контейнере
+    const itemWidth = 80; // Примерная ширина одного элемента
+    const maxItems = Math.floor(containerWidth / itemWidth);
+    
+    // Берем только последние maxItems элементов
+    const recentHistory = history.slice(-maxItems);
+    
+    // Добавляем элементы в контейнер
+    recentHistory.forEach(item => {
         const historyItem = document.createElement('div');
         historyItem.className = `history-item ${item.multiplier >= 2 ? 'history-win' : 'history-loss'}`;
         historyItem.textContent = `${item.multiplier.toFixed(2)}x`;
         historyContainer.appendChild(historyItem);
     });
+    
+    // Позиционируем контейнер, чтобы показывать самые последние элементы
+    const totalWidth = recentHistory.length * itemWidth;
+    if (totalWidth > containerWidth) {
+        historyContainer.style.transform = `translateX(-${totalWidth - containerWidth}px)`;
+    } else {
+        historyContainer.style.transform = 'translateX(0)';
+    }
 }
 
 async function placeBet() {
