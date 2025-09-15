@@ -238,16 +238,43 @@ function updatePlayersList(players) {
 
 function updateHistory(history) {
     const historyContainer = document.getElementById('historyItems');
-    historyContainer.innerHTML = '';
+    const maxItems = 8; // Максимальное количество элементов, которые помещаются в одну строку
     
-    history.slice(0, 10).forEach(item => {
+    // Удаляем старые элементы с анимацией
+    const currentItems = historyContainer.querySelectorAll('.history-item');
+    if (currentItems.length >= maxItems) {
+        const oldestItem = currentItems[0];
+        oldestItem.classList.add('removing');
+        setTimeout(() => {
+            if (oldestItem.parentNode) {
+                historyContainer.removeChild(oldestItem);
+            }
+        }, 500); // Время должно совпадать с длительностью анимации
+    }
+    
+    // Добавляем новый элемент
+    if (history.length > 0) {
+        const latestItem = history[history.length - 1];
         const historyItem = document.createElement('div');
-        historyItem.className = `history-item ${item.multiplier >= 2 ? 'history-win' : 'history-loss'}`;
-        historyItem.textContent = `${item.multiplier.toFixed(2)}x`;
+        historyItem.className = `history-item ${latestItem.multiplier >= 2 ? 'history-win' : 'history-loss'}`;
+        historyItem.textContent = `${latestItem.multiplier.toFixed(2)}x`;
         historyContainer.appendChild(historyItem);
-    });
+    }
+    
+    // Ограничиваем общее количество элементов
+    const allItems = historyContainer.querySelectorAll('.history-item');
+    if (allItems.length > maxItems) {
+        const itemsToRemove = allItems.length - maxItems;
+        for (let i = 0; i < itemsToRemove; i++) {
+            allItems[i].classList.add('removing');
+            setTimeout(() => {
+                if (allItems[i].parentNode) {
+                    historyContainer.removeChild(allItems[i]);
+                }
+            }, 500);
+        }
+    }
 }
-
 async function placeBet() {
     const betAmount = parseFloat(document.getElementById('betAmount').value);
     

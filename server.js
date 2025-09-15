@@ -325,6 +325,7 @@ function startRocketFlight() {
 }
 
 
+// server.js - исправленная функция processRocketGameEnd
 function processRocketGameEnd() {
   // Сохраняем игру в историю
   const gameRecord = rocketGames.insert({
@@ -339,9 +340,9 @@ function processRocketGameEnd() {
 
   // Обрабатываем выплаты для реальных игроков
   rocketGame.players.forEach(player => {
-    if (!player.isBot) {
+    if (!player.isBot && player.cashedOut) {
       const user = users.findOne({ telegram_id: parseInt(player.userId) });
-      if (user && player.cashedOut) {
+      if (user) {
         const winAmount = player.betAmount * player.cashoutMultiplier;
         
         if (player.demoMode) {
@@ -1182,6 +1183,7 @@ app.post('/api/rocket/bet', async (req, res) => {
 });
 
 // API: Забрать выигрыш в Rocket
+// server.js - исправленный endpoint /api/rocket/cashout
 app.post('/api/rocket/cashout', async (req, res) => {
     const { telegramId } = req.body;
 
@@ -1203,16 +1205,44 @@ app.post('/api/rocket/cashout', async (req, res) => {
             return res.status(400).json({ error: 'Игрок не найден или уже забрал выигрыш' });
         }
 
+        // 🔥 НЕМЕДЛЕННО начисляем выигрыш
+        const winAmount = player.betAmount * rocketGame.multiplier;
+        
+        if (player.demoMode) {
+            users.update({
+                ...user,
+                demo_balance: user.demo_balance + winAmount
+            });
+        } else {
+            users.update({
+                ...user,
+                main_balance: user.main_balance + winAmount
+            });
+            updateCasinoBank(-winAmount);
+        }
+
+        // Обновляем данные игрока
         player.cashedOut = true;
         player.cashoutMultiplier = rocketGame.multiplier;
-        player.winAmount = player.betAmount * rocketGame.multiplier;
+        player.winAmount = winAmount;
+
+        // 🔥 Сохраняем транзакцию сразу
+        transactions.insert({
+            user_id: user.$loki,
+            amount: winAmount,
+            type: 'rocket_win',
+            status: 'completed',
+            demo_mode: player.demoMode,
+            created_at: new Date()
+        });
 
         broadcastRocketUpdate();
 
         res.json({
             success: true,
             multiplier: rocketGame.multiplier,
-            winAmount: player.winAmount
+            winAmount: winAmount,
+            new_balance: player.demoMode ? user.demo_balance : user.main_balance
         });
     } catch (error) {
         console.error('Rocket cashout error:', error);
