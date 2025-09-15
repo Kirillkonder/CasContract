@@ -11,18 +11,18 @@
     <div class="game-container">
         <!-- Верхняя панель -->
         <div class="top-panel">
-            <div class="close-btn" onclick="goBack()">
+            <div class="close-btn">
                 <i class="bi bi-x"></i>
                 <span>Закрыть</span>
             </div>
             <div class="top-right">
                 <div class="balance">
                     <i class="bi bi-currency-bitcoin"></i>
-                    <span id="balance">0.00</span>
+                    +194
                 </div>
                 <div class="timer-section">
                     <i class="bi bi-diamond-fill"></i>
-                    <span id="timer">0:00</span>
+                    <span class="timer">0:00</span>
                 </div>
                 <i class="bi bi-three-dots"></i>
             </div>
@@ -32,30 +32,146 @@
         <div class="game-field">
             <div class="grid-overlay"></div>
             <div class="rocket-container">
-                <div id="rocketCanvas" style="position: relative; width: 100%; height: 100%;">
-                    <img src="Rocket.png" alt="Rocket" class="rocket" id="rocket" style="position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%);">
-                    <div id="rocketTrail" style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 3px; background: linear-gradient(to top, rgba(255,255,255,0.8), transparent); height: 0px;"></div>
-                </div>
+                <img src="Rocket.png" alt="Rocket" class="rocket">
             </div>
         </div>
 
         <!-- Коэффициенты -->
         <div class="coefficients">
-            <div class="coeff-item active" id="currentMultiplier">Ожидание</div>
-            <div id="historyContainer"></div>
+            <div class="coeff-item active">Ожидание</div>
+            <div class="coeff-item">1.00</div>
+            <div class="coeff-item">1.78</div>
+            <div class="coeff-item">2.78</div>
+            <div class="coeff-item">12.1</div>
+            <div class="coeff-item">7.51</div>
+            <div class="coeff-item">4.33</div>
         </div>
 
         <!-- Кнопка ставки -->
         <div class="bet-button-container">
-            <button class="bet-button" id="placeBetButton" onclick="placeBet()">Сделать ставку</button>
+            <button class="bet-button">Сделать ставку</button>
         </div>
 
         <!-- Список игроков -->
-        <div class="players-list" id="playersListContainer">
-            <!-- Список будет заполняться динамически -->
+        <div class="players-list">
+            <div class="player-item">
+                <div class="player-info">
+                    <div class="avatar"></div>
+                    <div class="player-details">
+                        <div class="player-name">Даня</div>
+                        <div class="player-bet">
+                            <i class="bi bi-currency-bitcoin"></i>
+                            <span>1.00</span>
+                            <span class="win-amount">+1.95</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="player-stats">
+                    <i class="bi bi-diamond-fill"></i>
+                    <span>3.16</span>
+                    <div class="player-icon">🔥</div>
+                </div>
+            </div>
+
+            <div class="player-item">
+                <div class="player-info">
+                    <div class="avatar"></div>
+                    <div class="player-details">
+                        <div class="player-name">Кирилл</div>
+                        <div class="player-bet">
+                            <i class="bi bi-currency-bitcoin"></i>
+                            <span>1.00</span>
+                            <span class="win-amount">+1.95</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="player-stats">
+                    <i class="bi bi-diamond-fill"></i>
+                    <span>3.16</span>
+                    <div class="player-icon">🌱</div>
+                </div>
+            </div>
+
+            <div class="player-item">
+                <div class="player-info">
+                    <div class="avatar"></div>
+                    <div class="player-details">
+                        <div class="player-name">Наиль</div>
+                        <div class="player-bet">
+                            <i class="bi bi-currency-bitcoin"></i>
+                            <span>1.00</span>
+                            <span class="win-amount">+1.95</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="player-stats">
+                    <i class="bi bi-diamond-fill"></i>
+                    <span>3.16</span>
+                    <div class="player-icon">💜</div>
+                </div>
+            </div>
+
+            <div class="player-item">
+                <div class="player-info">
+                    <div class="avatar"></div>
+                    <div class="player-details">
+                        <div class="player-name">Миша</div>
+                        <div class="player-bet">
+                            <i class="bi bi-currency-bitcoin"></i>
+                            <span>1.00</span>
+                            <span class="win-amount">+1.95</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="player-stats">
+                    <i class="bi bi-diamond-fill"></i>
+                    <span>3.16</span>
+                    <div class="player-icon">🎮</div>
+                </div>
+            </div>
+
+            <div class="player-item">
+                <div class="player-info">
+                    <div class="avatar"></div>
+                    <div class="player-details">
+                        <div class="player-name">Ваня</div>
+                        <div class="player-bet">
+                            <i class="bi bi-currency-bitcoin"></i>
+                            <span>1.00</span>
+                            <span class="win-amount">+1.95</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="player-stats">
+                    <i class="bi bi-diamond-fill"></i>
+                    <span>3.16</span>
+                    <div class="player-icon">🎯</div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="js/rocket.js"></script>
+    <script>
+        // Анимация ракеты
+        function animateRocket() {
+            const rocket = document.querySelector('.rocket');
+            rocket.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                rocket.style.transform = 'translateY(0px)';
+            }, 1000);
+        }
+
+        // Запуск анимации каждые 3 секунды
+        setInterval(animateRocket, 3000);
+
+        // Анимация коэффициентов
+        const coeffItems = document.querySelectorAll('.coeff-item:not(.active)');
+        coeffItems.forEach((item, index) => {
+            setTimeout(() => {
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    </script>
 </body>
 </html>
