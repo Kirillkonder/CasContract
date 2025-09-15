@@ -40,7 +40,6 @@ body {
     font-size: 14px;
     color: #fff;
     font-weight: 500;
-    cursor: pointer;
 }
 
 .close-btn i {
@@ -134,31 +133,6 @@ body {
     50% { transform: translateY(-12px) rotate(2deg); }
 }
 
-.rocket.pulsating {
-    animation: rocketPulse 1.2s ease-in-out infinite;
-}
-
-@keyframes rocketPulse {
-    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2)); }
-    50% { transform: scale(1.1); filter: drop-shadow(0 0 25px rgba(255, 100, 100, 0.6)); }
-}
-
-.rocket.blast-off {
-    animation: blastOff 2s ease-out forwards;
-}
-
-@keyframes blastOff {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(0.3) translateY(-200px);
-        opacity: 0;
-        filter: blur(3px);
-    }
-}
-
 /* Коэффициенты */
 .coefficients {
     display: flex;
@@ -212,28 +186,6 @@ body {
     transform: translateY(0);
 }
 
-.coeff-item.current-multiplier {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-    border-color: #ee5a24;
-    color: #fff;
-    animation: multiplierPulse 0.5s ease-in-out infinite;
-}
-
-@keyframes multiplierPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-.coeff-item.history-win {
-    background: linear-gradient(135deg, #00b894, #00a085);
-    color: #fff;
-}
-
-.coeff-item.history-loss {
-    background: linear-gradient(135deg, #d63031, #74b9ff);
-    color: #fff;
-}
-
 /* Кнопка ставки */
 .bet-button-container {
     padding: 12px 16px;
@@ -261,25 +213,6 @@ body {
 
 .bet-button:active {
     transform: translateY(0);
-}
-
-.bet-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.bet-button.loading {
-    background: linear-gradient(135deg, #666, #888);
-    cursor: not-allowed;
-}
-
-.bet-button.cashout {
-    background: linear-gradient(135deg, #00b894, #00a085);
-}
-
-.bet-button.cashout:hover {
-    background: linear-gradient(135deg, #00a085, #00b894);
 }
 
 /* Список игроков */
@@ -370,34 +303,6 @@ body {
 
 .player-icon {
     font-size: 14px;
-}
-
-.blast-off-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 24px;
-    font-weight: bold;
-    color: #ff6b6b;
-    text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
-    animation: blastOffText 2s ease-out forwards;
-    z-index: 10;
-}
-
-@keyframes blastOffText {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.5);
-    }
-    20% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.2);
-    }
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.8);
-    }
 }
 
 /* Адаптация для мобильных устройств */
