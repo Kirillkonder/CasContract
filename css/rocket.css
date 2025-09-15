@@ -448,15 +448,8 @@
 
 
 .demo-badge {
-    background: #fdcb6e;
-    color: #2d3436;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: bold;
-    margin-left: 8px;
+    display: none !important;
 }
-
 .container {
     max-width: 600px;
     margin: 0 auto;

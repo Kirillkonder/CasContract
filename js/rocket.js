@@ -38,7 +38,7 @@ async function loadUserData() {
             const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
             document.getElementById('balance').textContent = balance.toFixed(2);
             isDemoMode = userData.demo_mode;
-            document.getElementById('demo-badge').textContent = isDemoMode ? 'TESTNET' : 'MAINNET';
+            document.getElementById('demo-badge').style.display = 'none';
         }
     } catch (error) {
         console.error('Error loading user data:', error);
