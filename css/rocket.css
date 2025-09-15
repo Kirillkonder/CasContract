@@ -23,7 +23,7 @@
 
 .rocket-canvas {
     width: 100vw;
-    height: 500px;
+    height: 400px;
     background: 
         linear-gradient(180deg, var(--primary-dark) 0%, var(--primary-medium) 100%),
         /* Горизонтальные линии (толстые и редкие) */
@@ -61,7 +61,7 @@
         150px 150px,
         200px 200px;
     border-radius: 0;
-    margin-bottom: 50px;
+    margin-bottom: 100px;
     position: relative;
     overflow: hidden;
     box-shadow: none;
