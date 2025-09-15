@@ -9,7 +9,12 @@
     --success: #00d8a7;
 }
 
-
+body {
+    background: linear-gradient(135deg, #0f051d 0%, #1a0933 50%, #2d1b4e 100%);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
 
 .rocket-container {
     max-width: 600px;
