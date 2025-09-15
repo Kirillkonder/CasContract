@@ -96,7 +96,7 @@ body {
 /* Game Canvas */
 .game-canvas {
     position: relative;
-    height: 400px;
+    height: 550px;
     background: linear-gradient(180deg, var(--secondary-bg) 0%, var(--primary-bg) 100%);
     border-radius: 20px;
     overflow: hidden;
@@ -162,7 +162,7 @@ body {
 /* Rocket */
 .rocket {
     position: absolute;
-    bottom: 100px;
+    bottom: 120px;
     left: 50%;
     transform: translateX(-50%) rotate(-45deg);
     z-index: 20;
