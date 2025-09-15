@@ -26,6 +26,31 @@ body {
     display: none;
 }
 
+.history-container-inside {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    background: rgba(26, 9, 51, 0.9);
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid rgba(140, 82, 255, 0.3);
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+}
+
+.history-container-inside::-webkit-scrollbar {
+    display: none;
+}
+
+.history-container-inside {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+
+}
+
 .rocket-canvas {
     width: 100vw;
     height: 500px;
