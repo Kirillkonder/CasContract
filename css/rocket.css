@@ -9,16 +9,13 @@
     --success: #00d8a7;
 }
 
-body, html {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-}
+
 
 .rocket-container {
-    max-width: 600px;
-    margin: 0 auto;
+    max-width: none; /* Убираем ограничение */
+    margin: 0; /* Убираем авто-отступы */
     padding: 20px;
+    width: 100%;
 }
 
 .rocket-header {
