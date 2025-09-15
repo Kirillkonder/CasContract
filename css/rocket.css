@@ -39,7 +39,6 @@ body {
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
 }
-
 .history-container-inside::-webkit-scrollbar {
     display: none;
 }
@@ -397,22 +396,36 @@ body {
 }
 
 .history-item {
-    padding: 5px 10px;
-    border-radius: 8px;
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 10px;
     font-size: 12px;
     font-weight: bold;
+    background: rgba(45, 27, 78, 0.8);
+    border: 1px solid rgba(140, 82, 255, 0.2);
+    margin-right: 8px;
+    white-space: nowrap;
+
 }
 
 .history-win {
-    background: rgba(0, 216, 167, 0.2);
-    color: var(--success);
+    color: #00d8a7;
+    border-color: rgba(0, 216, 167, 0.3);
 }
 
 .history-loss {
-    background: rgba(255, 42, 133, 0.2);
-    color: var(--accent-pink);
+    color: #ff2a85;
+    border-color: rgba(255, 42, 133, 0.3);
 }
 
+.history-container-inside::-webkit-scrollbar {
+    display: none;
+}
+
+.history-container-inside {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
 .explosion {
     position: absolute;
     top: 0;
