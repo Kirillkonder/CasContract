@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rocket Game</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/rocket.css">
+    <link rel="stylesheet" href="rocket.css">
 </head>
 <body>
     <div class="game-container">
@@ -41,31 +41,21 @@
 
         <!-- Коэффициенты -->
         <div class="coefficients">
-            <div class="coeff-item" id="currentMultiplier">Ожидание</div>
-            <div id="historyItems" style="display: contents;"></div>
+            <div class="coeff-item active" id="currentMultiplier">Ожидание</div>
+            <div id="historyContainer"></div>
         </div>
 
         <!-- Кнопка ставки -->
         <div class="bet-button-container">
             <button class="bet-button" id="placeBetButton" onclick="placeBet()">Сделать ставку</button>
-            <button class="bet-button" id="cashoutButton" onclick="cashout()" style="display: none;">Забрать выигрыш</button>
-        </div>
-
-        <!-- Информация о ставке пользователя -->
-        <div style="padding: 0 16px; margin-bottom: 10px; color: #fff; font-size: 13px; display: flex; justify-content: space-between;">
-            <div>Ваша ставка: <span id="userBet">0 TON</span></div>
-            <div>Выигрыш: <span id="potentialWin">0 TON</span></div>
         </div>
 
         <!-- Список игроков -->
-        <div class="players-list">
-            <div style="padding: 10px 0; color: #fff; font-size: 14px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.2);">
-                Игроки (<span id="playersCount">0</span>)
-            </div>
-            <div id="playersList"></div>
+        <div class="players-list" id="playersListContainer">
+            <!-- Список будет заполняться динамически -->
         </div>
     </div>
 
-    <script src="js/rocket.js"></script>
+    <script src="rocket.js"></script>
 </body>
 </html>
