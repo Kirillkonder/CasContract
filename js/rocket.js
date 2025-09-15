@@ -7,6 +7,18 @@ let userPlayer = null;
 let rocketPosition = 80;
 let countdownInterval = null;
 
+
+function showButtonLoading(buttonId) {
+    const button = document.getElementById(buttonId);
+    button.classList.add('loading');
+    button.disabled = true;
+}
+
+function hideButtonLoading(buttonId) {
+    const button = document.getElementById(buttonId);
+    button.classList.remove('loading');
+}
+
 // Инициализация
 document.addEventListener('DOMContentLoaded', function() {
     initializeGame();
@@ -236,36 +248,16 @@ function updatePlayersList(players) {
     });
 }
 
-// Обновленная функция для отображения истории
 function updateHistory(history) {
     const historyContainer = document.getElementById('historyItems');
-    const containerWidth = historyContainer.parentElement.offsetWidth;
-    
-    // Очищаем контейнер
     historyContainer.innerHTML = '';
     
-    // Определяем, сколько элементов может поместиться в контейнере
-    const itemWidth = 80; // Примерная ширина одного элемента
-    const maxItems = Math.floor(containerWidth / itemWidth);
-    
-    // Берем только последние maxItems элементов
-    const recentHistory = history.slice(-maxItems);
-    
-    // Добавляем элементы в контейнер
-    recentHistory.forEach(item => {
+    history.slice(0, 10).forEach(item => {
         const historyItem = document.createElement('div');
         historyItem.className = `history-item ${item.multiplier >= 2 ? 'history-win' : 'history-loss'}`;
         historyItem.textContent = `${item.multiplier.toFixed(2)}x`;
         historyContainer.appendChild(historyItem);
     });
-    
-    // Позиционируем контейнер, чтобы показывать самые последние элементы
-    const totalWidth = recentHistory.length * itemWidth;
-    if (totalWidth > containerWidth) {
-        historyContainer.style.transform = `translateX(-${totalWidth - containerWidth}px)`;
-    } else {
-        historyContainer.style.transform = 'translateX(0)';
-    }
 }
 
 async function placeBet() {
@@ -288,6 +280,8 @@ async function placeBet() {
         return;
     }
     
+    showButtonLoading('placeBetButton');
+    
     try {
         const response = await fetch('/api/rocket/bet', {
             method: 'POST',
@@ -302,6 +296,7 @@ async function placeBet() {
         });
         
         if (!response.ok) {
+            hideButtonLoading('placeBetButton');
             return;
         }
         
@@ -316,6 +311,8 @@ async function placeBet() {
         }
     } catch (error) {
         console.error('Error placing bet:', error);
+    } finally {
+        hideButtonLoading('placeBetButton');
     }
 }
 
@@ -334,6 +331,8 @@ async function cashout() {
         return;
     }
     
+    showButtonLoading('cashoutButton');
+    
     try {
         const response = await fetch('/api/rocket/cashout', {
             method: 'POST',
@@ -346,6 +345,7 @@ async function cashout() {
         });
         
         if (!response.ok) {
+            hideButtonLoading('cashoutButton');
             return;
         }
         
@@ -353,23 +353,22 @@ async function cashout() {
         if (result.success) {
             userCashedOut = true;
             
-            // 🔥 НЕМЕДЛЕННО обновляем баланс на клиенте
             const winAmount = userBet * rocketGame.multiplier;
             const currentBalance = parseFloat(document.getElementById('balance').textContent);
             const newBalance = currentBalance + winAmount;
             document.getElementById('balance').textContent = newBalance.toFixed(2);
             
-            // Также обновляем интерфейс
             document.getElementById('potentialWin').textContent = winAmount.toFixed(2);
             updateBettingUI();
             
-            // 🔥 ДОПОЛНИТЕЛЬНО синхронизируем с сервером
             setTimeout(() => {
-                loadUserData(); // Запрашиваем актуальный баланс с сервера
+                loadUserData();
             }, 1000);
         }
     } catch (error) {
         console.error('Error cashing out:', error);
+    } finally {
+        hideButtonLoading('cashoutButton');
     }
 }
 
