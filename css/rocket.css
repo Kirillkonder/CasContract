@@ -355,7 +355,6 @@
 
 
 
-
 .history-container {
     margin-top: 20px;
 }
@@ -448,11 +447,3 @@
     margin-top: 10px;
 }
 
-#statusText, #countdown {
-    display: inline;
-}
-
-#countdown {
-    color: #a97bff;
-    font-weight: bold;
-}

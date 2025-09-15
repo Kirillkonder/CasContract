@@ -76,33 +76,27 @@ function connectWebSocket() {
 function updateGameState(gameState) {
     rocketGame = gameState;
     
-    const statusElement = document.getElementById('statusText');
-    const countdownElement = document.getElementById('countdown');
+    // Убрали обновление статуса, так как убрали соответствующие элементы
+    clearCountdown();
     
     switch(gameState.status) {
         case 'waiting':
-            statusElement.textContent = 'Ожидание начала игры...';
-            countdownElement.textContent = '';
             clearCountdown();
             resetBettingUI();
             break;
             
         case 'counting':
-            statusElement.textContent = 'Прием ставок: ';
+            // ФИКС: Передаем timeLeft, а не endBetTime
             startCountdown(gameState.timeLeft || Math.max(0, Math.ceil((gameState.endBetTime - Date.now()) / 1000)));
             updateBettingUI();
             break;
             
         case 'flying':
-            statusElement.textContent = 'Ракета взлетает!';
-            countdownElement.textContent = '';
             clearCountdown();
             updateRocketPosition(gameState.multiplier);
             break;
             
         case 'crashed':
-            statusElement.textContent = `Ракета взорвалась на ${gameState.crashPoint.toFixed(2)}x!`;
-            countdownElement.textContent = '';
             clearCountdown();
             showExplosion();
             break;
@@ -119,8 +113,6 @@ function updateGameState(gameState) {
         
         if (userCashedOut) {
             document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2);
-            // Обновляем баланс сразу после выигрыша
-            updateBalanceAfterWin(userPlayer.winAmount);
         }
     }
     
@@ -135,27 +127,10 @@ function updateGameState(gameState) {
     updateBettingUI();
 }
 
-async function updateBalanceAfterWin(winAmount) {
-    try {
-        const response = await fetch(`/api/user/balance/${currentUser.id}`);
-        if (response.ok) {
-            const userData = await response.json();
-            const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
-            document.getElementById('balance').textContent = balance.toFixed(2);
-        }
-    } catch (error) {
-        console.error('Error updating balance:', error);
-    }
-}
-
 function startCountdown(timeLeft) {
     clearCountdown();
     
-    document.getElementById('statusText').textContent = `Прием ставок: ${timeLeft}с`;
-    document.getElementById('placeBetButton').textContent = timeLeft > 0 ? `Поставить (${timeLeft}с)` : 'Время вышло';
-    
     if (timeLeft <= 0) {
-        document.getElementById('statusText').textContent = 'Время ставок закончилось';
         document.getElementById('placeBetButton').textContent = 'Время вышло';
         document.getElementById('placeBetButton').disabled = true;
     }
@@ -357,8 +332,12 @@ async function cashout() {
             userCashedOut = true;
             updateBettingUI();
             
-            // Обновляем баланс сразу после вывода
-            updateBalanceAfterWin(result.winAmount || 0);
+            const response = await fetch(`/api/user/balance/${currentUser.id}`);
+            if (response.ok) {
+                const userData = await response.json();
+                const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
+                document.getElementById('balance').textContent = balance.toFixed(2);
+            }
         }
     } catch (error) {
         console.error('Error cashing out:', error);
