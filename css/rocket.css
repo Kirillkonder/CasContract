@@ -1,967 +1,682 @@
-iphone-pro-max {
-  background-color: #ffffff;
-  display: grid;
-  justify-items: center;
-  align-items: start;
-  width: 100vw;
-}
-
-.iphone-pro-max .overlap-group-wrapper {
-  background-color: #ffffff;
-  overflow: hidden;
-  width: 440px;
-  height: 956px;
-}
-
-.iphone-pro-max .overlap-group {
-  position: relative;
-  width: 471px;
-  height: 956px;
+:root {
+    --pulse-speed: 1.2s;
+    --pulse-scale: 1.05;
+    --primary-bg: #0a0a14;
+    --secondary-bg: #121225;
+    --tertiary-bg: #1d1d3e;
+    --card-bg: rgba(29, 29, 62, 0.95);
+    --accent-primary: #6c5ce7;
+    --accent-secondary: #a29bfe;
+    --accent-gradient: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    --success: #00b894;
+    --danger: #ff7675;
+    --warning: #fdcb6e;
+    --text-primary: #ffffff;
+    --text-secondary: #dfe6e9;
+    --text-muted: #b2bec3;
+    --border-color: rgba(255, 255, 255, 0.15);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+    --glow-primary: 0 0 15px rgba(108, 92, 231, 0.6);
+    --glow-success: 0 0 15px rgba(0, 184, 148, 0.6);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--primary-bg);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.game-container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background: radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a14 100%);
+}
+
+/* Header */
+.header-section {
+    margin-bottom: 10px;
+}
+
+.game-header {
+    margin-bottom: 8px;
+}
+
+.balance-container {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    padding: 16px 20px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md), var(--glow-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.balance-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent-gradient);
+}
+
+.balance-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.balance-amount {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.ton-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.demo-badge {
+    display: none !important;
+    background: var(--warning);
+    color: #000;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Game Canvas */
+.canvas-section {
+    margin-bottom: 15px;
+}
+
+.game-canvas {
+    position: relative;
+    height: 400px;
+    background: linear-gradient(180deg, #1e1e3f 0%, #0f0f1a 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg), var(--glow-primary);
+}
+
+.game-canvas::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(108, 92, 231, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(162, 155, 254, 0.15) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Stars background */
+.stars-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 90px 40px, #ddd, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 130px 80px, #fff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 160px 30px, #eee, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 210px 60px, #ddd, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 250px 90px, #fff, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 290px 20px, #eee, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 330px 70px, #fff, rgba(0,0,0,0));
+    background-repeat: repeat;
+    background-size: 350px 350px;
+    animation: starsMove 120s linear infinite;
+    opacity: 0.6;
+    z-index: 1;
+}
+
+@keyframes starsMove {
+    from { background-position: 0 0; }
+    to { background-position: 350px 350px; }
+}
+
+/* Multiplier Display */
+.multiplier-display {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--success);
+    text-shadow: 0 0 20px rgba(0, 184, 148, 0.8);
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 184, 148, 0.3);
+    box-shadow: var(--glow-success);
+}
+
+/* Rocket */
+.rocket {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-45deg);
+    z-index: 20;
+    width: 100px;
+    height: 100px;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 15px rgba(108, 92, 231, 0.7));
+}
+
+.rocket img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Trail */
+.trail {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 0;
+    background: linear-gradient(to top, var(--accent-primary), transparent 90%);
+    z-index: 15;
+    transition: height 0.3s ease;
+    border-radius: 50% 50% 0 0;
+}
+
+/* Particles */
+.particles-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Animations */
+.rocket.pulsating {
+    animation: rocketPulse var(--pulse-speed) ease-in-out infinite;
+}
+
+@keyframes rocketPulse {
+    0%, 100% {
+        transform: translateX(-50%) rotate(-45deg) scale(1);
+        filter: drop-shadow(0 0 15px rgba(108, 92, 231, 0.7));
+    }
+    50% {
+        transform: translateX(-50%) rotate(-45deg) scale(1.15);
+        filter: drop-shadow(0 0 25px rgba(108, 92, 231, 0.9));
+    }
+}
+
+.game-canvas.pulsating {
+    animation: canvasPulse var(--pulse-speed) ease-in-out infinite;
+}
+
+@keyframes canvasPulse {
+    0%, 100% {
+        box-shadow: var(--shadow-lg), var(--glow-primary);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(108, 92, 231, 0.5), var(--glow-primary);
+    }
+}
+
+@keyframes rocketBlastOff {
+    0% {
+        transform: translateX(-50%) rotate(-45deg) scale(1);
+        bottom: 100px;
+        filter: brightness(1) drop-shadow(0 0 15px rgba(108, 92, 231, 0.7));
+    }
+    20% {
+        transform: translateX(-50%) rotate(-45deg) scale(1.5);
+        filter: brightness(2.5) drop-shadow(0 0 40px var(--accent-secondary));
+    }
+    100% {
+        transform: translateX(-50%) rotate(-45deg) scale(0.3);
+        bottom: 450px;
+        opacity: 0;
+        filter: brightness(4) drop-shadow(0 0 60px var(--accent-secondary));
+    }
+}
+
+.rocket.blast-off {
+    animation: rocketBlastOff 1.2s ease-out forwards;
+    z-index: 25;
+}
+
+.blast-off-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--accent-secondary);
+    text-shadow: 
+        0 0 30px rgba(162, 155, 254, 0.8),
+        0 0 60px rgba(162, 155, 254, 0.6);
+    z-index: 20;
+    animation: textAppear 1.5s ease-in-out forwards;
+}
+
+/* History */
+.history-container-inside {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    z-index: 30;
+    box-shadow: var(--shadow-sm);
+}
+
+.history-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.history-items {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.history-items::-webkit-scrollbar {
+    display: none;
+}
+
+.history-item {
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    min-width: 60px;
+    text-align: center;
+}
+
+.history-win {
+    color: var(--success);
+    background: rgba(0, 184, 148, 0.1);
+    border-color: rgba(0, 184, 148, 0.3);
+}
+
+.history-loss {
+    color: var(--danger);
+    background: rgba(255, 118, 117, 0.1);
+    border-color: rgba(255, 118, 117, 0.3);
+}
+
+/* Game Controls */
+.controls-section {
+    margin-bottom: 15px;
+}
+
+.game-controls {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+}
+
+.bet-panel {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.bet-input-container {
+    position: relative;
+}
+
+.input-group {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.bet-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    padding: 12px 16px;
+    border-right: none;
+}
+
+.bet-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.bet-input::placeholder {
+    color: var(--text-muted);
+}
+
+.input-group-text {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--border-color);
+    border-left: none;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* Buttons */
+.primary-button, .success-button {
+    position: relative;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    height: 100%;
+}
+
+.primary-button {
+    background: var(--accent-gradient);
+    color: white;
+}
+
+.primary-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+}
+
+.success-button {
+    background: linear-gradient(135deg, var(--success), #009975);
+    color: white;
+}
+
+.success-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 184, 148, 0.3);
+}
+
+.primary-button:disabled, .success-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.button-loader {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+.loading .button-text {
+    opacity: 0.7;
+}
+
+.loading .button-loader {
+    display: block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.cashout-button {
+    width: 100%;
+    margin-bottom: 16px;
+    padding: 14px;
+}
+
+/* Bet Info */
+.bet-info {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 16px;
 }
 
-.iphone-pro-max .rectangle {
-  position: absolute;
-  width: 440px;
-  height: 956px;
-  top: 0;
-  left: 0;
-}
-
-.iphone-pro-max .line {
-  position: absolute;
-  width: 3px;
-  height: 478px;
-  top: 0;
-  left: 70px;
-}
-
-.iphone-pro-max .img {
-  position: absolute;
-  width: 3px;
-  height: 478px;
-  top: 0;
-  left: 159px;
-}
-
-.iphone-pro-max .line-2 {
-  position: absolute;
-  width: 3px;
-  height: 478px;
-  top: 0;
-  left: 249px;
-}
-
-.iphone-pro-max .line-3 {
-  position: absolute;
-  width: 3px;
-  height: 478px;
-  top: 0;
-  left: 333px;
-}
-
-.iphone-pro-max .line-4 {
-  position: absolute;
-  width: 3px;
-  height: 478px;
-  top: 0;
-  left: 411px;
-}
-
-.iphone-pro-max .line-5 {
-  position: absolute;
-  width: 436px;
-  height: 5px;
-  top: 36px;
-  left: 4px;
-}
-
-.iphone-pro-max .line-6 {
-  position: absolute;
-  width: 436px;
-  height: 5px;
-  top: 116px;
-  left: 0;
-}
-
-.iphone-pro-max .line-7 {
-  position: absolute;
-  width: 436px;
-  height: 5px;
-  top: 196px;
-  left: 0;
-}
-
-.iphone-pro-max .line-8 {
-  position: absolute;
-  width: 436px;
-  height: 5px;
-  top: 276px;
-  left: 4px;
-}
-
-.iphone-pro-max .line-9 {
-  position: absolute;
-  width: 436px;
-  height: 5px;
-  top: 356px;
-  left: 0;
-}
-
-.iphone-pro-max .line-10 {
-  position: absolute;
-  width: 436px;
-  height: 5px;
-  top: 436px;
-  left: 0;
-}
-
-.iphone-pro-max .div {
-  position: absolute;
-  width: 52px;
-  height: 27px;
-  top: 77px;
-  left: 15px;
-  background-color: #d9d9d954;
-  border-radius: 101px;
-  border: 1px solid;
-  border-color: transparent;
-  backdrop-filter: blur(6px) brightness(100%);
-  -webkit-backdrop-filter: blur(6px) brightness(100%);
-}
-
-.iphone-pro-max .rectangle-2 {
-  position: absolute;
-  width: 104px;
-  height: 24px;
-  top: 26px;
-  left: 8px;
-}
-
-.iphone-pro-max .vector {
-  position: absolute;
-  width: 420px;
-  height: 67px;
-  top: 508px;
-  left: 9px;
-}
-
-.iphone-pro-max .vector-2 {
-  position: absolute;
-  width: 87px;
-  height: 24px;
-  top: 458px;
-  left: 8px;
-}
-
-.iphone-pro-max .rectangle-3 {
-  position: absolute;
-  width: 65px;
-  height: 24px;
-  top: 25px;
-  left: 358px;
-}
-
-.iphone-pro-max .rectangle-4 {
-  position: absolute;
-  width: 35px;
-  height: 24px;
-  top: 458px;
-  left: 119px;
-}
-
-.iphone-pro-max .rectangle-5 {
-  position: absolute;
-  width: 35px;
-  height: 24px;
-  top: 459px;
-  left: 170px;
-}
-
-.iphone-pro-max .rectangle-6 {
-  position: absolute;
-  width: 35px;
-  height: 24px;
-  top: 458px;
-  left: 221px;
-}
-
-.iphone-pro-max .rectangle-7 {
-  position: absolute;
-  width: 35px;
-  height: 24px;
-  top: 459px;
-  left: 272px;
-}
-
-.iphone-pro-max .rectangle-8 {
-  position: absolute;
-  width: 35px;
-  height: 24px;
-  top: 459px;
-  left: 323px;
-}
-
-.iphone-pro-max .rectangle-9 {
-  position: absolute;
-  width: 35px;
-  height: 24px;
-  top: 458px;
-  left: 375px;
-}
-
-.iphone-pro-max .rectangle-10 {
-  position: absolute;
-  width: 11px;
-  height: 24px;
-  top: 458px;
-  left: 429px;
-}
-
-.iphone-pro-max .rectangle-11 {
-  position: absolute;
-  width: 87px;
-  height: 24px;
-  top: 78px;
-  left: 336px;
-  background-color: #d9d9d954;
-  border-radius: 101px;
-  border: 1px solid;
-  border-color: transparent;
-}
-
-.iphone-pro-max .text-wrapper {
-  width: 79px;
-  top: 81px;
-  left: 368px;
-  color: #ffffff;
-  font-size: 12px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .image {
-  width: 16px;
-  height: 16px;
-  top: 82px;
-  left: 339px;
-  position: absolute;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-.iphone-pro-max .ellipse {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  top: 82px;
-  left: 402px;
-}
-
-.iphone-pro-max .line-11 {
-  position: absolute;
-  width: 1px;
-  height: 8px;
-  top: 86px;
-  left: 410px;
-  object-fit: cover;
-}
-
-.iphone-pro-max .line-12 {
-  position: absolute;
-  width: 8px;
-  height: 1px;
-  top: 90px;
-  left: 406px;
-}
-
-.iphone-pro-max .image-2 {
-  width: 74px;
-  height: 74px;
-  top: 58px;
-  left: 4px;
-  position: absolute;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-.iphone-pro-max .text-wrapper-2 {
-  top: 461px;
-  left: 20px;
-  color: #ffffff;
-  font-size: 12px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-3 {
-  top: 521px;
-  left: 101px;
-  color: #ffffff;
-  font-size: 32px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .rocket {
-  position: absolute;
-  width: 269px;
-  height: 269px;
-  top: 109px;
-  left: 83px;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-.iphone-pro-max .rectangle-12 {
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  top: 619px;
-  left: 106px;
-  object-fit: cover;
-}
-
-.iphone-pro-max .rectangle-13 {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  top: 614px;
-  left: 309px;
-  object-fit: cover;
-}
-
-.iphone-pro-max .rectangle-14 {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  top: 678px;
-  left: 309px;
-  object-fit: cover;
-}
-
-.iphone-pro-max .rectangle-15 {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  top: 744px;
-  left: 309px;
-  object-fit: cover;
-}
-
-.iphone-pro-max .rectangle-16 {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  top: 810px;
-  left: 309px;
-  object-fit: cover;
-}
-
-.iphone-pro-max .rectangle-17 {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  top: 884px;
-  left: 309px;
-  object-fit: cover;
-}
-
-.iphone-pro-max .rectangle-18 {
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  top: 689px;
-  left: 106px;
-  object-fit: cover;
-}
-
-.iphone-pro-max .rectangle-19 {
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  top: 754px;
-  left: 106px;
-  object-fit: cover;
-}
-
-.iphone-pro-max .rectangle-20 {
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  top: 819px;
-  left: 106px;
-  object-fit: cover;
-}
-
-.iphone-pro-max .rectangle-21 {
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  top: 892px;
-  left: 106px;
-  object-fit: cover;
-}
-
-.iphone-pro-max .line-13 {
-  position: absolute;
-  width: 406px;
-  height: 2px;
-  top: 654px;
-  left: 17px;
-}
-
-.iphone-pro-max .line-14 {
-  position: absolute;
-  width: 406px;
-  height: 2px;
-  top: 723px;
-  left: 16px;
-}
-
-.iphone-pro-max .line-15 {
-  position: absolute;
-  width: 406px;
-  height: 2px;
-  top: 788px;
-  left: 21px;
-}
-
-.iphone-pro-max .line-16 {
-  position: absolute;
-  width: 406px;
-  height: 2px;
-  top: 863px;
-  left: 16px;
-}
-
-.iphone-pro-max .image-3 {
-  width: 51px;
-  height: 51px;
-  top: 596px;
-  left: 41px;
-  position: absolute;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-.iphone-pro-max .image-4 {
-  width: 51px;
-  height: 51px;
-  top: 666px;
-  left: 41px;
-  position: absolute;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-.iphone-pro-max .image-5 {
-  width: 51px;
-  height: 51px;
-  top: 733px;
-  left: 41px;
-  position: absolute;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-.iphone-pro-max .image-6 {
-  width: 51px;
-  height: 51px;
-  top: 800px;
-  left: 41px;
-  position: absolute;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-.iphone-pro-max .image-7 {
-  width: 51px;
-  height: 51px;
-  top: 870px;
-  left: 41px;
-  position: absolute;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-.iphone-pro-max .text-wrapper-4 {
-  width: 57px;
-  top: 595px;
-  left: 113px;
-  color: #ffffff;
-  font-size: 14px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-5 {
-  width: 57px;
-  top: 665px;
-  left: 113px;
-  color: #ffffff;
-  font-size: 14px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-6 {
-  width: 57px;
-  top: 732px;
-  left: 113px;
-  color: #ffffff;
-  font-size: 14px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-7 {
-  width: 57px;
-  top: 799px;
-  left: 113px;
-  color: #ffffff;
-  font-size: 14px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-8 {
-  width: 57px;
-  top: 869px;
-  left: 113px;
-  color: #ffffff;
-  font-size: 14px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-9 {
-  position: absolute;
-  width: 33px;
-  top: 618px;
-  left: 170px;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  color: #19ff43;
-  font-size: 12px;
-  letter-spacing: 0;
-  line-height: normal;
-  white-space: nowrap;
-}
-
-.iphone-pro-max .text-wrapper-10 {
-  top: 691px;
-  position: absolute;
-  width: 33px;
-  left: 170px;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  color: #19ff43;
-  font-size: 12px;
-  letter-spacing: 0;
-  line-height: normal;
-  white-space: nowrap;
-}
-
-.iphone-pro-max .text-wrapper-11 {
-  top: 754px;
-  position: absolute;
-  width: 33px;
-  left: 170px;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  color: #19ff43;
-  font-size: 12px;
-  letter-spacing: 0;
-  line-height: normal;
-  white-space: nowrap;
-}
-
-.iphone-pro-max .text-wrapper-12 {
-  top: 819px;
-  position: absolute;
-  width: 33px;
-  left: 170px;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  color: #19ff43;
-  font-size: 12px;
-  letter-spacing: 0;
-  line-height: normal;
-  white-space: nowrap;
-}
-
-.iphone-pro-max .text-wrapper-13 {
-  top: 892px;
-  position: absolute;
-  width: 33px;
-  left: 170px;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  color: #19ff43;
-  font-size: 12px;
-  letter-spacing: 0;
-  line-height: normal;
-  white-space: nowrap;
-}
-
-.iphone-pro-max .text-wrapper-14 {
-  width: 32px;
-  top: 619px;
-  left: 129px;
-  color: #ffffff;
-  font-size: 12px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-15 {
-  width: 32px;
-  top: 688px;
-  left: 129px;
-  color: #ffffff;
-  font-size: 12px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-16 {
-  width: 32px;
-  top: 753px;
-  left: 129px;
-  color: #ffffff;
-  font-size: 12px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-17 {
-  width: 32px;
-  top: 821px;
-  left: 129px;
-  color: #ffffff;
-  font-size: 12px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-18 {
-  width: 32px;
-  top: 895px;
-  left: 129px;
-  color: #ffffff;
-  font-size: 12px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-19 {
-  width: 43px;
-  top: 617px;
-  left: 346px;
-  color: #19ff43;
-  font-size: 16px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-20 {
-  width: 43px;
-  top: 679px;
-  left: 346px;
-  color: #19ff43;
-  font-size: 16px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-21 {
-  width: 43px;
-  top: 744px;
-  left: 346px;
-  color: #19ff43;
-  font-size: 16px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-22 {
-  width: 43px;
-  top: 813px;
-  left: 347px;
-  color: #19ff43;
-  font-size: 16px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-23 {
-  width: 43px;
-  top: 884px;
-  left: 345px;
-  color: #19ff43;
-  font-size: 16px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .image-edited-free {
-  position: absolute;
-  width: 52px;
-  height: 52px;
-  top: 600px;
-  left: 382px;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-.iphone-pro-max .image-edited-free-2 {
-  position: absolute;
-  width: 52px;
-  height: 52px;
-  top: 663px;
-  left: 380px;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-.iphone-pro-max .image-edited-free-3 {
-  position: absolute;
-  width: 52px;
-  height: 52px;
-  top: 728px;
-  left: 380px;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-.iphone-pro-max .image-no-bg-preview {
-  position: absolute;
-  width: 52px;
-  height: 52px;
-  top: 869px;
-  left: 377px;
-  aspect-ratio: 1;
-  object-fit: cover;
-}
-
-.iphone-pro-max .text-wrapper-24 {
-  width: 101px;
-  top: 29px;
-  left: 38px;
-  color: #ffffff;
-  font-size: 15px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .line-17 {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  top: 33px;
-  left: 16px;
-}
-
-.iphone-pro-max .line-18 {
-  position: absolute;
-  width: 7px;
-  height: 11px;
-  top: 33px;
-  left: 370px;
-}
-
-.iphone-pro-max .line-19 {
-  position: absolute;
-  width: 7px;
-  height: 11px;
-  top: 33px;
-  left: 365px;
-}
-
-.iphone-pro-max .ellipse-2 {
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  top: 35px;
-  left: 396px;
-  background-color: #ffffff;
-  border-radius: 2.5px;
-}
-
-.iphone-pro-max .ellipse-3 {
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  top: 35px;
-  left: 405px;
-  background-color: #ffffff;
-  border-radius: 2.5px;
-}
-
-.iphone-pro-max .ellipse-4 {
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  top: 35px;
-  left: 414px;
-  background-color: #ffffff;
-  border-radius: 2.5px;
-}
-
-.iphone-pro-max .text-wrapper-25 {
-  width: 39px;
-  top: 462px;
-  left: 123px;
-  color: #ffffff;
-  font-size: 13px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-26 {
-  width: 39px;
-  top: 462px;
-  left: 173px;
-  color: #ffffff;
-  font-size: 13px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-27 {
-  width: 39px;
-  top: 462px;
-  left: 224px;
-  color: #ffffff;
-  font-size: 13px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-28 {
-  width: 39px;
-  top: 462px;
-  left: 278px;
-  color: #ffffff;
-  font-size: 13px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-29 {
-  width: 39px;
-  top: 462px;
-  left: 329px;
-  color: #ffffff;
-  font-size: 13px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-30 {
-  width: 39px;
-  top: 462px;
-  left: 378px;
-  color: #ffffff;
-  font-size: 13px;
-  position: absolute;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .text-wrapper-31 {
-  position: absolute;
-  width: 39px;
-  top: 461px;
-  left: 432px;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  color: #ffffff;
-  font-size: 13px;
-  letter-spacing: 0;
-  line-height: normal;
-}
-
-.iphone-pro-max .image-8 {
-  width: 36px;
-  height: 36px;
-  top: 811px;
-  left: 388px;
-  position: absolute;
-  aspect-ratio: 1;
-  object-fit: cover;
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.info-item:last-child {
+    margin-bottom: 0;
+}
+
+.info-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Players Panel */
+.players-section {
+    margin-bottom: 10px;
+}
+
+.players-panel {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.panel-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+}
+
+.players-count {
+    background: var(--accent-primary);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.players-list {
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-primary) transparent;
+}
+
+.players-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.players-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.players-list::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 2px;
+}
+
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.player-item:last-child {
+    border-bottom: none;
+}
+
+.player-name {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.player-bet {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--success);
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .game-container {
+        padding: 12px;
+        gap: 16px;
+    }
+    
+    .game-canvas {
+        height: 350px;
+    }
+    
+    .rocket {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .multiplier-display {
+        font-size: 24px;
+        padding: 6px 12px;
+    }
+    
+    .bet-panel {
+        grid-template-columns: 1fr;
+    }
+    
+    .primary-button, .success-button {
+        min-width: auto;
+        padding: 12px;
+    }
+    
+    .game-controls, .players-panel {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 360px) {
+    .balance-amount {
+        font-size: 18px;
+    }
+    
+    .game-canvas {
+        height: 300px;
+    }
+    
+    .rocket {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+/* Loading states */
+@keyframes shimmer {
+    0% {
+        background-position: -200px 0;
+    }
+    100% {
+        background-position: calc(200px + 100%) 0;
+    }
+}
+
+.loading-shimmer {
+    background: linear-gradient(90deg, #2d2d2d 0px, #3d3d3d 40px, #2d2d2d 80px);
+    background-size: 200px 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 8px;
+}
+
+/* Custom Bootstrap overrides */
+.form-control:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 0.25rem rgba(108, 92, 231, 0.25);
+}
+
+.btn {
+    border: none;
 }
