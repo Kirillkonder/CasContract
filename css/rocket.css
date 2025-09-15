@@ -12,10 +12,18 @@
 
 
 .rocket-container {
-    max-width: none; /* Убираем ограничение */
-    margin: 0; /* Убираем авто-отступы */
-    padding: 20px;
+    max-width: 100% !important;
     width: 100%;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .rocket-header {
@@ -27,7 +35,7 @@
     height: 500px;
     background: 
         linear-gradient(180deg, var(--primary-dark) 0%, var(--primary-medium) 100%),
-        /* Горизонтальные линии (толстые и редкие) */
+        /* Горизонтальные линии */
         linear-gradient(0deg, 
             transparent 69px, 
             rgba(140, 82, 255, 0.2) 69px, 
@@ -38,7 +46,7 @@
             rgba(140, 82, 255, 0.18) 147px,
             transparent 147px
         ),
-        /* Вертикальные линии (толстые и редкие) */
+        /* Вертикальные линии */
         linear-gradient(90deg, 
             transparent 69px, 
             rgba(140, 82, 255, 0.2) 69px, 
@@ -62,11 +70,16 @@
         150px 150px,
         200px 200px;
     border-radius: 15px;
-    margin-bottom: 20px;
+    margin: 0 auto 20px;
     position: relative;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    
+    /* Добавьте эти свойства для максимальной ширины */
+    max-width: 100%;
+    display: block;
 }
+
 
 /* Анимация движения сетки */
 .rocket-canvas::before {
