@@ -21,19 +21,12 @@
     display: none;
 }
 
-rocket-canvas-fullwidth {
-    width: 100vw;
-    height: 60vh; /* или задайте нужную высоту */
-    margin-left: -20px; /* компенсируем padding контейнера */
-    margin-right: -20px;
-    border-radius: 0;
-    margin-bottom: 20px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+.rocket-canvas {
+    width: 100%;
+    height: 500px;
     background: 
         linear-gradient(180deg, var(--primary-dark) 0%, var(--primary-medium) 100%),
-        /* остальные фоновые стили из .rocket-canvas */
+        /* Горизонтальные линии (толстые и редкие) */
         linear-gradient(0deg, 
             transparent 69px, 
             rgba(140, 82, 255, 0.2) 69px, 
@@ -44,6 +37,7 @@ rocket-canvas-fullwidth {
             rgba(140, 82, 255, 0.18) 147px,
             transparent 147px
         ),
+        /* Вертикальные линии (толстые и редкие) */
         linear-gradient(90deg, 
             transparent 69px, 
             rgba(140, 82, 255, 0.2) 69px, 
@@ -54,6 +48,7 @@ rocket-canvas-fullwidth {
             rgba(140, 82, 255, 0.18) 147px,
             transparent 147px
         ),
+        /* Слабые диагональные линии */
         linear-gradient(45deg, 
             transparent 47%, 
             rgba(140, 82, 255, 0.06) 47%, 
@@ -65,13 +60,12 @@ rocket-canvas-fullwidth {
         150px 150px,
         150px 150px,
         200px 200px;
+    border-radius: 15px;
+    margin-bottom: 50px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
-
-/* Уберите старый .rocket-canvas или переименуйте его */
-.rocket-canvas {
-    display: none; /* скрываем старый стиль */
-}
-
 
 /* Анимация движения сетки */
 .rocket-canvas::before {
@@ -460,26 +454,10 @@ rocket-canvas-fullwidth {
     margin-left: 8px;
 }
 
-.rocket {
-    bottom: 20%; /* адаптируем позицию ракеты */
-    width: 120px;
-    height: 120px;
-}
-
-@media (max-width: 768px) {
-    .rocket-canvas-fullwidth {
-        height: 50vh;
-    }
-    
-    .rocket {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .multiplier-display {
-        font-size: 28px;
-    }
-
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 .balance {
