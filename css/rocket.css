@@ -38,14 +38,15 @@ body {
     overflow-x: auto;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
-}
-
-.history-container-inside {
     -ms-overflow-style: none;
     scrollbar-width: none;
-
-
+    z-index: 30;
 }
+
+.history-container-inside::-webkit-scrollbar {
+    display: none;
+}
+
 
 .rocket-canvas {
     width: 100vw;
@@ -392,6 +393,7 @@ body {
     justify-content: center;
 }
 
+
 .history-item {
     display: inline-block;
     padding: 6px 12px;
@@ -415,14 +417,7 @@ body {
     border-color: rgba(255, 42, 133, 0.3);
 }
 
-.history-container-inside::-webkit-scrollbar {
-    display: none;
-}
 
-.history-container-inside {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
 .explosion {
     position: absolute;
     top: 0;
