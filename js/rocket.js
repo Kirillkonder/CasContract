@@ -76,33 +76,39 @@ function connectWebSocket() {
 function updateGameState(gameState) {
     rocketGame = gameState;
     
-    // Убрали обновление статуса, так как убрали соответствующие элементы
-    clearCountdown();
+    const statusElement = document.getElementById('statusText');
+    const countdownElement = document.getElementById('countdown');
+    const statusClass = `status-${gameState.status}`;
+    
+    document.getElementById('gameStatus').className = `game-status ${statusClass}`;
     
     switch(gameState.status) {
         case 'waiting':
+            statusElement.textContent = 'Ожидание начала игры...';
+            countdownElement.textContent = '';
             clearCountdown();
             resetBettingUI();
-            // ОБНОВЛЕНИЕ: Обновляем баланс при завершении раунда
-            updateUserBalance();
             break;
             
-        case 'counting':
+       case 'counting':
+            statusElement.textContent = 'Прием ставок: ';
             // ФИКС: Передаем timeLeft, а не endBetTime
             startCountdown(gameState.timeLeft || Math.max(0, Math.ceil((gameState.endBetTime - Date.now()) / 1000)));
             updateBettingUI();
             break;
             
         case 'flying':
+            statusElement.textContent = 'Ракета взлетает!';
+            countdownElement.textContent = '';
             clearCountdown();
             updateRocketPosition(gameState.multiplier);
             break;
             
         case 'crashed':
+            statusElement.textContent = `Ракета взорвалась на ${gameState.crashPoint.toFixed(2)}x!`;
+            countdownElement.textContent = '';
             clearCountdown();
             showExplosion();
-            // ОБНОВЛЕНИЕ: Обновляем баланс при завершении раунда
-            updateUserBalance();
             break;
     }
     
@@ -303,6 +309,7 @@ async function placeBet() {
     }
 }
 
+// rocket.js - исправленная функция cashout
 async function cashout() {
     if (userCashedOut) {
         return;
@@ -336,12 +343,8 @@ async function cashout() {
             userCashedOut = true;
             updateBettingUI();
             
-            const response = await fetch(`/api/user/balance/${currentUser.id}`);
-            if (response.ok) {
-                const userData = await response.json();
-                const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
-                document.getElementById('balance').textContent = balance.toFixed(2);
-            }
+            // 🔥 ДОБАВЛЕНО: Запрашиваем обновленный баланс после выигрыша
+            await loadUserData();
         }
     } catch (error) {
         console.error('Error cashing out:', error);
@@ -385,18 +388,6 @@ function updateBettingUI() {
         cashoutButton.textContent = 'Забрать выигрыш';
     }
 }
-async function updateUserBalance() {
-    try {
-        const response = await fetch(`/api/user/balance/${currentUser.id}`);
-        if (response.ok) {
-            const userData = await response.json();
-            const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
-            document.getElementById('balance').textContent = balance.toFixed(2);
-        }
-    } catch (error) {
-        console.error('Error updating user balance:', error);
-    }
-}
 
 function resetBettingUI() {
     userBet = 0;
@@ -412,10 +403,6 @@ function resetBettingUI() {
     const trailElement = document.getElementById('rocketTrail');
     rocketElement.style.bottom = '100px';
     trailElement.style.height = '0px';
-    
-    // ОБНОВЛЕНИЕ: Обновляем баланс при сбросе UI
-    updateUserBalance();
-
 }
 
 let rocketGame = {
