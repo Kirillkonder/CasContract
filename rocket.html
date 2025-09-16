@@ -10,26 +10,17 @@
 </head>
 <body>
     <div class="game-container">
-        <!-- Игровое поле с сеткой занимает весь экран -->
-        <div class="game-field">
-            <div class="grid-overlay"></div>
-            <div class="rocket-container">
-                <div id="rocketCanvas" class="rocket-canvas">
-                    <img src="Rocket.png" alt="Rocket" id="rocket" class="rocket">
-                </div>
-            </div>
-        </div>
-
-        <!-- Верхняя панель поверх игрового поля -->
+        <!-- Верхняя панель -->
         <div class="top-panel">
             <div class="close-btn" onclick="goBack()">
                 <i class="bi bi-x"></i>
                 <span>Закрыть</span>
             </div>
             <div class="top-right">
+                <!-- Счетчик игроков -->
                 <div class="players-counter">
-                    <i class="bi bi-people-fill" style="color: #00c851;"></i>
-                    <span id="playersCount">0</span>
+    <i class="bi bi-people-fill" style="color: #00c851;"></i>
+    <span id="playersCount">0</span>
                 </div>
                 <div class="balance">
                     <i class="bi bi-currency-bitcoin"></i>
@@ -45,7 +36,18 @@
             </div>
         </div>
 
-        <!-- История ставок поверх игрового поля -->
+        <!-- Игровое поле с сеткой -->
+        <div class="game-field">
+            <div class="grid-overlay"></div>
+            <div class="rocket-container">
+                <div id="rocketCanvas" class="rocket-canvas">
+                    <img src="Rocket.png" alt="Rocket" id="rocket" class="rocket">
+                </div>
+            </div>
+        </div>
+
+        
+        <!-- Таймер/История -->
         <div class="coefficients">
             <div class="coeff-item active" id="timerDisplay">Ожидание</div>
             <div class="coeff-item" id="historyItem1">1.00</div>
