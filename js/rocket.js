@@ -310,7 +310,6 @@ async function updateUserBalance(winAmount = 0) {
     }
 }
 
-// Обновленная функция updatePlayersList
 function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
@@ -396,21 +395,26 @@ function updatePlayersList(players) {
                 // Игрок выиграл
                 betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
                 betSpan.style.color = '#00b894';
-                betSpan.classList.add('win-animation');
                 playerItem.classList.remove('player-loss');
+                
+                // Анимация выигрыша - добавляем класс для анимации
+                playerItem.classList.add('win-animation');
+                setTimeout(() => {
+                    playerItem.classList.remove('win-animation');
+                }, 1000);
             } else if (rocketGame.status === 'crashed' && !player.cashedOut) {
                 // Игрок проиграл (не успел вывести)
                 betSpan.textContent = `-${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#ff4757';
+                playerItem.classList.add('player-loss');
                 
+                // Анимация проигрыша при краше
                 if (rocketGame.justCrashed) {
-                    betSpan.classList.add('loss-animation');
+                    playerItem.classList.add('loss-animation');
                     setTimeout(() => {
-                        betSpan.classList.remove('loss-animation');
+                        playerItem.classList.remove('loss-animation');
                     }, 500);
                 }
-                
-                playerItem.classList.add('player-loss');
             } else if (rocketGame.status === 'crashed' && player.cashedOut) {
                 // Игрок выиграл и игра уже завершилась
                 betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
@@ -439,26 +443,34 @@ function updatePlayersList(players) {
             const betSpan = existingPlayer.querySelector('.player-bet');
             const playerItem = existingPlayer;
             
+            // Убираем предыдущие классы анимации
+            playerItem.classList.remove('win-animation', 'loss-animation');
+            
             // Отображаем выигрыш или проигрыш
             if (player.cashedOut) {
                 // Игрок выиграл
                 betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
                 betSpan.style.color = '#00b894';
-                betSpan.classList.add('win-animation');
                 playerItem.classList.remove('player-loss');
+                
+                // Анимация выигрыша
+                playerItem.classList.add('win-animation');
+                setTimeout(() => {
+                    playerItem.classList.remove('win-animation');
+                }, 1000);
             } else if (rocketGame.status === 'crashed' && !player.cashedOut) {
                 // Игрок проиграл (не успел вывести)
                 betSpan.textContent = `-${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#ff4757';
+                playerItem.classList.add('player-loss');
                 
+                // Анимация проигрыша при краше
                 if (rocketGame.justCrashed) {
-                    betSpan.classList.add('loss-animation');
+                    playerItem.classList.add('loss-animation');
                     setTimeout(() => {
-                        betSpan.classList.remove('loss-animation');
+                        playerItem.classList.remove('loss-animation');
                     }, 500);
                 }
-                
-                playerItem.classList.add('player-loss');
             } else if (rocketGame.status === 'crashed' && player.cashedOut) {
                 // Игрок выиграл и игра уже завершилась
                 betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
