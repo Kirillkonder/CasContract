@@ -17,6 +17,11 @@
                 <span>Закрыть</span>
             </div>
             <div class="top-right">
+                <!-- Счетчик игроков -->
+                <div class="players-counter">
+                    <img src="Online.png" alt="Online" class="online-icon">
+                    <span id="playersCount">0</span>
+                </div>
                 <div class="balance">
                     <i class="bi bi-currency-bitcoin"></i>
                     <span id="balance">0.00</span>
@@ -75,7 +80,7 @@
         <!-- Список игроков -->
         <div class="players-section">
             <div class="players-header">
-                <span>Игроки (<span id="playersCount">0</span>)</span>
+                <span>Игроки</span>
             </div>
             <div class="players-list" id="playersList">
                 <!-- Игроки будут добавляться через JS -->

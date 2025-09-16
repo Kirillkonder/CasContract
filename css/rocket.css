@@ -712,3 +712,24 @@ body {
     25% { transform: translateX(-3px); }
     75% { transform: translateX(3px); }
 }
+
+.players-counter {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.online-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.players-counter span {
+    color: #fff;
+    font-weight: bold;
+}

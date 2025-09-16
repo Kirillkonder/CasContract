@@ -276,6 +276,7 @@ function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
     
+    playersCount.textContent = players.length;
     // Получаем текущих игроков из DOM
     const currentPlayerElements = Array.from(playersList.children);
     const currentPlayerNames = currentPlayerElements.map(item => {
