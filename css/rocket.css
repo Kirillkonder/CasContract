@@ -1,12 +1,7 @@
- *{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
-
-:root {
-    --pulse-speed: 1.2s;
-    --glow-intensity: 0.5;
 }
 
 body {
@@ -576,34 +571,8 @@ body {
 }
 
 @keyframes rocketPulse {
-    0% { 
-        transform: translate(-50%, -50%) rotate(-45deg) scale(1); 
-        filter: brightness(1) drop-shadow(0 0 5px rgba(0, 191, 255, 0.5));
-    }
-    100% { 
-        transform: translate(-50%, -50%) rotate(-45deg) scale(1.15); 
-        filter: brightness(1.8) drop-shadow(0 0 25px rgba(0, 191, 255, 1)) drop-shadow(0 0 35px rgba(255, 255, 255, 0.3));
-    }
-}
-
-/* Новые анимации для высоких множителей */
-@keyframes rocketHighSpeed {
-    0% { 
-        transform: translate(-50%, -50%) rotate(-45deg) scale(1); 
-        filter: brightness(1.2) drop-shadow(0 0 10px rgba(255, 69, 0, 0.7));
-    }
-    50% { 
-        transform: translate(-50%, -50%) rotate(-43deg) scale(1.2); 
-        filter: brightness(2.2) drop-shadow(0 0 30px rgba(255, 69, 0, 1)) drop-shadow(0 0 50px rgba(255, 215, 0, 0.5));
-    }
-    100% { 
-        transform: translate(-50%, -50%) rotate(-47deg) scale(1.1); 
-        filter: brightness(1.8) drop-shadow(0 0 20px rgba(255, 0, 0, 0.8));
-    }
-}
-
-.rocket.high-speed {
-    animation: rocketHighSpeed var(--pulse-speed, 0.8s) infinite;
+    0% { transform: translate(-50%, -50%) rotate(-45deg) scale(1); filter: brightness(1) drop-shadow(0 0 5px rgba(0, 191, 255, 0.5)); }
+    100% { transform: translate(-50%, -50%) rotate(-45deg) scale(1.1); filter: brightness(1.5) drop-shadow(0 0 15px rgba(0, 191, 255, 0.8)); }
 }
 
 .rocket.blast-off {
@@ -697,13 +666,6 @@ body {
     justify-content: center;
     font-size: 16px;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-}
-
-.player-avatar:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .player-info-container {
@@ -834,29 +796,4 @@ body {
 /* Уменьшаем отступ между кнопками и списком игроков */
 .bet-button-container:last-of-type {
     margin-bottom: 5px; /* Уменьшаем отступ после последней кнопки */
-}
-
-/* Улучшенные стили для индикации пользователей */
-.player-name {
-    transition: all 0.3s ease;
-}
-
-.player-item:hover .player-name {
-    color: #00bfff !important;
-    text-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
-}
-
-/* Анимация для высоких множителей */
-.game-field.extreme-mode {
-    background: radial-gradient(circle at center, rgba(255, 0, 0, 0.1) 0%, transparent 70%);
-    animation: extremePulse 0.5s infinite;
-}
-
-@keyframes extremePulse {
-    0%, 100% { 
-        background: radial-gradient(circle at center, rgba(255, 0, 0, 0.1) 0%, transparent 70%);
-    }
-    50% { 
-        background: radial-gradient(circle at center, rgba(255, 69, 0, 0.2) 0%, transparent 70%);
-    }
 }
