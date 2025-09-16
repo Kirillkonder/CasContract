@@ -203,8 +203,13 @@ function updateRocketPosition(multiplier) {
     const trailElement = document.getElementById('rocketTrail');
     const canvasElement = document.getElementById('rocketCanvas');
     
+    // Гарантируем, что ракета всегда повернута на -45 градусов
+    rocketElement.style.transform = 'translateX(-50%) rotate(-45deg)';
+    rocketElement.style.bottom = '150px';
+    rocketElement.style.left = '50%';
+    
+    // Остальной код функции без изменений...
     const trailHeight = Math.max(0, multiplier * 10);
-   
     
     if (multiplier > 1.00) {
         rocketElement.classList.add('pulsating');
@@ -218,7 +223,6 @@ function updateRocketPosition(multiplier) {
             document.documentElement.style.setProperty('--pulse-speed', '1.2s');
         }
         
-        
     } else {
         rocketElement.classList.remove('pulsating');
         canvasElement.classList.remove('pulsating');
@@ -231,24 +235,36 @@ function showExplosion() {
     const canvas = document.getElementById('rocketCanvas');
     const rocketElement = document.getElementById('rocket');
     
+    // Сбрасываем стили и гарантируем поворот на -45 градусов
     rocketElement.classList.remove('pulsating');
+    rocketElement.style.transform = 'translateX(-50%) rotate(-45deg)';
+    rocketElement.style.bottom = '150px';
+    rocketElement.style.left = '50%';
+    
     canvas.classList.remove('pulsating');
     canvas.style.backgroundColor = '';
     
+    // Запускаем анимацию взлета
     rocketElement.classList.add('blast-off');
     
+    // Создаем текст "УЛЕТЕЛ!" внутри игрового поля
     const blastOffText = document.createElement('div');
     blastOffText.className = 'blast-off-text';
     blastOffText.textContent = 'УЛЕТЕЛ!';
-    document.body.appendChild(blastOffText);
+    canvas.appendChild(blastOffText);
     
     setTimeout(() => {
+        // Убираем текст и сбрасываем анимацию
         if (blastOffText.parentNode) {
-            document.body.removeChild(blastOffText);
+            canvas.removeChild(blastOffText);
         }
         rocketElement.classList.remove('blast-off');
         rocketElement.style.opacity = '1';
         rocketElement.style.filter = 'none';
+        // Возвращаем правильное положение и поворот
+        rocketElement.style.transform = 'translateX(-50%) rotate(-45deg)';
+        rocketElement.style.bottom = '150px';
+        rocketElement.style.left = '50%';
     }, 2000);
 }
 
