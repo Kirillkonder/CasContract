@@ -110,11 +110,12 @@ function updateGameState(gameState) {
         case 'crashed':
             clearCountdown();
             showExplosion();
-            updateTimerDisplay('КРАШ ' + gameState.multiplier.toFixed(2) + 'x');
+            updateTimerDisplay(gameState.multiplier.toFixed(2) + 'x'); // Убрано слово "КРАШ"
             break;
     }
     
-    document.getElementById('multiplierDisplay').textContent = gameState.multiplier.toFixed(2) + 'x';
+    // Обновляем список игроков при любом состоянии игры
+    updatePlayersList(gameState.players);
     
     userPlayer = gameState.players.find(p => p.userId == currentUser.id && !p.isBot);
     
@@ -128,7 +129,6 @@ function updateGameState(gameState) {
         }
     }
     
-    updatePlayersList(gameState.players);
     updateHistory(gameState.history);
     
     if (userBet > 0 && !userCashedOut && gameState.status === 'flying') {
@@ -138,6 +138,7 @@ function updateGameState(gameState) {
     
     updateBettingUI();
 }
+
 
 function updateTimerDisplay(text) {
     const timerDisplay = document.getElementById('timerDisplay');
@@ -255,29 +256,33 @@ function updatePlayersList(players) {
     playersList.innerHTML = '';
     playersCount.textContent = players.length;
     
+    // Показываем всех игроков, которые сделали ставку (независимо от статуса игры)
     players.forEach(player => {
-        const playerItem = document.createElement('div');
-        playerItem.className = 'player-item';
-        
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'player-name';
-        nameSpan.textContent = player.name;
-        
-        const betSpan = document.createElement('span');
-        betSpan.className = 'player-bet';
-        
-        if (player.cashedOut) {
-            betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
-            betSpan.style.color = '#00b894';
-        } else if (player.isBot) {
-            betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-        } else {
-            betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+        // Показываем игрока только если он сделал ставку
+        if (player.betAmount > 0) {
+            const playerItem = document.createElement('div');
+            playerItem.className = 'player-item';
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'player-name';
+            nameSpan.textContent = player.name;
+            
+            const betSpan = document.createElement('span');
+            betSpan.className = 'player-bet';
+            
+            if (player.cashedOut) {
+                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+                betSpan.style.color = '#00b894';
+            } else {
+                // Показываем ставку для всех игроков (ботов и реальных)
+                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+                betSpan.style.color = '#fff';
+            }
+            
+            playerItem.appendChild(nameSpan);
+            playerItem.appendChild(betSpan);
+            playersList.appendChild(playerItem);
         }
-        
-        playerItem.appendChild(nameSpan);
-        playerItem.appendChild(betSpan);
-        playersList.appendChild(playerItem);
     });
 }
 
