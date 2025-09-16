@@ -281,8 +281,12 @@ function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
     
-    // Очищаем список
-    playersList.innerHTML = '';
+    // Получаем текущих игроков из DOM
+    const currentPlayerElements = Array.from(playersList.children);
+    const currentPlayerNames = currentPlayerElements.map(item => {
+        const nameSpan = item.querySelector('.player-name');
+        return nameSpan ? nameSpan.textContent : '';
+    });
     
     // Фильтруем только игроков с ставками
     const playersWithBets = players.filter(player => player.betAmount > 0);
@@ -295,75 +299,115 @@ function updatePlayersList(players) {
         return 0;
     });
     
-    // Добавляем игроков с анимацией
-    playersWithBets.forEach((player, index) => {
-        const playerItem = document.createElement('div');
-        playerItem.className = 'player-item';
-        
-        // Создаем аватарку
-        const avatar = document.createElement('div');
-        avatar.className = 'player-avatar';
-        
-        // Разные эмодзи для ботов и реальных игроков
-        if (player.isBot) {
-            // Случайный эмодзи для бота
-            const botEmojis = ['🤖', '👾', '🦾', '🔧', '⚙️', '💻', '🎮', '🧠'];
-            avatar.textContent = botEmojis[Math.floor(Math.random() * botEmojis.length)];
-            avatar.style.backgroundColor = '#ff6b35';
-        } else {
-            // Эмодзи для реального игрока
-            const userEmojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯'];
-            avatar.textContent = userEmojis[Math.floor(Math.random() * userEmojis.length)];
-            avatar.style.backgroundColor = '#1e5cb8';
+    // Удаляем игроков, которых больше нет в списке
+    currentPlayerElements.forEach(playerElement => {
+        const nameSpan = playerElement.querySelector('.player-name');
+        if (nameSpan) {
+            const playerName = nameSpan.textContent;
+            const playerStillExists = playersWithBets.some(player => player.name === playerName);
+            if (!playerStillExists) {
+                playerElement.remove();
+            }
         }
+    });
+    
+    // Добавляем только новых игроков с анимацией
+    playersWithBets.forEach((player, index) => {
+        // Проверяем, есть ли уже такой игрок в DOM
+        const existingPlayer = Array.from(playersList.children).find(item => {
+            const nameSpan = item.querySelector('.player-name');
+            return nameSpan && nameSpan.textContent === player.name;
+        });
         
-        const infoContainer = document.createElement('div');
-        infoContainer.className = 'player-info-container';
-        
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'player-name';
-        nameSpan.textContent = player.name;
-        
-        const betSpan = document.createElement('span');
-        betSpan.className = 'player-bet';
-        
-        if (player.cashedOut) {
-            // Выигрыш - зеленый
-            betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
-            betSpan.style.color = '#00b894';
-            betSpan.classList.add('win-animation');
-        } else if (rocketGame.status === 'crashed' && !player.cashedOut) {
-            // Проигрыш - красный с анимацией (только если игра только что завершилась)
-            betSpan.textContent = `-${player.betAmount.toFixed(2)} TON`;
-            betSpan.style.color = '#ff4757';
+        if (!existingPlayer) {
+            const playerItem = document.createElement('div');
+            playerItem.className = 'player-item';
             
-            // Добавляем анимацию только если игра только что завершилась
-            if (rocketGame.justCrashed) {
-                betSpan.classList.add('loss-animation');
-                // Убираем класс анимации после завершения
-                setTimeout(() => {
-                    betSpan.classList.remove('loss-animation');
-                }, 500);
+            // Создаем аватарку
+            const avatar = document.createElement('div');
+            avatar.className = 'player-avatar';
+            
+            // Разные эмодзи для ботов и реальных игроков
+            if (player.isBot) {
+                const botEmojis = ['🤖', '👾', '🦾', '🔧', '⚙️', '💻', '🎮', '🧠'];
+                avatar.textContent = botEmojis[Math.floor(Math.random() * botEmojis.length)];
+                avatar.style.backgroundColor = '#ff6b35';
+            } else {
+                const userEmojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯'];
+                avatar.textContent = userEmojis[Math.floor(Math.random() * userEmojis.length)];
+                avatar.style.backgroundColor = '#1e5cb8';
             }
             
-            playerItem.classList.add('player-loss');
+            const infoContainer = document.createElement('div');
+            infoContainer.className = 'player-info-container';
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'player-name';
+            nameSpan.textContent = player.name;
+            
+            const betSpan = document.createElement('span');
+            betSpan.className = 'player-bet';
+            
+            if (player.cashedOut) {
+                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+                betSpan.style.color = '#00b894';
+                betSpan.classList.add('win-animation');
+            } else if (rocketGame.status === 'crashed' && !player.cashedOut) {
+                betSpan.textContent = `-${player.betAmount.toFixed(2)} TON`;
+                betSpan.style.color = '#ff4757';
+                
+                if (rocketGame.justCrashed) {
+                    betSpan.classList.add('loss-animation');
+                    setTimeout(() => {
+                        betSpan.classList.remove('loss-animation');
+                    }, 500);
+                }
+                
+                playerItem.classList.add('player-loss');
+            } else {
+                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+                betSpan.style.color = '#fff';
+            }
+            
+            infoContainer.appendChild(nameSpan);
+            infoContainer.appendChild(betSpan);
+            
+            playerItem.appendChild(avatar);
+            playerItem.appendChild(infoContainer);
+            playersList.appendChild(playerItem);
+            
+            // Анимация появления только для новых игроков
+            setTimeout(() => {
+                playerItem.classList.add('show');
+            }, 10);
         } else {
-            // Активная ставка
-            betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-            betSpan.style.color = '#fff';
+            // Обновляем существующих игроков без анимации
+            const betSpan = existingPlayer.querySelector('.player-bet');
+            const playerItem = existingPlayer;
+            
+            if (player.cashedOut) {
+                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+                betSpan.style.color = '#00b894';
+                betSpan.classList.add('win-animation');
+                playerItem.classList.remove('player-loss');
+            } else if (rocketGame.status === 'crashed' && !player.cashedOut) {
+                betSpan.textContent = `-${player.betAmount.toFixed(2)} TON`;
+                betSpan.style.color = '#ff4757';
+                
+                if (rocketGame.justCrashed) {
+                    betSpan.classList.add('loss-animation');
+                    setTimeout(() => {
+                        betSpan.classList.remove('loss-animation');
+                    }, 500);
+                }
+                
+                playerItem.classList.add('player-loss');
+            } else {
+                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+                betSpan.style.color = '#fff';
+                playerItem.classList.remove('player-loss');
+            }
         }
-        
-        infoContainer.appendChild(nameSpan);
-        infoContainer.appendChild(betSpan);
-        
-        playerItem.appendChild(avatar);
-        playerItem.appendChild(infoContainer);
-        playersList.appendChild(playerItem);
-        
-        // Анимация появления
-        setTimeout(() => {
-            playerItem.classList.add('show');
-        }, index * 100);
     });
 }
 
