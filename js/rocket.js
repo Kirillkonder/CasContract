@@ -383,11 +383,15 @@ function updatePlayersList(players) {
             const betSpan = document.createElement('span');
             betSpan.className = 'player-bet';
             
+            // Отображаем выигрыш или проигрыш
             if (player.cashedOut) {
+                // Игрок выиграл
                 betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
                 betSpan.style.color = '#00b894';
                 betSpan.classList.add('win-animation');
+                playerItem.classList.remove('player-loss');
             } else if (rocketGame.status === 'crashed' && !player.cashedOut) {
+                // Игрок проиграл (не успел вывести)
                 betSpan.textContent = `-${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#ff4757';
                 
@@ -399,9 +403,16 @@ function updatePlayersList(players) {
                 }
                 
                 playerItem.classList.add('player-loss');
+            } else if (rocketGame.status === 'crashed' && player.cashedOut) {
+                // Игрок выиграл и игра уже завершилась
+                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+                betSpan.style.color = '#00b894';
+                playerItem.classList.remove('player-loss');
             } else {
+                // Игра идет, ставка активна
                 betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#fff';
+                playerItem.classList.remove('player-loss');
             }
             
             infoContainer.appendChild(nameSpan);
@@ -416,16 +427,19 @@ function updatePlayersList(players) {
                 playerItem.classList.add('show');
             }, 10);
         } else {
-            // Обновляем существующих игроков без анимации
+            // Обновляем существующих игроков
             const betSpan = existingPlayer.querySelector('.player-bet');
             const playerItem = existingPlayer;
             
+            // Отображаем выигрыш или проигрыш
             if (player.cashedOut) {
+                // Игрок выиграл
                 betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
                 betSpan.style.color = '#00b894';
                 betSpan.classList.add('win-animation');
                 playerItem.classList.remove('player-loss');
             } else if (rocketGame.status === 'crashed' && !player.cashedOut) {
+                // Игрок проиграл (не успел вывести)
                 betSpan.textContent = `-${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#ff4757';
                 
@@ -437,7 +451,13 @@ function updatePlayersList(players) {
                 }
                 
                 playerItem.classList.add('player-loss');
+            } else if (rocketGame.status === 'crashed' && player.cashedOut) {
+                // Игрок выиграл и игра уже завершилась
+                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+                betSpan.style.color = '#00b894';
+                playerItem.classList.remove('player-loss');
             } else {
+                // Игра идет, ставка активна
                 betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#fff';
                 playerItem.classList.remove('player-loss');
