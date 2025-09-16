@@ -88,14 +88,19 @@ body {
 
 /* Игровое поле */
 .game-field {
-    height: 300px;
+    height: 380px; /* Увеличиваем высоту */
     background: #000;
     position: relative;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    margin-bottom: 10px; /* Добавляем отступ снизу */
 }
+
 
 @keyframes gridMove {
     0% {
@@ -189,7 +194,6 @@ body {
     
     animation: gridDepth 4s ease-in-out infinite;
 }
-
 @keyframes gridDepth {
     0%, 100% { 
         opacity: 0.8;
@@ -225,19 +229,15 @@ body {
 }
 
 .rocket {
-    width: 120px;
-    height: 120px;
-    filter: 
-        drop-shadow(0 0 15px rgba(255, 255, 255, 0.3))
-        drop-shadow(0 0 30px rgba(0, 191, 255, 0.4));
-    transition: none;
+    width: 140px;
+    height: 140px;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-45deg);
-    z-index: 10;
+    z-index: 2;
+    transition: none;
 }
-
 
 @keyframes rocketFloat {
     0%, 100% { transform: translate(-50%, -50%) rotate(-45deg); }
@@ -268,7 +268,7 @@ body {
 .coefficients {
     display: flex;
     gap: 6px;
-    padding: 12px 16px;
+    padding: 8px 16px; /* Уменьшаем вертикальные отступы */
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -319,7 +319,7 @@ body {
 
 /* Кнопка ставки */
 .bet-button-container {
-    padding: 12px 16px;
+    padding: 8px 16px; /* Уменьшаем вертикальные отступы */
 }
 
 .bet-button {
@@ -506,15 +506,15 @@ body {
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
+
 .bet-info {
     display: flex;
     justify-content: space-between;
-    padding: 10px 16px;
+    padding: 8px 16px; /* Уменьшаем вертикальные отступы */
     background: rgba(255, 255, 255, 0.05);
-    margin: 10px 16px;
+    margin: 8px 16px; /* Уменьшаем отступы */
     border-radius: 8px;
 }
-
 .bet-info-item {
     display: flex;
     flex-direction: column;
@@ -533,7 +533,8 @@ body {
 }
 
 .players-section {
-    padding: 0 16px 16px;
+    padding: 0 16px 5px !important;
+    margin-top: 5px; /* Добавляем небольшой отступ сверху */
 }
 
 .players-header {
@@ -547,12 +548,11 @@ body {
 .rocket-canvas {
     position: relative;
     width: 100%;
-    height: 200px;
+    height: 250px; /* Увеличиваем высоту */
     display: flex;
     justify-content: center;
     align-items: flex-end;
 }
-
 
 
 .rocket {
