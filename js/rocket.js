@@ -7,9 +7,6 @@ let userPlayer = null;
 let rocketPosition = 80;
 let countdownInterval = null;
 let allOnlineUsers = 0;
-let pulsatingActive = false;
-let lastPulseBucket = -1;
-let lastGlowBucket = -1;
 
 function showButtonLoading(buttonId) {
     const button = document.getElementById(buttonId);
@@ -205,60 +202,62 @@ function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const canvasElement = document.getElementById('rocketCanvas');
     
-    // Плавно управляем состояниями, исключая лишние перезапуски анимаций
-    if (multiplier <= 1.0) {
-        if (pulsatingActive) {
-            rocketElement.classList.remove('pulsating');
-            canvasElement.classList.remove('pulsating');
-            pulsatingActive = false;
-        }
-        if (lastPulseBucket !== -1) {
-            document.documentElement.style.setProperty('--pulse-speed', '1.2s');
-            lastPulseBucket = -1;
-        }
-        if (lastGlowBucket !== -1) {
-            canvasElement.style.backgroundColor = '';
-            lastGlowBucket = -1;
-        }
+    // Убираем пульсацию при множителе 1.00
+    if (multiplier <= 1.00) {
+        rocketElement.classList.remove('pulsating');
+        canvasElement.classList.remove('pulsating');
+        document.documentElement.style.setProperty('--pulse-speed', '1.2s');
         return;
     }
-
-    if (!pulsatingActive) {
-        rocketElement.classList.add('pulsating');
-        canvasElement.classList.add('pulsating');
-        pulsatingActive = true;
-    }
-
-    // Определяем «корзину» скорости, чтобы менять её не на каждый тик
+    
+    // Добавляем пульсацию при множителе выше 1.00
+    rocketElement.classList.add('pulsating');
+    canvasElement.classList.add('pulsating');
+    
+    // Настройка скорости пульсации в зависимости от множителя
     let pulseSpeed;
-    let pulseBucket;
-    if (multiplier < 1.5) { pulseSpeed = 2.0; pulseBucket = 0; }
-    else if (multiplier < 2.0) { pulseSpeed = 1.8; pulseBucket = 1; }
-    else if (multiplier < 2.5) { pulseSpeed = 1.6; pulseBucket = 2; }
-    else if (multiplier < 3.0) { pulseSpeed = 1.4; pulseBucket = 3; }
-    else if (multiplier < 5.0) { pulseSpeed = 1.2; pulseBucket = 4; }
-    else if (multiplier < 10.0) { pulseSpeed = 1.0; pulseBucket = 5; }
-    else if (multiplier < 15.0) { pulseSpeed = 0.8; pulseBucket = 6; }
-    else if (multiplier < 20.0) { pulseSpeed = 0.6; pulseBucket = 7; }
-    else if (multiplier < 25.0) { pulseSpeed = 0.4; pulseBucket = 8; }
-    else { pulseSpeed = 0.3; pulseBucket = 9; }
-
-    if (pulseBucket !== lastPulseBucket) {
-        document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
-        lastPulseBucket = pulseBucket;
+    
+    if (multiplier < 1.5) {
+        // Очень медленно до 1.5x
+        pulseSpeed = 2.0;
+    } else if (multiplier < 2.0) {
+        // Медленно от 1.5x до 2.0x
+        pulseSpeed = 1.8;
+    } else if (multiplier < 2.5) {
+        // Средне-медленно от 2.0x до 2.5x
+        pulseSpeed = 1.6;
+    } else if (multiplier < 3.0) {
+        // Средне от 2.5x до 3.0x
+        pulseSpeed = 1.4;
+    } else if (multiplier < 5.0) {
+        // Немного быстрее от 3.0x до 5.0x
+        pulseSpeed = 1.2;
+    } else if (multiplier < 10.0) {
+        // Быстрее от 5.0x до 10.0x
+        pulseSpeed = 1.0;
+    } else if (multiplier < 15.0) {
+        // Еще быстрее от 10.0x до 15.0x
+        pulseSpeed = 0.8;
+    } else if (multiplier < 20.0) {
+        // Очень быстро от 15.0x до 20.0x
+        pulseSpeed = 0.6;
+    } else if (multiplier < 25.0) {
+        // Максимально быстро от 20.0x до 25.0x
+        pulseSpeed = 0.4;
+    } else {
+        // Сверхскорость после 25.0x
+        pulseSpeed = 0.3;
     }
-
-    // Свечение тоже обновляем ступенчато, чтобы не было мерцания/перерисовок
+    
+    // Устанавливаем скорость пульсации
+    document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
+    
+    // Дополнительные визуальные эффекты для высоких множителей
     if (multiplier >= 5.0) {
         const intensity = Math.min(0.8, (multiplier - 5) / 50);
-        const glowBucket = Math.round(intensity * 10); // 0..8
-        if (glowBucket !== lastGlowBucket) {
-            canvasElement.style.backgroundColor = `rgba(255, 100, 0, ${(glowBucket / 10).toFixed(1)})`;
-            lastGlowBucket = glowBucket;
-        }
-    } else if (lastGlowBucket !== -1) {
+        canvasElement.style.backgroundColor = `rgba(255, 100, 0, ${intensity})`;
+    } else {
         canvasElement.style.backgroundColor = '';
-        lastGlowBucket = -1;
     }
 }
 
@@ -269,11 +268,6 @@ function showExplosion() {
     rocketElement.classList.remove('pulsating');
     canvas.classList.remove('pulsating');
     canvas.style.backgroundColor = '';
-
-    // Сброс внутренних состояний анимации, чтобы следующий раунд был чистым
-    pulsatingActive = false;
-    lastPulseBucket = -1;
-    lastGlowBucket = -1;
     
     // Заменяем blast-off на fly-away
     rocketElement.classList.add('fly-away');
@@ -352,12 +346,14 @@ function updatePlayersList(players) {
         }
     });
     
-    // Русские имена для ботов и пользователей
+    // Список русских имен для игроков и ботов
     const russianNames = [
-        'Алексей', 'Михаил', 'Дмитрий', 'Сергей', 'Андрей', 'Иван', 'Артем', 'Максим',
-        'Никита', 'Владимир', 'Павел', 'Роман', 'Егор', 'Константин', 'Олег', 'Ярослав',
-        'Анна', 'Мария', 'Екатерина', 'Ольга', 'Наталья', 'Ирина', 'Светлана', 'Татьяна',
-        'Елена', 'Юлия', 'Александра', 'Виктория', 'Дарья', 'Ксения', 'Алина', 'Полина'
+        'Алексей', 'Дмитрий', 'Сергей', 'Андрей', 'Максим', 
+        'Иван', 'Артем', 'Михаил', 'Никита', 'Роман',
+        'Егор', 'Кирилл', 'Владимир', 'Павел', 'Константин',
+        'Олег', 'Тимур', 'Юрий', 'Григорий', 'Станислав',
+        'Мария', 'Анна', 'Екатерина', 'Ольга', 'Наталья',
+        'Ирина', 'Светлана', 'Татьяна', 'Елена', 'Юлия'
     ];
     
     // Добавляем только новых игроков с анимацией
@@ -376,15 +372,14 @@ function updatePlayersList(players) {
             const avatar = document.createElement('div');
             avatar.className = 'player-avatar';
             
-            // Одинаковые эмодзи для всех (и ботов, и реальных игроков)
+            // Генерируем русское имя для всех игроков
+            const randomName = russianNames[Math.floor(Math.random() * russianNames.length)];
+            const playerName = player.isBot ? randomName : (player.name || randomName);
+            
+            // Одинаковые аватарки для всех
             const userEmojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯'];
             avatar.textContent = userEmojis[Math.floor(Math.random() * userEmojis.length)];
-            
-            // Одинаковый цвет фона для всех
-            avatar.style.backgroundColor = '#1e5cb8';
-            
-            // Генерируем русское имя для всех игроков
-            const playerName = russianNames[Math.floor(Math.random() * russianNames.length)];
+            avatar.style.backgroundColor = player.isBot ? '#ff6b35' : '#1e5cb8';
             
             const infoContainer = document.createElement('div');
             infoContainer.className = 'player-info-container';
@@ -396,24 +391,19 @@ function updatePlayersList(players) {
             const betSpan = document.createElement('span');
             betSpan.className = 'player-bet';
             
-            // Сохраняем оригинальное имя игрока как data-атрибут для идентификации
-            playerItem.setAttribute('data-player-id', player.name);
-            
             // Отображаем выигрыш или проигрыш
             if (player.cashedOut) {
                 // Игрок выиграл
                 betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
                 betSpan.style.color = '#00b894';
-                if (!betSpan.classList.contains('win-animation')) {
-                    betSpan.classList.add('win-animation');
-                }
+                betSpan.classList.add('win-animation');
                 playerItem.classList.remove('player-loss');
             } else if (rocketGame.status === 'crashed' && !player.cashedOut) {
                 // Игрок проиграл (не успел вывести)
                 betSpan.textContent = `-${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#ff4757';
                 
-                if (rocketGame.justCrashed && !betSpan.classList.contains('loss-animation')) {
+                if (rocketGame.justCrashed) {
                     betSpan.classList.add('loss-animation');
                     setTimeout(() => {
                         betSpan.classList.remove('loss-animation');
@@ -431,8 +421,6 @@ function updatePlayersList(players) {
                 betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#fff';
                 playerItem.classList.remove('player-loss');
-                // Убираем анимационные классы для активных ставок
-                betSpan.classList.remove('win-animation', 'loss-animation');
             }
             
             infoContainer.appendChild(nameSpan);
@@ -451,28 +439,19 @@ function updatePlayersList(players) {
             const betSpan = existingPlayer.querySelector('.player-bet');
             const playerItem = existingPlayer;
             
-            // Проверяем изменение статуса для предотвращения повторных анимаций
-            const currentText = betSpan.textContent;
-            let newText = '';
-            
             // Отображаем выигрыш или проигрыш
             if (player.cashedOut) {
                 // Игрок выиграл
-                newText = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
                 betSpan.style.color = '#00b894';
-                
-                // Добавляем анимацию выигрыша только если текст изменился (только что выиграл)
-                if (currentText !== newText && !betSpan.classList.contains('win-animation')) {
-                    betSpan.classList.add('win-animation');
-                }
+                betSpan.classList.add('win-animation');
                 playerItem.classList.remove('player-loss');
             } else if (rocketGame.status === 'crashed' && !player.cashedOut) {
                 // Игрок проиграл (не успел вывести)
-                newText = `-${player.betAmount.toFixed(2)} TON`;
+                betSpan.textContent = `-${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#ff4757';
                 
-                // Добавляем анимацию проигрыша только если игра только что завершилась
-                if (rocketGame.justCrashed && currentText !== newText && !betSpan.classList.contains('loss-animation')) {
+                if (rocketGame.justCrashed) {
                     betSpan.classList.add('loss-animation');
                     setTimeout(() => {
                         betSpan.classList.remove('loss-animation');
@@ -482,24 +461,14 @@ function updatePlayersList(players) {
                 playerItem.classList.add('player-loss');
             } else if (rocketGame.status === 'crashed' && player.cashedOut) {
                 // Игрок выиграл и игра уже завершилась
-                newText = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
                 betSpan.style.color = '#00b894';
                 playerItem.classList.remove('player-loss');
             } else {
                 // Игра идет, ставка активна
-                newText = `${player.betAmount.toFixed(2)} TON`;
+                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#fff';
                 playerItem.classList.remove('player-loss');
-                
-                // Убираем анимационные классы для активных ставок, только если статус изменился
-                if (currentText !== newText) {
-                    betSpan.classList.remove('win-animation', 'loss-animation');
-                }
-            }
-            
-            // Обновляем текст только если он изменился
-            if (currentText !== newText) {
-                betSpan.textContent = newText;
             }
         }
     });
