@@ -12,6 +12,29 @@
     <!-- Фон с сеткой на всю страницу -->
     <div class="grid-background"></div>
     
+    <!-- Модальное окно пополнения -->
+    <div id="deposit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Пополнение баланса</h3>
+                <span class="close" onclick="closeDepositModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>Сумма пополнения (TON):</label>
+                    <input type="number" id="deposit-amount" min="1" step="0.1" placeholder="Введите сумму">
+                </div>
+                <div class="modal-info" id="deposit-mode-info">
+                    Реальное пополнение через Crypto Pay
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="processDeposit()">Пополнить</button>
+                <button class="btn btn-secondary" onclick="closeDepositModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
+
     <div class="game-container">
         <!-- Верхняя панель -->
         <div class="top-panel">
@@ -22,12 +45,13 @@
             <div class="top-right">
                 <!-- Счетчик игроков -->
                 <div class="players-counter">
-    <i class="bi bi-people-fill" style="color: #00c851;"></i>
-    <span id="playersCount">0</span>
+                    <i class="bi bi-people-fill" style="color: #00c851;"></i>
+                    <span id="playersCount">0</span>
                 </div>
-                <div class="balance">
+                <div class="balance" onclick="openDepositModal()">
                     <i class="bi bi-currency-bitcoin"></i>
                     <span id="balance">0.00</span>
+                    <i class="bi bi-plus-circle deposit-icon"></i>
                 </div>
                 <div class="timer-section">
                     <i class="bi bi-diamond-fill"></i>
@@ -91,5 +115,141 @@
     </div>
 
     <script src="js/rocket.js"></script>
+    <script>
+        // Глобальные переменные
+        let currentUser = null;
+        let isDemoMode = false;
+
+        // Функции для работы с модальным окном
+        function openDepositModal() {
+            document.getElementById('deposit-modal').style.display = 'block';
+        }
+
+        function closeDepositModal() {
+            document.getElementById('deposit-modal').style.display = 'none';
+            document.getElementById('deposit-amount').value = '';
+        }
+
+        async function processDeposit() {
+            const amount = parseFloat(document.getElementById('deposit-amount').value);
+            
+            if (!amount || amount < 1) {
+                alert('Минимальный депозит: 1 TON');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/create-invoice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        telegramId: currentUser.id,
+                        amount: amount,
+                        demoMode: isDemoMode
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (isDemoMode) {
+                        // Для демо-режима сразу обновляем баланс
+                        await loadUserData();
+                        alert(`Демо-депозит ${amount} TON успешно зачислен!`);
+                    } else {
+                        // Для реального режима открываем инвойс
+                        window.open(result.invoice_url, '_blank');
+                        alert(`Откройте Crypto Bot для оплаты ${amount} TON`);
+                        checkDepositStatus(result.invoice_id);
+                    }
+                    
+                    closeDepositModal();
+                } else {
+                    alert('Ошибка при создании депозита: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Deposit error:', error);
+                alert('Ошибка при создании депозита');
+            }
+        }
+
+        async function checkDepositStatus(invoiceId) {
+            const checkInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/check-invoice', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            invoiceId: invoiceId,
+                            demoMode: isDemoMode
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'paid') {
+                        clearInterval(checkInterval);
+                        alert('Депозит успешно зачислен!');
+                        await loadUserData();
+                    } else if (result.status === 'expired' || result.status === 'cancelled') {
+                        clearInterval(checkInterval);
+                        alert('Платеж отменен или просрочен');
+                    }
+                } catch (error) {
+                    console.error('Status check error:', error);
+                }
+            }, 5000);
+        }
+
+        // Закрытие модального окна при клике вне его
+        window.onclick = function(event) {
+            const modal = document.getElementById('deposit-modal');
+            if (event.target === modal) {
+                closeDepositModal();
+            }
+        }
+
+        // Инициализация пользователя
+        function initializeUser() {
+            const tg = window.Telegram.WebApp;
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                currentUser = {
+                    id: tg.initDataUnsafe.user.id,
+                    username: tg.initDataUnsafe.user.username || `User_${tg.initDataUnsafe.user.id}`,
+                    firstName: tg.initDataUnsafe.user.first_name,
+                    lastName: tg.initDataUnsafe.user.last_name
+                };
+                loadUserData();
+            }
+        }
+
+        async function loadUserData() {
+            try {
+                const response = await fetch(`/api/user/balance/${currentUser.id}`);
+                if (response.ok) {
+                    const userData = await response.json();
+                    const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
+                    document.getElementById('balance').textContent = balance.toFixed(2);
+                    isDemoMode = userData.demo_mode;
+                    document.getElementById('demo-badge').style.display = isDemoMode ? 'block' : 'none';
+                    
+                    // Обновляем информацию о режиме в модальном окне
+                    const modeInfo = document.getElementById('deposit-mode-info');
+                    if (modeInfo) {
+                        modeInfo.textContent = isDemoMode ? 
+                            'Демо-пополнение (виртуальные TON)' : 
+                            'Реальное пополнение через Crypto Pay';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeUser();
+        });
+    </script>
 </body>
 </html>

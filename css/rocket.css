@@ -676,3 +676,153 @@ body {
 .bet-button-container:last-of-type {
     margin-bottom: 5px;
 }
+
+/* Стили для модального окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: rgba(0, 0, 0, 0.9);
+    margin: 10% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    color: #fff;
+    font-size: 18px;
+    margin: 0;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close:hover {
+    color: #fff;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    color: #999;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 16px;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #1e5cb8;
+}
+
+.modal-info {
+    background: rgba(30, 92, 184, 0.2);
+    padding: 10px;
+    border-radius: 6px;
+    color: #87ceeb;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.modal-footer {
+    padding: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #1e5cb8, #2668b3);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2668b3, #1e5cb8);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Стили для иконки пополнения */
+.deposit-icon {
+    color: #00c851;
+    font-size: 14px;
+    margin-left: 5px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.deposit-icon:hover {
+    transform: scale(1.2);
+}
+
+.balance {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.balance:hover {
+    transform: scale(1.05);
+}
