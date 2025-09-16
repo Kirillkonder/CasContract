@@ -217,23 +217,35 @@ function updateRocketPosition(multiplier) {
     // Настройка скорости пульсации в зависимости от множителя
     let pulseSpeed;
     
-    if (multiplier < 3.00) {
-        // Медленная пульсация до 3x
+    if (multiplier < 1.5) {
+        // Очень медленно до 1.5x
+        pulseSpeed = 2.0;
+    } else if (multiplier < 2.0) {
+        // Медленно от 1.5x до 2.0x
+        pulseSpeed = 1.8;
+    } else if (multiplier < 2.5) {
+        // Средне-медленно от 2.0x до 2.5x
+        pulseSpeed = 1.6;
+    } else if (multiplier < 3.0) {
+        // Средне от 2.5x до 3.0x
+        pulseSpeed = 1.4;
+    } else if (multiplier < 5.0) {
+        // Немного быстрее от 3.0x до 5.0x
         pulseSpeed = 1.2;
-    } else if (multiplier < 5.00) {
-        // Средняя скорость от 3x до 5x
+    } else if (multiplier < 10.0) {
+        // Быстрее от 5.0x до 10.0x
         pulseSpeed = 1.0;
-    } else if (multiplier < 10.00) {
-        // Быстрее от 5x до 10x
+    } else if (multiplier < 15.0) {
+        // Еще быстрее от 10.0x до 15.0x
         pulseSpeed = 0.8;
-    } else if (multiplier < 20.00) {
-        // Еще быстрее от 10x до 20x
+    } else if (multiplier < 20.0) {
+        // Очень быстро от 15.0x до 20.0x
         pulseSpeed = 0.6;
-    } else if (multiplier < 50.00) {
-        // Очень быстро от 20x до 50x
+    } else if (multiplier < 25.0) {
+        // Максимально быстро от 20.0x до 25.0x
         pulseSpeed = 0.4;
     } else {
-        // Максимальная скорость после 50x
+        // Сверхскорость после 25.0x
         pulseSpeed = 0.3;
     }
     
@@ -241,8 +253,8 @@ function updateRocketPosition(multiplier) {
     document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
     
     // Дополнительные визуальные эффекты для высоких множителей
-    if (multiplier >= 10.00) {
-        const intensity = Math.min(0.8, (multiplier - 10) / 100);
+    if (multiplier >= 5.0) {
+        const intensity = Math.min(0.8, (multiplier - 5) / 50);
         canvasElement.style.backgroundColor = `rgba(255, 100, 0, ${intensity})`;
     } else {
         canvasElement.style.backgroundColor = '';
