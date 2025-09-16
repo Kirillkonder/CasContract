@@ -278,59 +278,55 @@ function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
     
-    // Получаем текущих игроков
-    const currentPlayers = Array.from(playersList.children);
+    // Очищаем список игроков
+    playersList.innerHTML = '';
     
     // Фильтруем только игроков с ставками
     const playersWithBets = players.filter(player => player.betAmount > 0);
     playersCount.textContent = playersWithBets.length;
     
-    // Обновляем существующих игроков
-    playersWithBets.forEach(player => {
-        const existingPlayer = currentPlayers.find(item => {
-            const nameSpan = item.querySelector('.player-name');
-            return nameSpan && nameSpan.textContent === player.name;
-        });
+    // Добавляем всех игроков с анимацией
+    playersWithBets.forEach((player, index) => {
+        const playerItem = document.createElement('div');
+        playerItem.className = 'player-item';
         
-        if (existingPlayer) {
-            // Обновляем ставку существующего игрока
-            const betSpan = existingPlayer.querySelector('.player-bet');
-            if (player.cashedOut) {
-                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
-                betSpan.style.color = '#00b894';
-            } else {
-                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-                betSpan.style.color = '#fff';
-            }
+        const playerInfo = document.createElement('div');
+        playerInfo.className = 'player-info';
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar';
+        
+        const playerDetails = document.createElement('div');
+        playerDetails.className = 'player-details';
+        
+        const playerName = document.createElement('span');
+        playerName.className = 'player-name';
+        playerName.textContent = player.name;
+        
+        const playerBet = document.createElement('span');
+        playerBet.className = 'player-bet';
+        
+        if (player.cashedOut) {
+            playerBet.innerHTML = `<i class="bi bi-cash-coin"></i> +${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+            playerBet.style.color = '#00b894';
         } else {
-            // Добавляем нового игрока с анимацией
-            const playerItem = document.createElement('div');
-            playerItem.className = 'player-item';
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'player-name';
-            nameSpan.textContent = player.name;
-            
-            const betSpan = document.createElement('span');
-            betSpan.className = 'player-bet';
-            
-            if (player.cashedOut) {
-                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
-                betSpan.style.color = '#00b894';
-            } else {
-                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-                betSpan.style.color = '#fff';
-            }
-            
-            playerItem.appendChild(nameSpan);
-            playerItem.appendChild(betSpan);
-            playersList.appendChild(playerItem);
-            
-            // Анимация появления
-            setTimeout(() => {
-                playerItem.classList.add('show');
-            }, 10);
+            playerBet.innerHTML = `<i class="bi bi-currency-bitcoin"></i> ${player.betAmount.toFixed(2)} TON`;
+            playerBet.style.color = '#fff';
         }
+        
+        playerDetails.appendChild(playerName);
+        playerDetails.appendChild(playerBet);
+        
+        playerInfo.appendChild(avatar);
+        playerInfo.appendChild(playerDetails);
+        
+        playerItem.appendChild(playerInfo);
+        playersList.appendChild(playerItem);
+        
+        // Анимация появления с задержкой
+        setTimeout(() => {
+            playerItem.classList.add('show');
+        }, index * 100);
     });
 }
 
@@ -436,7 +432,16 @@ async function cashout() {
         if (result.success) {
             userCashedOut = true;
             document.getElementById('potentialWin').textContent = result.winAmount.toFixed(2) + ' TON';
+            
+            // Немедленное обновление баланса
             document.getElementById('balance').textContent = result.new_balance.toFixed(2);
+            
+            // Анимация обновления баланса
+            const balanceElement = document.getElementById('balance');
+            balanceElement.classList.add('balance-updated');
+            setTimeout(() => {
+                balanceElement.classList.remove('balance-updated');
+            }, 1000);
             
             document.getElementById('cashoutButton').disabled = true;
             document.getElementById('cashoutButton').textContent = 'Выплачено';
