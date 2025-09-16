@@ -124,10 +124,10 @@ function updateGameState(gameState) {
             document.getElementById('userBet').textContent = userBet.toFixed(2) + ' TON';
             
             if (userCashedOut) {
-                document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2) + ' TON';
-                // Обновляем баланс после выигрыша
-                updateUserBalance(userPlayer.winAmount - userBet);
-            }
+    document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2) + ' TON';
+    // Обновляем баланс после выигрыша - эта строка должна быть раскомментирована
+    updateUserBalance(userPlayer.winAmount - userBet);
+}
         }
     }
     
@@ -440,6 +440,9 @@ async function cashout() {
             
             document.getElementById('cashoutButton').disabled = true;
             document.getElementById('cashoutButton').textContent = 'Выплачено';
+            
+            // Обновляем баланс в реальном времени
+            updateUserBalance(result.winAmount - userBet);
         }
     } catch (error) {
         console.error('Error cashing out:', error);
