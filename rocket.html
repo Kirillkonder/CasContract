@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="css/rocket.css">
 </head>
 <body>
+    <!-- Фон с сеткой на всю страницу -->
+    <div class="grid-background"></div>
+    
     <div class="game-container">
         <!-- Верхняя панель -->
         <div class="top-panel">
@@ -19,8 +22,8 @@
             <div class="top-right">
                 <!-- Счетчик игроков -->
                 <div class="players-counter">
-                    <i class="bi bi-people-fill" style="color: #00c851;"></i>
-                    <span id="playersCount">0</span>
+    <i class="bi bi-people-fill" style="color: #00c851;"></i>
+    <span id="playersCount">0</span>
                 </div>
                 <div class="balance">
                     <i class="bi bi-currency-bitcoin"></i>
@@ -36,6 +39,16 @@
             </div>
         </div>
 
+        <!-- Игровое поле с ракеткой -->
+        <div class="game-field">
+            <div class="rocket-container">
+                <div id="rocketCanvas" class="rocket-canvas">
+                    <img src="Rocket.png" alt="Rocket" id="rocket" class="rocket">
+                </div>
+            </div>
+        </div>
+
+        
         <!-- Таймер/История -->
         <div class="coefficients">
             <div class="coeff-item active" id="timerDisplay">Ожидание</div>
@@ -44,16 +57,6 @@
             <div class="coeff-item" id="historyItem3">1.00</div>
             <div class="coeff-item" id="historyItem4">1.00</div>
             <div class="coeff-item" id="historyItem5">1.00</div>
-        </div>
-
-        <!-- Игровое поле с сеткой -->
-        <div class="game-field">
-            <div class="grid-overlay"></div>
-            <div class="rocket-container">
-                <div id="rocketCanvas" class="rocket-canvas">
-                    <img src="Rocket.png" alt="Rocket" id="rocket" class="rocket">
-                </div>
-            </div>
         </div>
 
         <!-- Ставка и информация о ставке -->
