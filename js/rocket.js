@@ -497,6 +497,13 @@ async function placeBet() {
         return;
     }
     
+    // Проверяем баланс
+    const currentBalance = parseFloat(document.getElementById('balance').textContent);
+    if (currentBalance < betAmount) {
+        showInsufficientFunds();
+        return;
+    }
+    
     showButtonLoading('placeBetButton');
     
     try {
@@ -514,6 +521,7 @@ async function placeBet() {
         
         if (!response.ok) {
             hideButtonLoading('placeBetButton');
+            showError('Ошибка при размещении ставки');
             return;
         }
         
@@ -525,14 +533,129 @@ async function placeBet() {
             
             document.getElementById('placeBetButton').disabled = true;
             document.getElementById('placeBetButton').textContent = 'Ставка сделана';
+            
+            // Показываем уведомление о успешной ставке
+            showBetPlaced(betAmount);
         }
     } catch (error) {
         console.error('Error placing bet:', error);
+        showError('Ошибка соединения');
     } finally {
         hideButtonLoading('placeBetButton');
     }
 }
 
+// Добавляем контейнер для уведомлений при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    createToastContainer();
+    initializeGame();
+    connectWebSocket();
+});
+
+
+function showToast(type, title, message, duration = 3000) {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const icons = {
+        success: 'bi bi-check-circle-fill',
+        error: 'bi bi-x-circle-fill',
+        warning: 'bi bi-exclamation-triangle-fill',
+        info: 'bi bi-info-circle-fill',
+        win: 'bi bi-trophy-fill'
+    };
+    
+    toast.innerHTML = `
+        <i class="toast-icon ${icons[type] || icons.info}"></i>
+        <div class="toast-content">
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">
+            <i class="bi bi-x"></i>
+        </button>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    // Анимация появления
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    
+    // Автоматическое закрытие
+    if (duration > 0) {
+        setTimeout(() => {
+            hideToast(toast);
+        }, duration);
+    }
+    
+    return toast;
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+    return container;
+}
+
+function hideToast(toast) {
+    toast.classList.remove('show');
+    toast.classList.add('hide');
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 300);
+}
+
+// Примеры использования в разных ситуациях:
+
+// 1. При недостатке средств
+function showInsufficientFunds() {
+    showToast('error', 'Недостаточно средств', 'Пополните баланс для совершения ставки');
+}
+
+// 2. При выигрыше
+function showWinNotification(amount, multiplier) {
+    if (amount >= 100) {
+        showToast('win', 'КРУПНЫЙ ВЫИГРЫШ!', 
+            `🎉 Вы выиграли ${amount.toFixed(2)} TON (${multiplier.toFixed(2)}x)`, 5000);
+    } else if (amount >= 50) {
+        showToast('success', 'Отличный выигрыш!', 
+            `💰 +${amount.toFixed(2)} TON (${multiplier.toFixed(2)}x)`);
+    } else {
+        showToast('success', 'Выигрыш!', 
+            `+${amount.toFixed(2)} TON (${multiplier.toFixed(2)}x)`);
+    }
+}
+
+// 3. При успешной ставке
+function showBetPlaced(betAmount) {
+    showToast('success', 'Ставка принята', `Ставка ${betAmount} TON размещена`);
+}
+
+// 4. При ошибке
+function showError(message) {
+    showToast('error', 'Ошибка', message);
+}
+
+// 5. Информационные уведомления
+function showInfo(title, message) {
+    showToast('info', title, message);
+}
+
+// 6. Предупреждения
+function showWarning(message) {
+    showToast('warning', 'Внимание', message);
+}
+
+// Обновляем функцию cashout для показа уведомления о выигрыше
 async function cashout() {
     if (userCashedOut) {
         return;
@@ -562,6 +685,7 @@ async function cashout() {
         
         if (!response.ok) {
             hideButtonLoading('cashoutButton');
+            showError('Ошибка при выводе средств');
             return;
         }
         
@@ -574,11 +698,15 @@ async function cashout() {
             document.getElementById('cashoutButton').disabled = true;
             document.getElementById('cashoutButton').textContent = 'Выплачено';
             
+            // Показываем уведомление о выигрыше
+            showWinNotification(result.winAmount - userBet, result.winAmount / userBet);
+            
             // Обновляем баланс в реальном времени
             updateUserBalance(result.winAmount - userBet);
         }
     } catch (error) {
         console.error('Error cashing out:', error);
+        showError('Ошибка соединения');
     } finally {
         hideButtonLoading('cashoutButton');
     }
