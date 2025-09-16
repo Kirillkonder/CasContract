@@ -151,14 +151,32 @@ function updateGameState(gameState) {
 
 function updateTimerDisplay(text) {
     const timerDisplay = document.getElementById('timerDisplay');
-    timerDisplay.textContent = text;
+    const timerDisplayOverlay = document.getElementById('timerDisplayOverlay');
     
-    if (text === 'Ожидание') {
-        timerDisplay.className = 'coeff-item active';
-    } else if (text.includes('КРАШ')) {
-        timerDisplay.className = 'coeff-item history-loss';
-    } else {
-        timerDisplay.className = 'coeff-item';
+    // Основной дисплей таймера
+    if (timerDisplay) {
+        timerDisplay.textContent = text;
+        
+        if (text === 'Ожидание') {
+            timerDisplay.className = 'coeff-item active';
+        } else if (text.includes('КРАШ')) {
+            timerDisplay.className = 'coeff-item history-loss';
+        } else {
+            timerDisplay.className = 'coeff-item';
+        }
+    }
+    
+    // Дисплей таймера на игровом экране
+    if (timerDisplayOverlay) {
+        timerDisplayOverlay.textContent = text;
+        
+        if (text === 'Ожидание') {
+            timerDisplayOverlay.className = 'coeff-item active';
+        } else if (text.includes('КРАШ')) {
+            timerDisplayOverlay.className = 'coeff-item history-loss';
+        } else {
+            timerDisplayOverlay.className = 'coeff-item';
+        }
     }
 }
 
@@ -201,11 +219,15 @@ function clearCountdown() {
 function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
     const canvasElement = document.getElementById('rocketCanvas');
+    const headerRocketElement = document.getElementById('headerRocket');
     
     // Убираем пульсацию при множителе 1.00
     if (multiplier <= 1.00) {
         rocketElement.classList.remove('pulsating');
         canvasElement.classList.remove('pulsating');
+        if (headerRocketElement) {
+            headerRocketElement.classList.remove('pulsating');
+        }
         document.documentElement.style.setProperty('--pulse-speed', '1.2s');
         return;
     }
@@ -213,6 +235,9 @@ function updateRocketPosition(multiplier) {
     // Добавляем пульсацию при множителе выше 1.00
     rocketElement.classList.add('pulsating');
     canvasElement.classList.add('pulsating');
+    if (headerRocketElement) {
+        headerRocketElement.classList.add('pulsating');
+    }
     
     // Настройка скорости пульсации в зависимости от множителя
     let pulseSpeed;
@@ -471,12 +496,35 @@ function updateHistory(history) {
     // Обновляем историю в коэффициентах
     for (let i = 0; i < 5; i++) {
         const historyItem = document.getElementById('historyItem' + (i + 1));
+        const historyItemOverlay = document.getElementById('historyItem' + (i + 1) + 'Overlay');
+        
         if (history[i]) {
-            historyItem.textContent = history[i].multiplier.toFixed(2) + 'x';
-            historyItem.className = `coeff-item ${history[i].multiplier >= 2 ? 'history-win' : 'history-loss'}`;
+            const multiplierText = history[i].multiplier.toFixed(2) + 'x';
+            const className = `coeff-item ${history[i].multiplier >= 2 ? 'history-win' : 'history-loss'}`;
+            
+            // Основная история
+            if (historyItem) {
+                historyItem.textContent = multiplierText;
+                historyItem.className = className;
+            }
+            
+            // История на игровом экране
+            if (historyItemOverlay) {
+                historyItemOverlay.textContent = multiplierText;
+                historyItemOverlay.className = className;
+            }
         } else {
-            historyItem.textContent = '1.00';
-            historyItem.className = 'coeff-item';
+            // Основная история
+            if (historyItem) {
+                historyItem.textContent = '1.00';
+                historyItem.className = 'coeff-item';
+            }
+            
+            // История на игровом экране
+            if (historyItemOverlay) {
+                historyItemOverlay.textContent = '1.00';
+                historyItemOverlay.className = 'coeff-item';
+            }
         }
     }
 }
