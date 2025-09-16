@@ -200,16 +200,15 @@ function clearCountdown() {
 
 function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
-    const trailElement = document.getElementById('rocketTrail');
     const canvasElement = document.getElementById('rocketCanvas');
     
-    // Гарантируем, что ракета всегда повернута на -45 градусов
-    rocketElement.style.transform = 'translateX(-50%) rotate(-45deg)';
+    // Жестко фиксируем позицию и размер ракеты
+    rocketElement.style.position = 'fixed';
     rocketElement.style.bottom = '150px';
-    rocketElement.style.left = '50%';
-    
-    // Остальной код функции без изменений...
-    const trailHeight = Math.max(0, multiplier * 10);
+    rocketElement.style.left = 'calc(50% - 40px)';
+    rocketElement.style.transform = 'rotate(-45deg)';
+    rocketElement.style.width = '80px';
+    rocketElement.style.height = '80px';
     
     if (multiplier > 1.00) {
         rocketElement.classList.add('pulsating');
@@ -219,14 +218,10 @@ function updateRocketPosition(multiplier) {
             const speedIntensity = Math.min(0.7, (multiplier - 3) / 10);
             const pulseSpeed = Math.max(0.3, 1.2 - speedIntensity);
             document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
-        } else {
-            document.documentElement.style.setProperty('--pulse-speed', '1.2s');
         }
-        
     } else {
         rocketElement.classList.remove('pulsating');
         canvasElement.classList.remove('pulsating');
-        canvasElement.style.backgroundColor = '';
         document.documentElement.style.setProperty('--pulse-speed', '1.2s');
     }
 }
@@ -235,36 +230,51 @@ function showExplosion() {
     const canvas = document.getElementById('rocketCanvas');
     const rocketElement = document.getElementById('rocket');
     
-    // Сбрасываем стили и гарантируем поворот на -45 градусов
-    rocketElement.classList.remove('pulsating');
-    rocketElement.style.transform = 'translateX(-50%) rotate(-45deg)';
+    // Жестко фиксируем позицию и поворот ракеты
+    rocketElement.style.position = 'fixed';
     rocketElement.style.bottom = '150px';
-    rocketElement.style.left = '50%';
+    rocketElement.style.left = 'calc(50% - 40px)';
+    rocketElement.style.transform = 'rotate(-45deg)';
+    rocketElement.style.width = '80px';
+    rocketElement.style.height = '80px';
+    rocketElement.style.transition = 'none';
     
+    // Убираем все классы анимаций
+    rocketElement.classList.remove('pulsating');
     canvas.classList.remove('pulsating');
-    canvas.style.backgroundColor = '';
     
-    // Запускаем анимацию взлета
+    // Запускаем взлет
     rocketElement.classList.add('blast-off');
     
-    // Создаем текст "УЛЕТЕЛ!" внутри игрового поля
+    // Создаем текст "УЛЕТЕЛ!"
     const blastOffText = document.createElement('div');
     blastOffText.className = 'blast-off-text';
     blastOffText.textContent = 'УЛЕТЕЛ!';
+    blastOffText.style.color = '#ff4757';
+    blastOffText.style.fontSize = '48px';
+    blastOffText.style.fontWeight = 'bold';
+    blastOffText.style.position = 'absolute';
+    blastOffText.style.top = '50%';
+    blastOffText.style.left = '50%';
+    blastOffText.style.transform = 'translate(-50%, -50%)';
+    blastOffText.style.zIndex = '100';
+    
     canvas.appendChild(blastOffText);
     
+    // Через 2 секунды убираем всё
     setTimeout(() => {
-        // Убираем текст и сбрасываем анимацию
+        // Убираем текст
         if (blastOffText.parentNode) {
             canvas.removeChild(blastOffText);
         }
+        
+        // Сбрасываем ракету в исходное положение
         rocketElement.classList.remove('blast-off');
         rocketElement.style.opacity = '1';
         rocketElement.style.filter = 'none';
-        // Возвращаем правильное положение и поворот
-        rocketElement.style.transform = 'translateX(-50%) rotate(-45deg)';
+        rocketElement.style.transform = 'rotate(-45deg)';
         rocketElement.style.bottom = '150px';
-        rocketElement.style.left = '50%';
+        rocketElement.style.left = 'calc(50% - 40px)';
     }, 2000);
 }
 
