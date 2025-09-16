@@ -24,57 +24,30 @@ body {
     bottom: 0;
     z-index: -1;
     background: 
-        /* Ближние линии - более яркие и толстые */
-        linear-gradient(rgba(30, 92, 184, 0.9) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(30, 92, 184, 0.9) 1px, transparent 1px),
-        /* Средние линии - менее яркие */
-        linear-gradient(rgba(30, 92, 184, 0.6) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(30, 92, 184, 0.6) 1px, transparent 1px),
-        /* Дальние линии - самые прозрачные */
         linear-gradient(rgba(30, 92, 184, 0.3) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(30, 92, 184, 0.3) 1px, transparent 1px);
+        linear-gradient(90deg, rgba(30, 92, 184, 0.3) 1px, transparent 1px),
+        linear-gradient(rgba(30, 92, 184, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30, 92, 184, 0.2) 1px, transparent 1px),
+        linear-gradient(rgba(30, 92, 184, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30, 92, 184, 0.1) 1px, transparent 1px);
     
-    /* Разный размер сетки для создания глубины */
     background-size: 
-        30px 30px,  /* Ближний слой */
-        30px 30px,
-        60px 60px,  /* Средний слой */
+        120px 120px,
+        120px 120px,
         60px 60px,
-        120px 120px, /* Дальний слой */
-        120px 120px;
-    
-    /* Смещение слоев для 3D-эффекта */
-    background-position: 
-        0 0,
-        0 0,
-        15px 15px,
-        15px 15px,
+        60px 60px,
         30px 30px,
         30px 30px;
     
-    animation: gridDepth 4s ease-in-out infinite;
+    animation: gridMove 20s linear infinite;
 }
 
-@keyframes gridDepth {
-    0%, 100% { 
-        opacity: 0.8;
-        background-position: 
-            0 0,
-            0 0,
-            15px 15px,
-            15px 15px,
-            30px 30px,
-            30px 30px;
+@keyframes gridMove {
+    0% {
+        background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
     }
-    50% { 
-        opacity: 1;
-        background-position: 
-            5px 5px,
-            5px 5px,
-            20px 20px,
-            20px 20px,
-            35px 35px,
-            35px 35px;
+    100% {
+        background-position: 120px 120px, 120px 120px, 60px 60px, 60px 60px, 30px 30px, 30px 30px;
     }
 }
 
@@ -82,7 +55,7 @@ body {
     max-width: 390px;
     margin: 0 auto;
     min-height: 100vh;
-    background: rgba(0, 0, 0, 0.8); /* Полупрозрачный фон для контейнера */
+    background: transparent; /* Полностью прозрачный фон */
     position: relative;
     z-index: 1;
 }
@@ -93,7 +66,8 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.7); /* Полупрозрачный черный */
+    backdrop-filter: blur(5px);
     position: relative;
     z-index: 10;
 }
@@ -153,7 +127,7 @@ body {
 
 /* Игровое поле */
 .game-field {
-    height: 380px; /* Увеличиваем высоту */
+    height: 380px;
     position: relative;
     overflow: hidden;
     display: flex;
@@ -162,18 +136,22 @@ body {
     width: 100vw;
     margin-left: calc(-50vw + 50%);
     margin-right: calc(-50vw + 50%);
-    margin-bottom: 10px; /* Добавляем отступ снизу */
-    background: transparent; /* Прозрачный фон */
+    margin-bottom: 10px;
+    background: transparent;
 }
 
 /* Коэффициенты */
 .coefficients {
     display: flex;
     gap: 6px;
-    padding: 8px 16px; /* Уменьшаем вертикальные отступы */
+    padding: 8px 16px;
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    border-radius: 10px;
+    margin: 0 16px;
 }
 
 .coefficients::-webkit-scrollbar {
@@ -221,9 +199,8 @@ body {
 
 /* Кнопка ставки */
 .bet-button-container {
-    padding: 8px 16px; /* Уменьшаем вертикальные отступы */
+    padding: 8px 16px;
 }
-
 
 .bet-button {
     width: 100%;
@@ -254,9 +231,11 @@ body {
     padding: 0 16px 16px;
     max-height: 260px;
     overflow-y: auto;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    border-radius: 10px;
+    margin: 0 16px;
 }
-
-
 
 .player-item:nth-child(1) { animation-delay: 0.1s; }
 .player-item:nth-child(2) { animation-delay: 0.2s; }
@@ -270,7 +249,6 @@ body {
         transform: translateY(0);
     }
 }
-
 
 .player-info {
     display: flex;
@@ -353,6 +331,7 @@ body {
     .coefficients {
         padding: 10px 12px;
         gap: 4px;
+        margin: 0 12px;
     }
     
     .coeff-item {
@@ -367,6 +346,7 @@ body {
     
     .players-list {
         padding: 0 12px 12px;
+        margin: 0 12px;
     }
 }
 
@@ -397,7 +377,6 @@ body {
     }
 }
 
-
 /* Добавляем эти стили в конец файла */
 
 .multiplier-display {
@@ -412,9 +391,10 @@ body {
 .bet-info {
     display: flex;
     justify-content: space-between;
-    padding: 8px 16px; /* Уменьшаем вертикальные отступы */
-    background: rgba(255, 255, 255, 0.05);
-    margin: 8px 16px; /* Уменьшаем отступы */
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    margin: 8px 16px;
     border-radius: 8px;
 }
 
@@ -437,7 +417,7 @@ body {
 
 .players-section {
     padding: 0 16px 5px !important;
-    margin-top: 5px; /* Добавляем небольшой отступ сверху */
+    margin-top: 5px;
 }
 
 .players-header {
@@ -451,13 +431,11 @@ body {
 .rocket-canvas {
     position: relative;
     width: 100%;
-    height: 250px; /* Увеличиваем высоту */
+    height: 250px;
     display: flex;
     justify-content: center;
     align-items: flex-end;
 }
-
-
 
 .rocket {
     width: 140px;
@@ -549,7 +527,6 @@ body {
     transform: translateY(0);
 }
 
-
 .balance-updated {
     animation: balancePulse 0.5s ease-in-out;
 }
@@ -559,7 +536,6 @@ body {
     50% { transform: scale(1.1); background: linear-gradient(135deg, #00ff00, #32cd32); }
     100% { transform: scale(1); }
 }
-
 
 .player-avatar {
     width: 32px;
@@ -667,7 +643,6 @@ body {
     100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-
 @keyframes rocketFlyAway {
     0% { 
         transform: translate(-50%, -50%) rotate(-45deg) scale(1);
@@ -690,14 +665,14 @@ body {
 
 /* Убираем отступы у секции игроков */
 .players-section {
-    padding: 0 16px 5px !important; /* Уменьшаем нижний отступ */
+    padding: 0 16px 5px !important;
 }
 
 .players-header {
-    display: none !important; /* Скрываем заголовок "Игроки" */
+    display: none !important;
 }
 
 /* Уменьшаем отступ между кнопками и списком игроков */
 .bet-button-container:last-of-type {
-    margin-bottom: 5px; /* Уменьшаем отступ после последней кнопки */
+    margin-bottom: 5px;
 }
