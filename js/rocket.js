@@ -129,11 +129,7 @@ function updateGameState(gameState) {
     }
     
     updatePlayersList(gameState.players);
-    
-    // Обновляем историю только если она есть в gameState
-    if (gameState.history && gameState.history.length > 0) {
-        updateHistory(gameState.history);
-    }
+    updateHistory(gameState.history);
     
     if (userBet > 0 && !userCashedOut && gameState.status === 'flying') {
         const potentialWin = userBet * gameState.multiplier;
@@ -142,7 +138,6 @@ function updateGameState(gameState) {
     
     updateBettingUI();
 }
-
 
 function updateTimerDisplay(text) {
     const timerDisplay = document.getElementById('timerDisplay');
@@ -286,25 +281,18 @@ function updatePlayersList(players) {
 }
 
 function updateHistory(history) {
-    // Обновляем историю в коэффициентах только если передана актуальная история
-    if (!history || history.length === 0) return;
-    
+    // Обновляем историю в коэффициентах
     for (let i = 0; i < 5; i++) {
         const historyItem = document.getElementById('historyItem' + (i + 1));
         if (history[i]) {
             historyItem.textContent = history[i].multiplier.toFixed(2) + 'x';
             historyItem.className = `coeff-item ${history[i].multiplier >= 2 ? 'history-win' : 'history-loss'}`;
         } else {
-            // Если в истории меньше 5 элементов, оставляем предыдущие значения
-            // Не сбрасываем на 1.00, чтобы сохранить историю
-            if (historyItem.textContent === '1.00') {
-                historyItem.textContent = '1.00';
-                historyItem.className = 'coeff-item';
-            }
+            historyItem.textContent = '1.00';
+            historyItem.className = 'coeff-item';
         }
     }
 }
-
 
 async function placeBet() {
     const betAmount = 5; // Фиксированная ставка 5 TON
@@ -457,5 +445,5 @@ let rocketGame = {
     status: 'waiting',
     multiplier: 1.00,
     players: [],
-    history: [] // История будет заполняться с сервера
+    history: []
 };
