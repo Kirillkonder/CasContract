@@ -10,7 +10,7 @@
 </head>
 <body>
     <div class="game-container">
-        <!-- Игровое поле с сеткой и ракетой (fixed) -->
+        <!-- Игровое поле с сеткой занимает весь экран -->
         <div class="game-field">
             <div class="grid-overlay"></div>
             <div class="rocket-container">
@@ -18,73 +18,70 @@
                     <img src="Rocket.png" alt="Rocket" id="rocket" class="rocket">
                 </div>
             </div>
-            
-            <!-- Верхняя панель поверх игрового поля -->
-            <div class="top-panel">
-                <div class="close-btn" onclick="goBack()">
-                    <i class="bi bi-x"></i>
-                    <span>Закрыть</span>
-                </div>
-                <div class="top-right">
-                    <div class="players-counter">
-                        <i class="bi bi-people-fill" style="color: #00c851;"></i>
-                        <span id="playersCount">0</span>
-                    </div>
-                    <div class="balance">
-                        <i class="bi bi-currency-bitcoin"></i>
-                        <span id="balance">0.00</span>
-                    </div>
-                    <div class="timer-section">
-                        <i class="bi bi-diamond-fill"></i>
-                        <span class="timer" id="timer">0:00</span>
-                    </div>
-                    <div id="demo-badge" style="display: none; background: #ff9500; color: black; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
-                        DEMO
-                    </div>
-                </div>
-            </div>
+        </div>
 
-            <!-- История ставок поверх игрового поля -->
-            <div class="coefficients">
-                <div class="coeff-item active" id="timerDisplay">Ожидание</div>
-                <div class="coeff-item" id="historyItem1">1.00</div>
-                <div class="coeff-item" id="historyItem2">1.00</div>
-                <div class="coeff-item" id="historyItem3">1.00</div>
-                <div class="coeff-item" id="historyItem4">1.00</div>
-                <div class="coeff-item" id="historyItem5">1.00</div>
+        <!-- Верхняя панель поверх игрового поля -->
+        <div class="top-panel">
+            <div class="close-btn" onclick="goBack()">
+                <i class="bi bi-x"></i>
+                <span>Закрыть</span>
+            </div>
+            <div class="top-right">
+                <div class="players-counter">
+                    <i class="bi bi-people-fill" style="color: #00c851;"></i>
+                    <span id="playersCount">0</span>
+                </div>
+                <div class="balance">
+                    <i class="bi bi-currency-bitcoin"></i>
+                    <span id="balance">0.00</span>
+                </div>
+                <div class="timer-section">
+                    <i class="bi bi-diamond-fill"></i>
+                    <span class="timer" id="timer">0:00</span>
+                </div>
+                <div id="demo-badge" style="display: none; background: #ff9500; color: black; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
+                    DEMO
+                </div>
             </div>
         </div>
 
-        <!-- Остальной контент (под игровым полем) -->
-        <div class="content-below">
-            <!-- Ставка и информация о ставке -->
-            <div class="bet-info">
-                <div class="bet-info-item">
-                    <span>Ваша ставка:</span>
-                    <span id="userBet">0 TON</span>
-                </div>
-                <div class="bet-info-item">
-                    <span>Потенциальный выигрыш:</span>
-                    <span id="potentialWin">0 TON</span>
-                </div>
-            </div>
+        <!-- История ставок поверх игрового поля -->
+        <div class="coefficients">
+            <div class="coeff-item active" id="timerDisplay">Ожидание</div>
+            <div class="coeff-item" id="historyItem1">1.00</div>
+            <div class="coeff-item" id="historyItem2">1.00</div>
+            <div class="coeff-item" id="historyItem3">1.00</div>
+            <div class="coeff-item" id="historyItem4">1.00</div>
+            <div class="coeff-item" id="historyItem5">1.00</div>
+        </div>
 
-            <!-- Кнопки ставки и вывода -->
-            <div class="bet-button-container">
-                <button class="bet-button" id="placeBetButton" onclick="placeBet()">Поставить 5 TON</button>
+        <!-- Ставка и информация о ставке -->
+        <div class="bet-info">
+            <div class="bet-info-item">
+                <span>Ваша ставка:</span>
+                <span id="userBet">0 TON</span>
             </div>
-            <div class="bet-button-container">
-                <button class="bet-button cashout-btn" id="cashoutButton" onclick="cashout()">Забрать выигрыш</button>
+            <div class="bet-info-item">
+                <span>Потенциальный выигрыш:</span>
+                <span id="potentialWin">0 TON</span>
             </div>
+        </div>
 
-            <!-- Список игроков -->
-            <div class="players-section">
-                <div class="players-header">
-                    <span>Игроки</span>
-                </div>
-                <div class="players-list" id="playersList">
-                    <!-- Игроки будут добавляться через JS -->
-                </div>
+        <!-- Кнопки ставки и вывода -->
+        <div class="bet-button-container">
+            <button class="bet-button" id="placeBetButton" onclick="placeBet()">Поставить 5 TON</button>
+        </div>
+        <div class="bet-button-container">
+            <button class="bet-button cashout-btn" id="cashoutButton" onclick="cashout()">Забрать выигрыш</button>
+        </div>
+
+        <!-- Список игроков -->
+        <div class="players-section">
+            <div class="players-header">
+                <span>Игроки</span>
+            </div>
+            <div class="players-list" id="playersList">
+                <!-- Игроки будут добавляться через JS -->
             </div>
         </div>
     </div>
