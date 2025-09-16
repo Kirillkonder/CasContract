@@ -6,6 +6,7 @@ let userCashedOut = false;
 let userPlayer = null;
 let rocketPosition = 80;
 let countdownInterval = null;
+let allOnlineUsers = 0;
 
 function showButtonLoading(buttonId) {
     const button = document.getElementById(buttonId);
@@ -89,6 +90,7 @@ function updateGameState(gameState) {
     const wasCrashed = rocketGame.status === 'crashed';
     rocketGame = gameState;
     rocketGame.justCrashed = (gameState.status === 'crashed' && !wasCrashed);
+    allOnlineUsers = gameState.totalOnlineUsers || gameState.players.length;
     
     clearCountdown();
     
@@ -137,6 +139,7 @@ function updateGameState(gameState) {
     // Обновляем список игроков
     updatePlayersList(gameState.players);
     updateHistory(gameState.history);
+    document.getElementById('playersCount').textContent = allOnlineUsers;
     
     if (userBet > 0 && !userCashedOut && gameState.status === 'flying') {
         const potentialWin = userBet * gameState.multiplier;
@@ -275,8 +278,9 @@ async function updateUserBalance(winAmount = 0) {
 function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
-    
+    document.getElementById('playersCount').textContent = allOnlineUsers;
     playersCount.textContent = players.length;
+    
     // Получаем текущих игроков из DOM
     const currentPlayerElements = Array.from(playersList.children);
     const currentPlayerNames = currentPlayerElements.map(item => {
