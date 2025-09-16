@@ -551,14 +551,7 @@ body {
     align-items: flex-end;
 }
 
-.rocket-trail {
-    position: absolute;
-    bottom: 60px;
-    width: 4px;
-    background: linear-gradient(to top, #00bfff, transparent);
-    border-radius: 2px;
-    transition: height 0.1s ease;
-}
+
 
 .rocket {
     width: 60px;

@@ -201,7 +201,7 @@ function updateRocketPosition(multiplier) {
     const canvasElement = document.getElementById('rocketCanvas');
     
     const trailHeight = Math.max(0, multiplier * 10);
-    trailElement.style.height = `${trailHeight}px`;
+   
     
     if (multiplier > 1.00) {
         rocketElement.classList.add('pulsating');
@@ -215,12 +215,7 @@ function updateRocketPosition(multiplier) {
             document.documentElement.style.setProperty('--pulse-speed', '1.2s');
         }
         
-        if (multiplier > 5) {
-            const redIntensity = Math.min(0.3, (multiplier - 5) / 15);
-            canvasElement.style.backgroundColor = `rgba(255, 50, 50, ${redIntensity})`;
-        } else {
-            canvasElement.style.backgroundColor = '';
-        }
+        
     } else {
         rocketElement.classList.remove('pulsating');
         canvasElement.classList.remove('pulsating');
