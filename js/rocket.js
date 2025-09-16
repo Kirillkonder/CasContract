@@ -318,10 +318,6 @@ function updatePlayersList(players) {
     
     // Получаем текущих игроков из DOM
     const currentPlayerElements = Array.from(playersList.children);
-    const currentPlayerNames = currentPlayerElements.map(item => {
-        const nameSpan = item.querySelector('.player-name');
-        return nameSpan ? nameSpan.textContent : '';
-    });
     
     // Фильтруем только игроков с ставками
     const playersWithBets = players.filter(player => player.betAmount > 0);
@@ -336,13 +332,10 @@ function updatePlayersList(players) {
     
     // Удаляем игроков, которых больше нет в списке
     currentPlayerElements.forEach(playerElement => {
-        const nameSpan = playerElement.querySelector('.player-name');
-        if (nameSpan) {
-            const playerName = nameSpan.textContent;
-            const playerStillExists = playersWithBets.some(player => player.name === playerName);
-            if (!playerStillExists) {
-                playerElement.remove();
-            }
+        const playerId = playerElement.getAttribute('data-player-id');
+        const playerStillExists = playersWithBets.some(player => player.userId == playerId);
+        if (!playerStillExists) {
+            playerElement.remove();
         }
     });
     
@@ -357,14 +350,14 @@ function updatePlayersList(players) {
     // Добавляем только новых игроков с анимацией
     playersWithBets.forEach((player, index) => {
         // Проверяем, есть ли уже такой игрок в DOM
-        const existingPlayer = Array.from(playersList.children).find(item => {
-            const nameSpan = item.querySelector('.player-name');
-            return nameSpan && nameSpan.textContent === player.name;
-        });
+        const existingPlayer = Array.from(playersList.children).find(item => 
+            item.getAttribute('data-player-id') == player.userId
+        );
         
         if (!existingPlayer) {
             const playerItem = document.createElement('div');
             playerItem.className = 'player-item';
+            playerItem.setAttribute('data-player-id', player.userId);
             
             // Создаем аватарку
             const avatar = document.createElement('div');
@@ -377,8 +370,9 @@ function updatePlayersList(players) {
             // Одинаковый цвет фона для всех
             avatar.style.backgroundColor = '#1e5cb8';
             
-            // Генерируем русское имя для всех игроков
-            const playerName = russianNames[Math.floor(Math.random() * russianNames.length)];
+            // Генерируем фиксированное имя для игрока на основе его ID
+            const nameIndex = player.userId % russianNames.length;
+            const playerName = russianNames[nameIndex];
             
             const infoContainer = document.createElement('div');
             infoContainer.className = 'player-info-container';
