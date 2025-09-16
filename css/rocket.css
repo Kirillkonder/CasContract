@@ -225,14 +225,15 @@ body {
 }
 
 .rocket {
-    width: 70px;
-    height: 70px;
-    filter: 
-        drop-shadow(0 0 15px rgba(255, 255, 255, 0.3))
-        drop-shadow(0 0 30px rgba(0, 191, 255, 0.4));
-    transition: transform 1s ease-in-out;
-    animation: rocketFloat 3s ease-in-out infinite;
-    position: relative;
+    width: 100px;
+    height: 100px;
+    position: fixed;
+    bottom: 150px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-45deg);
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3))
+            drop-shadow(0 0 30px rgba(0, 191, 255, 0.4));
+    transition: all 0.1s ease;
     z-index: 10;
 }
 
@@ -575,9 +576,37 @@ body {
 }
 
 @keyframes blastOff {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    50% { transform: translateY(-100px) scale(1.2); opacity: 0.8; filter: brightness(3) blur(5px); }
-    100% { transform: translateY(-200px) scale(0.5); opacity: 0; }
+    0% { 
+        transform: translateX(-50%) rotate(-45deg) translateY(0) scale(1); 
+        opacity: 1; 
+    }
+    50% { 
+        transform: translateX(-50%) rotate(-45deg) translateY(-100px) scale(1.2); 
+        opacity: 0.8; 
+        filter: brightness(3) blur(5px); 
+    }
+    100% { 
+        transform: translateX(-50%) rotate(-45deg) translateY(-200px) scale(0.5); 
+        opacity: 0; 
+    }
+}
+
+.blast-off-text {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    font-weight: bold;
+    color: #ff4757;
+    text-shadow: 0 0 20px rgba(255, 71, 87, 0.8);
+    z-index: 20;
+    animation: textPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes textPulse {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.9; }
 }
 
 .cashout-btn {

@@ -240,18 +240,18 @@ function showExplosion() {
     const blastOffText = document.createElement('div');
     blastOffText.className = 'blast-off-text';
     blastOffText.textContent = 'УЛЕТЕЛ!';
-    canvas.appendChild(blastOffText);
+    document.body.appendChild(blastOffText);
     
     setTimeout(() => {
         if (blastOffText.parentNode) {
-            canvas.removeChild(blastOffText);
+            document.body.removeChild(blastOffText);
         }
         rocketElement.classList.remove('blast-off');
-        rocketElement.style.bottom = '110px';
         rocketElement.style.opacity = '1';
         rocketElement.style.filter = 'none';
     }, 2000);
 }
+
 
 async function updateUserBalance(winAmount = 0) {
     try {
@@ -280,7 +280,7 @@ function updatePlayersList(players) {
     const playersCount = document.getElementById('playersCount');
     document.getElementById('playersCount').textContent = allOnlineUsers;
     playersCount.textContent = players.length;
-    
+
     // Получаем текущих игроков из DOM
     const currentPlayerElements = Array.from(playersList.children);
     const currentPlayerNames = currentPlayerElements.map(item => {
