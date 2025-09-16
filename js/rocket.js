@@ -200,30 +200,52 @@ function clearCountdown() {
 
 function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
-    const trailElement = document.getElementById('rocketTrail');
     const canvasElement = document.getElementById('rocketCanvas');
     
-    const trailHeight = Math.max(0, multiplier * 10);
-   
-    
-    if (multiplier > 1.00) {
-        rocketElement.classList.add('pulsating');
-        canvasElement.classList.add('pulsating');
-        
-        if (multiplier >= 3) {
-            const speedIntensity = Math.min(0.7, (multiplier - 3) / 10);
-            const pulseSpeed = Math.max(0.3, 1.2 - speedIntensity);
-            document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
-        } else {
-            document.documentElement.style.setProperty('--pulse-speed', '1.2s');
-        }
-        
-        
-    } else {
+    // Убираем пульсацию при множителе 1.00
+    if (multiplier <= 1.00) {
         rocketElement.classList.remove('pulsating');
         canvasElement.classList.remove('pulsating');
-        canvasElement.style.backgroundColor = '';
         document.documentElement.style.setProperty('--pulse-speed', '1.2s');
+        return;
+    }
+    
+    // Добавляем пульсацию при множителе выше 1.00
+    rocketElement.classList.add('pulsating');
+    canvasElement.classList.add('pulsating');
+    
+    // Настройка скорости пульсации в зависимости от множителя
+    let pulseSpeed;
+    
+    if (multiplier < 3.00) {
+        // Медленная пульсация до 3x
+        pulseSpeed = 1.2;
+    } else if (multiplier < 5.00) {
+        // Средняя скорость от 3x до 5x
+        pulseSpeed = 1.0;
+    } else if (multiplier < 10.00) {
+        // Быстрее от 5x до 10x
+        pulseSpeed = 0.8;
+    } else if (multiplier < 20.00) {
+        // Еще быстрее от 10x до 20x
+        pulseSpeed = 0.6;
+    } else if (multiplier < 50.00) {
+        // Очень быстро от 20x до 50x
+        pulseSpeed = 0.4;
+    } else {
+        // Максимальная скорость после 50x
+        pulseSpeed = 0.3;
+    }
+    
+    // Устанавливаем скорость пульсации
+    document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
+    
+    // Дополнительные визуальные эффекты для высоких множителей
+    if (multiplier >= 10.00) {
+        const intensity = Math.min(0.8, (multiplier - 10) / 100);
+        canvasElement.style.backgroundColor = `rgba(255, 100, 0, ${intensity})`;
+    } else {
+        canvasElement.style.backgroundColor = '';
     }
 }
 
