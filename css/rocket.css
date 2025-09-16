@@ -225,21 +225,23 @@ body {
 }
 
 .rocket {
-    width: 70px;
-    height: 70px;
+    width: 120px;
+    height: 120px;
     filter: 
         drop-shadow(0 0 15px rgba(255, 255, 255, 0.3))
         drop-shadow(0 0 30px rgba(0, 191, 255, 0.4));
-    transition: transform 1s ease-in-out;
-    animation: rocketFloat 3s ease-in-out infinite;
-    position: relative;
+    transition: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
     z-index: 10;
 }
 
 
 @keyframes rocketFloat {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-12px) rotate(2deg); }
+    0%, 100% { transform: translate(-50%, -50%) rotate(-45deg); }
+    50% { transform: translate(-50%, -50%) rotate(-45deg); }
 }
 
 
@@ -554,11 +556,14 @@ body {
 
 
 .rocket {
-    width: 60px;
-    height: 60px;
-    position: relative;
+    width: 120px;
+    height: 120px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
     z-index: 2;
-    transition: all 0.1s ease;
+    transition: none;
 }
 
 .rocket.pulsating {
@@ -566,8 +571,8 @@ body {
 }
 
 @keyframes rocketPulse {
-    0% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 5px rgba(0, 191, 255, 0.5)); }
-    100% { transform: scale(1.1); filter: brightness(1.5) drop-shadow(0 0 15px rgba(0, 191, 255, 0.8)); }
+    0% { transform: translate(-50%, -50%) rotate(-45deg) scale(1); filter: brightness(1) drop-shadow(0 0 5px rgba(0, 191, 255, 0.5)); }
+    100% { transform: translate(-50%, -50%) rotate(-45deg) scale(1.1); filter: brightness(1.5) drop-shadow(0 0 15px rgba(0, 191, 255, 0.8)); }
 }
 
 .rocket.blast-off {
@@ -575,9 +580,9 @@ body {
 }
 
 @keyframes blastOff {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    50% { transform: translateY(-100px) scale(1.2); opacity: 0.8; filter: brightness(3) blur(5px); }
-    100% { transform: translateY(-200px) scale(0.5); opacity: 0; }
+    0% { transform: translate(-50%, -50%) rotate(-45deg) scale(1); opacity: 1; }
+    50% { transform: translate(-50%, -50%) rotate(-45deg) scale(1.2); opacity: 0.8; filter: brightness(3) blur(5px); }
+    100% { transform: translate(-50%, -50%) rotate(-45deg) scale(0.5); opacity: 0; }
 }
 
 .cashout-btn {
@@ -737,4 +742,23 @@ body {
 .players-counter span {
     color: #fff;
     font-weight: bold;
+}
+
+.blast-off-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    font-weight: bold;
+    color: #ff0000;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+    z-index: 100;
+    animation: blastOffTextPulse 2s ease-in-out;
+}
+
+@keyframes blastOffTextPulse {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }

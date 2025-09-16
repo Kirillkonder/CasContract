@@ -247,9 +247,7 @@ function showExplosion() {
             canvas.removeChild(blastOffText);
         }
         rocketElement.classList.remove('blast-off');
-        rocketElement.style.bottom = '110px';
-        rocketElement.style.opacity = '1';
-        rocketElement.style.filter = 'none';
+        // Убираем изменение позиции ракеты - она остается зафиксированной по центру
     }, 2000);
 }
 
