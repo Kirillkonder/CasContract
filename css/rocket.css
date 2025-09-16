@@ -15,11 +15,9 @@ body {
 }
 
 .game-container {
-    max-width: 390px;
-    margin: 0 auto;
-    min-height: 100vh;
-    background: #000;
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
 /* Верхняя панель */
@@ -31,6 +29,7 @@ body {
     background: rgba(0, 0, 0, 0.9);
     position: relative;
     z-index: 10;
+    flex-shrink: 0;
 }
 
 .close-btn {
@@ -88,7 +87,7 @@ body {
 
 /* Игровое поле */
 .game-field {
-    height: 380px; /* Увеличиваем высоту */
+    height: auto; /* Увеличиваем высоту */
     background: #000;
     position: relative;
     overflow: hidden;
@@ -96,9 +95,24 @@ body {
     align-items: center;
     justify-content: center;
     width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    margin-right: calc(-50vw + 50%);
-    margin-bottom: 10px; /* Добавляем отступ снизу */
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    flex: 1;
+      margin: 0;
+      
+    
+}
+
+@media (max-width: 390px) {
+    .game-field {
+        height: 45vh;
+    }
+    
+    .rocket {
+        width: 80px;
+        height: 80px;
+    }
 }
 
 
@@ -278,6 +292,7 @@ body {
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
+     flex-shrink: 0;
 }
 
 .coefficients::-webkit-scrollbar {
