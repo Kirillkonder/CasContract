@@ -637,3 +637,124 @@ let rocketGame = {
     players: [],
     history: []
 };
+
+// Функции для пополнения баланса
+function openDepositModal() {
+    document.getElementById('deposit-modal').style.display = 'block';
+}
+
+function closeDepositModal() {
+    document.getElementById('deposit-modal').style.display = 'none';
+    document.getElementById('deposit-amount').value = '';
+}
+
+async function processDeposit() {
+    const amount = parseFloat(document.getElementById('deposit-amount').value);
+    
+    if (!amount || amount < 1) {
+        alert('Минимальный депозит: 1 TON');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/create-invoice', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                telegramId: currentUser.id,
+                amount: amount,
+                demoMode: isDemoMode
+            })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            if (isDemoMode) {
+                // Для демо-режима сразу обновляем баланс
+                await loadUserData();
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.showPopup({
+                        title: "✅ Демо-пополнение",
+                        message: `Демо-депозит ${amount} TON успешно зачислен!`,
+                        buttons: [{ type: "ok" }]
+                    });
+                } else {
+                    alert(`Демо-депозит ${amount} TON успешно зачислен!`);
+                }
+            } else {
+                // Для реального режима открываем инвойс
+                window.open(result.invoice_url, '_blank');
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.showPopup({
+                        title: "Оплата TON",
+                        message: `Откройте Crypto Bot для оплаты ${amount} TON`,
+                        buttons: [{ type: "ok" }]
+                    });
+                } else {
+                    alert(`Откройте Crypto Bot для оплаты ${amount} TON`);
+                }
+                checkDepositStatus(result.invoice_id);
+            }
+            
+            closeDepositModal();
+        } else {
+            alert('Ошибка при создании депозита: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Deposit error:', error);
+        alert('Ошибка при создании депозита');
+    }
+}
+
+async function checkDepositStatus(invoiceId) {
+    const checkInterval = setInterval(async () => {
+        try {
+            const response = await fetch('/api/check-invoice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    invoiceId: invoiceId,
+                    demoMode: isDemoMode
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.status === 'paid') {
+                clearInterval(checkInterval);
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.showPopup({
+                        title: "✅ Успешно",
+                        message: 'Депозит успешно зачислен!',
+                        buttons: [{ type: "ok" }]
+                    });
+                } else {
+                    alert('Депозит успешно зачислен!');
+                }
+                await loadUserData();
+            } else if (result.status === 'expired' || result.status === 'cancelled') {
+                clearInterval(checkInterval);
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.showPopup({
+                        title: "❌ Ошибка",
+                        message: 'Платеж отменен или просрочен',
+                        buttons: [{ type: "ok" }]
+                    });
+                } else {
+                    alert('Платеж отменен или просрочен');
+                }
+            }
+        } catch (error) {
+            console.error('Status check error:', error);
+        }
+    }, 5000);
+}
+
+// Обработчик клика вне модального окна
+window.onclick = function(event) {
+    const depositModal = document.getElementById('deposit-modal');
+    if (event.target === depositModal) {
+        closeDepositModal();
+    }
+}

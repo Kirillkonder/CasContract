@@ -28,6 +28,9 @@
                 <div class="balance">
                     <i class="bi bi-currency-bitcoin"></i>
                     <span id="balance">0.00</span>
+                    <button class="balance-plus-btn" onclick="openDepositModal()">
+                        <i class="bi bi-plus"></i>
+                    </button>
                 </div>
                 <div class="timer-section">
                     <i class="bi bi-diamond-fill"></i>
@@ -86,6 +89,26 @@
             </div>
             <div class="players-list" id="playersList">
                 <!-- Игроки будут добавляться через JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно пополнения баланса -->
+    <div id="deposit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>💰 Пополнить баланс</h3>
+                <span class="close" onclick="closeDepositModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="deposit-info">
+                    <p id="deposit-mode-info">Пополнение через Crypto Pay</p>
+                </div>
+                <div class="input-group">
+                    <label for="deposit-amount">Сумма (TON):</label>
+                    <input type="number" id="deposit-amount" placeholder="Введите сумму" min="1" step="0.01">
+                </div>
+                <button class="modal-btn deposit-btn" onclick="processDeposit()">Пополнить</button>
             </div>
         </div>
     </div>
