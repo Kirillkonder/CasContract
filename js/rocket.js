@@ -141,12 +141,6 @@ function updateGameState(gameState) {
 
 function updateTimerDisplay(text) {
     const timerDisplay = document.getElementById('timerDisplay');
-    
-    // Убираем слово "УЛЕТЕЛ" из отображения
-    if (text.includes('УЛЕТЕЛ')) {
-        text = text.replace('УЛЕТЕЛ', '').trim();
-    }
-    
     timerDisplay.textContent = text;
     
     if (text === 'Ожидание') {
@@ -238,14 +232,21 @@ function showExplosion() {
     
     rocketElement.classList.add('blast-off');
     
+    const blastOffText = document.createElement('div');
+    blastOffText.className = 'blast-off-text';
+    blastOffText.textContent = 'УЛЕТЕЛ!';
+    canvas.appendChild(blastOffText);
+    
     setTimeout(() => {
+        if (blastOffText.parentNode) {
+            canvas.removeChild(blastOffText);
+        }
         rocketElement.classList.remove('blast-off');
         rocketElement.style.bottom = '110px';
         rocketElement.style.opacity = '1';
         rocketElement.style.filter = 'none';
     }, 2000);
 }
-
 
 function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
