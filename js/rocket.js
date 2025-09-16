@@ -141,6 +141,12 @@ function updateGameState(gameState) {
 
 function updateTimerDisplay(text) {
     const timerDisplay = document.getElementById('timerDisplay');
+    
+    // Убираем слово "УЛЕТЕЛ" из отображения
+    if (text.includes('УЛЕТЕЛ')) {
+        text = text.replace('УЛЕТЕЛ', '').trim();
+    }
+    
     timerDisplay.textContent = text;
     
     if (text === 'Ожидание') {
@@ -232,15 +238,7 @@ function showExplosion() {
     
     rocketElement.classList.add('blast-off');
     
-    const blastOffText = document.createElement('div');
-    blastOffText.className = 'blast-off-text';
-    blastOffText.textContent = 'УЛЕТЕЛ!';
-    canvas.appendChild(blastOffText);
-    
     setTimeout(() => {
-        if (blastOffText.parentNode) {
-            canvas.removeChild(blastOffText);
-        }
         rocketElement.classList.remove('blast-off');
         rocketElement.style.bottom = '110px';
         rocketElement.style.opacity = '1';
@@ -255,9 +253,25 @@ function updatePlayersList(players) {
     playersList.innerHTML = '';
     playersCount.textContent = players.length;
     
-    players.forEach(player => {
+    // Сортируем игроков: сначала те, кто сделал ставку, потом боты
+    const sortedPlayers = [...players].sort((a, b) => {
+        if (a.betAmount > 0 && b.betAmount === 0) return -1;
+        if (a.betAmount === 0 && b.betAmount > 0) return 1;
+        return 0;
+    });
+    
+    sortedPlayers.forEach(player => {
         const playerItem = document.createElement('div');
         playerItem.className = 'player-item';
+        
+        const playerInfo = document.createElement('div');
+        playerInfo.className = 'player-info';
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar';
+        
+        const playerDetails = document.createElement('div');
+        playerDetails.className = 'player-details';
         
         const nameSpan = document.createElement('span');
         nameSpan.className = 'player-name';
@@ -266,17 +280,34 @@ function updatePlayersList(players) {
         const betSpan = document.createElement('span');
         betSpan.className = 'player-bet';
         
-        if (player.cashedOut) {
-            betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
-            betSpan.style.color = '#00b894';
-        } else if (player.isBot) {
-            betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+        if (player.betAmount > 0) {
+            if (player.cashedOut) {
+                betSpan.innerHTML = `<i class="bi bi-cash-coin"></i> +${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+                betSpan.style.color = '#00b894';
+            } else {
+                betSpan.innerHTML = `<i class="bi bi-currency-bitcoin"></i> ${player.betAmount.toFixed(2)} TON`;
+                
+                // Показываем текущий потенциальный выигрыш для активных ставок
+                if (rocketGame.status === 'flying' && !player.cashedOut) {
+                    const potentialWin = player.betAmount * rocketGame.multiplier;
+                    const winSpan = document.createElement('span');
+                    winSpan.className = 'win-amount';
+                    winSpan.textContent = ` → ${potentialWin.toFixed(2)} TON`;
+                    betSpan.appendChild(winSpan);
+                }
+            }
         } else {
-            betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+            betSpan.innerHTML = `<i class="bi bi-eye"></i> Наблюдает`;
+            betSpan.style.color = '#999';
         }
         
-        playerItem.appendChild(nameSpan);
-        playerItem.appendChild(betSpan);
+        playerDetails.appendChild(nameSpan);
+        playerDetails.appendChild(betSpan);
+        
+        playerInfo.appendChild(avatar);
+        playerInfo.appendChild(playerDetails);
+        playerItem.appendChild(playerInfo);
+        
         playersList.appendChild(playerItem);
     });
 }
