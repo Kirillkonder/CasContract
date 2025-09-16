@@ -298,16 +298,18 @@ function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
     
-    // Фильтруем только игроков с ставками
-    const playersWithBets = players.filter(player => player.betAmount > 0);
-    playersCount.textContent = playersWithBets.length;
+    // Показываем всех активных игроков (включая с нулевыми ставками для корректного отображения)
+    const activePlayers = players.filter(player => 
+        player.betAmount >= 0 && (player.name || player.userId)
+    );
+    playersCount.textContent = activePlayers.length;
     
     // Получаем существующие элементы игроков для сохранения анимации
     const existingPlayers = Array.from(playersList.children);
     const playerIds = new Set();
     
     // Обновляем существующих игроков и добавляем новых
-    playersWithBets.forEach((player, index) => {
+    activePlayers.forEach((player, index) => {
         const playerId = player.userId || player.name;
         playerIds.add(playerId);
         
@@ -357,13 +359,17 @@ function updatePlayersList(players) {
         
         // Обновляем информацию о ставке
         const playerBetElement = playerItem.querySelector('.player-bet');
-        if (player.cashedOut) {
+        if (player.cashedOut && player.winAmount > 0) {
             playerBetElement.innerHTML = `<i class="bi bi-cash-coin"></i> +${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
             playerBetElement.style.color = '#00b894';
             playerItem.classList.add('cashed-out');
-        } else {
+        } else if (player.betAmount > 0) {
             playerBetElement.innerHTML = `<i class="bi bi-currency-bitcoin"></i> ${player.betAmount.toFixed(2)} TON`;
             playerBetElement.style.color = '#fff';
+            playerItem.classList.remove('cashed-out');
+        } else {
+            playerBetElement.innerHTML = `<i class="bi bi-hourglass"></i> Ожидает...`;
+            playerBetElement.style.color = '#999';
             playerItem.classList.remove('cashed-out');
         }
     });
@@ -484,15 +490,28 @@ async function cashout() {
             userCashedOut = true;
             document.getElementById('potentialWin').textContent = result.winAmount.toFixed(2) + ' TON';
             
-            // Немедленное обновление баланса
-            document.getElementById('balance').textContent = result.new_balance.toFixed(2);
-            
-            // Анимация обновления баланса
-            const balanceElement = document.getElementById('balance');
-            balanceElement.classList.add('balance-updated');
-            setTimeout(() => {
-                balanceElement.classList.remove('balance-updated');
-            }, 1000);
+            // Обновляем баланс из ответа сервера
+            if (result.new_balance !== undefined) {
+                document.getElementById('balance').textContent = result.new_balance.toFixed(2);
+                
+                // Анимация обновления баланса
+                const balanceElement = document.getElementById('balance');
+                balanceElement.classList.add('balance-updated');
+                setTimeout(() => {
+                    balanceElement.classList.remove('balance-updated');
+                }, 1000);
+            } else {
+                // Если сервер не вернул новый баланс, принудительно загружаем данные пользователя
+                console.log('Сервер не вернул новый баланс, обновляем принудительно');
+                await loadUserData();
+                
+                // Анимация обновления баланса
+                const balanceElement = document.getElementById('balance');
+                balanceElement.classList.add('balance-updated');
+                setTimeout(() => {
+                    balanceElement.classList.remove('balance-updated');
+                }, 1000);
+            }
             
             document.getElementById('cashoutButton').disabled = true;
             document.getElementById('cashoutButton').textContent = 'Выплачено';
