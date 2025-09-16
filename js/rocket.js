@@ -85,7 +85,10 @@ function connectWebSocket() {
 }
 
 function updateGameState(gameState) {
+    // Добавляем флаг для определения, что игра только что завершилась
+    const wasCrashed = rocketGame.status === 'crashed';
     rocketGame = gameState;
+    rocketGame.justCrashed = (gameState.status === 'crashed' && !wasCrashed);
     
     clearCountdown();
     
@@ -124,10 +127,10 @@ function updateGameState(gameState) {
             document.getElementById('userBet').textContent = userBet.toFixed(2) + ' TON';
             
             if (userCashedOut) {
-    document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2) + ' TON';
-    // Обновляем баланс после выигрыша - эта строка должна быть раскомментирована
-    updateUserBalance(userPlayer.winAmount - userBet);
-}
+                document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2) + ' TON';
+                // Обновляем баланс после выигрыша
+                updateUserBalance(userPlayer.winAmount - userBet);
+            }
         }
     }
     
@@ -330,10 +333,19 @@ function updatePlayersList(players) {
             betSpan.style.color = '#00b894';
             betSpan.classList.add('win-animation');
         } else if (rocketGame.status === 'crashed' && !player.cashedOut) {
-            // Проигрыш - красный с анимацией
+            // Проигрыш - красный с анимацией (только если игра только что завершилась)
             betSpan.textContent = `-${player.betAmount.toFixed(2)} TON`;
             betSpan.style.color = '#ff4757';
-            betSpan.classList.add('loss-animation');
+            
+            // Добавляем анимацию только если игра только что завершилась
+            if (rocketGame.justCrashed) {
+                betSpan.classList.add('loss-animation');
+                // Убираем класс анимации после завершения
+                setTimeout(() => {
+                    betSpan.classList.remove('loss-animation');
+                }, 500);
+            }
+            
             playerItem.classList.add('player-loss');
         } else {
             // Активная ставка
