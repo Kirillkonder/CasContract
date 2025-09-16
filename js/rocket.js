@@ -310,6 +310,7 @@ async function updateUserBalance(winAmount = 0) {
     }
 }
 
+// Обновленная функция updatePlayersList
 function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
@@ -346,6 +347,14 @@ function updatePlayersList(players) {
         }
     });
     
+    // Русские имена для ботов и пользователей
+    const russianNames = [
+        'Алексей', 'Михаил', 'Дмитрий', 'Сергей', 'Андрей', 'Иван', 'Артем', 'Максим',
+        'Никита', 'Владимир', 'Павел', 'Роман', 'Егор', 'Константин', 'Олег', 'Ярослав',
+        'Анна', 'Мария', 'Екатерина', 'Ольга', 'Наталья', 'Ирина', 'Светлана', 'Татьяна',
+        'Елена', 'Юлия', 'Александра', 'Виктория', 'Дарья', 'Ксения', 'Алина', 'Полина'
+    ];
+    
     // Добавляем только новых игроков с анимацией
     playersWithBets.forEach((player, index) => {
         // Проверяем, есть ли уже такой игрок в DOM
@@ -362,23 +371,22 @@ function updatePlayersList(players) {
             const avatar = document.createElement('div');
             avatar.className = 'player-avatar';
             
-            // Разные эмодзи для ботов и реальных игроков
-            if (player.isBot) {
-                const botEmojis = ['🤖', '👾', '🦾', '🔧', '⚙️', '💻', '🎮', '🧠'];
-                avatar.textContent = botEmojis[Math.floor(Math.random() * botEmojis.length)];
-                avatar.style.backgroundColor = '#ff6b35';
-            } else {
-                const userEmojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯'];
-                avatar.textContent = userEmojis[Math.floor(Math.random() * userEmojis.length)];
-                avatar.style.backgroundColor = '#1e5cb8';
-            }
+            // Одинаковые эмодзи для всех (и ботов, и реальных игроков)
+            const userEmojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯'];
+            avatar.textContent = userEmojis[Math.floor(Math.random() * userEmojis.length)];
+            
+            // Одинаковый цвет фона для всех
+            avatar.style.backgroundColor = '#1e5cb8';
+            
+            // Генерируем русское имя для всех игроков
+            const playerName = russianNames[Math.floor(Math.random() * russianNames.length)];
             
             const infoContainer = document.createElement('div');
             infoContainer.className = 'player-info-container';
             
             const nameSpan = document.createElement('span');
             nameSpan.className = 'player-name';
-            nameSpan.textContent = player.name;
+            nameSpan.textContent = playerName;
             
             const betSpan = document.createElement('span');
             betSpan.className = 'player-bet';
