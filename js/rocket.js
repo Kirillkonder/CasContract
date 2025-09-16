@@ -252,36 +252,49 @@ function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
     
-    playersList.innerHTML = '';
-    playersCount.textContent = players.length;
+    // Сохраняем текущих игроков для сравнения
+    const currentPlayerIds = Array.from(playersList.children).map(item => {
+        const nameSpan = item.querySelector('.player-name');
+        return nameSpan ? nameSpan.textContent : null;
+    }).filter(Boolean);
     
-    // Показываем всех игроков, которые сделали ставку (независимо от статуса игры)
-    players.forEach(player => {
-        // Показываем игрока только если он сделал ставку
-        if (player.betAmount > 0) {
-            const playerItem = document.createElement('div');
-            playerItem.className = 'player-item';
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'player-name';
-            nameSpan.textContent = player.name;
-            
-            const betSpan = document.createElement('span');
-            betSpan.className = 'player-bet';
-            
-            if (player.cashedOut) {
-                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
-                betSpan.style.color = '#00b894';
-            } else {
-                // Показываем ставку для всех игроков (ботов и реальных)
-                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-                betSpan.style.color = '#fff';
-            }
-            
-            playerItem.appendChild(nameSpan);
-            playerItem.appendChild(betSpan);
-            playersList.appendChild(playerItem);
+    // Фильтруем только игроков с ставками
+    const playersWithBets = players.filter(player => player.betAmount > 0);
+    playersCount.textContent = playersWithBets.length;
+    
+    // Находим новых игроков (тех кого еще нет в списке)
+    const newPlayers = playersWithBets.filter(player => 
+        !currentPlayerIds.includes(player.name)
+    );
+    
+    // Добавляем только новых игроков с анимацией
+    newPlayers.forEach(player => {
+        const playerItem = document.createElement('div');
+        playerItem.className = 'player-item';
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'player-name';
+        nameSpan.textContent = player.name;
+        
+        const betSpan = document.createElement('span');
+        betSpan.className = 'player-bet';
+        
+        if (player.cashedOut) {
+            betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+            betSpan.style.color = '#00b894';
+        } else {
+            betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+            betSpan.style.color = '#fff';
         }
+        
+        playerItem.appendChild(nameSpan);
+        playerItem.appendChild(betSpan);
+        playersList.appendChild(playerItem);
+        
+        // Запускаем анимацию только для нового игрока
+        setTimeout(() => {
+            playerItem.classList.add('show');
+        }, 10);
     });
 }
 

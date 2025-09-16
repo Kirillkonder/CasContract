@@ -222,16 +222,7 @@ body {
     overflow-y: auto;
 }
 
-.player-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    animation: fadeInUp 0.3s ease forwards;
-    opacity: 0;
-    transform: translateY(10px);
-}
+
 
 .player-item:nth-child(1) { animation-delay: 0.1s; }
 .player-item:nth-child(2) { animation-delay: 0.2s; }
@@ -511,21 +502,18 @@ body {
     border-color: #ff4757 !important;
 }   
 
-
 .player-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    animation: fadeInUp 0.3s ease forwards;
     opacity: 0;
     transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-@keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.player-item.show {
+    opacity: 1;
+    transform: translateY(0);
 }
