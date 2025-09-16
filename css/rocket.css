@@ -816,3 +816,29 @@ body {
 .bet-button-container:last-of-type {
     margin-bottom: 5px; /* Уменьшаем отступ после последней кнопки */
 }
+
+.content-below {
+    position: relative;
+    z-index: 30;
+    background: #000;
+    margin-top: -100px; /* Немного перекрываем игровое поле */
+}
+
+/* Делаем коэффициенты более читаемыми на фоне */
+.coeff-item {
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+    min-width: 55px;
+    text-align: center;
+    transition: all 0.3s ease;
+    color: #fff;
+}
+
+.coeff-item.active {
+    background: rgba(30, 92, 184, 0.9);
+    border-color: #2668b3;
+}
