@@ -762,3 +762,38 @@ body {
     50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
     100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
+
+
+@keyframes rocketFlyAway {
+    0% { 
+        transform: translate(-50%, -50%) rotate(-45deg) scale(1);
+        opacity: 1;
+    }
+    50% { 
+        transform: translate(-50%, -200%) rotate(-45deg) scale(1.2);
+        opacity: 0.8;
+        filter: brightness(3) blur(5px);
+    }
+    100% { 
+        transform: translate(-50%, -500%) rotate(-45deg) scale(0.5);
+        opacity: 0;
+    }
+}
+
+.rocket.fly-away {
+    animation: rocketFlyAway 2s ease-out forwards;
+}
+
+/* Убираем отступы у секции игроков */
+.players-section {
+    padding: 0 16px 5px !important; /* Уменьшаем нижний отступ */
+}
+
+.players-header {
+    display: none !important; /* Скрываем заголовок "Игроки" */
+}
+
+/* Уменьшаем отступ между кнопками и списком игроков */
+.bet-button-container:last-of-type {
+    margin-bottom: 5px; /* Уменьшаем отступ после последней кнопки */
+}

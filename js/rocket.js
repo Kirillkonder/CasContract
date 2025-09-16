@@ -235,7 +235,8 @@ function showExplosion() {
     canvas.classList.remove('pulsating');
     canvas.style.backgroundColor = '';
     
-    rocketElement.classList.add('blast-off');
+    // Заменяем blast-off на fly-away
+    rocketElement.classList.add('fly-away');
     
     const blastOffText = document.createElement('div');
     blastOffText.className = 'blast-off-text';
@@ -246,8 +247,10 @@ function showExplosion() {
         if (blastOffText.parentNode) {
             canvas.removeChild(blastOffText);
         }
-        rocketElement.classList.remove('blast-off');
-        // Убираем изменение позиции ракеты - она остается зафиксированной по центру
+        rocketElement.classList.remove('fly-away');
+        // Возвращаем ракету на исходную позицию
+        rocketElement.style.transform = 'translate(-50%, -50%) rotate(-45deg)';
+        rocketElement.style.opacity = '1';
     }, 2000);
 }
 
