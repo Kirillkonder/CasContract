@@ -8,26 +8,6 @@ let rocketPosition = 80;
 let countdownInterval = null;
 let allOnlineUsers = 0;
 
-
-const botNames = [
-    'Иван', 'Алексей', 'Сергей', 'Дмитрий', 'Михаил', 
-    'Андрей', 'Максим', 'Артем', 'Никита', 'Владимир',
-    'Ольга', 'Елена', 'Анна', 'Мария', 'Наталья',
-    'Ирина', 'Светлана', 'Татьяна', 'Екатерина', 'Юлия'
-];
-
-const botSurnames = [
-    'Иванов', 'Петров', 'Сидоров', 'Смирнов', 'Кузнецов',
-    'Попов', 'Васильев', 'Павлов', 'Семенов', 'Голубев',
-    'Волкова', 'Новикова', 'Морозова', 'Романова', 'Васнецова'
-];
-
-function generateBotName() {
-    const name = botNames[Math.floor(Math.random() * botNames.length)];
-    const surname = botSurnames[Math.floor(Math.random() * botSurnames.length)];
-    return `${name} ${surname}`;
-}
-
 function showButtonLoading(buttonId) {
     const button = document.getElementById(buttonId);
     button.classList.add('loading');
@@ -130,7 +110,6 @@ function updateGameState(gameState) {
             updateRocketPosition(gameState.multiplier);
             updateTimerDisplay(gameState.multiplier.toFixed(2) + 'x');
             break;
-
             
         case 'crashed':
             clearCountdown();
@@ -221,32 +200,29 @@ function clearCountdown() {
 
 function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
+    const trailElement = document.getElementById('rocketTrail');
     const canvasElement = document.getElementById('rocketCanvas');
+    
+    const trailHeight = Math.max(0, multiplier * 10);
+   
     
     if (multiplier > 1.00) {
         rocketElement.classList.add('pulsating');
         canvasElement.classList.add('pulsating');
         
-        // Новая логика скорости пульсации в зависимости от множителя
-        let pulseSpeed;
-        if (multiplier <= 3) {
-            // Медленно от 1x до 3x
-            pulseSpeed = 1.2;
-        } else if (multiplier <= 7) {
-            // Быстрее от 3x до 7x
-            pulseSpeed = 0.8;
-        } else if (multiplier <= 15) {
-            // Еще быстрее от 7x до 15x
-            pulseSpeed = 0.5;
+        if (multiplier >= 3) {
+            const speedIntensity = Math.min(0.7, (multiplier - 3) / 10);
+            const pulseSpeed = Math.max(0.3, 1.2 - speedIntensity);
+            document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
         } else {
-            // Максимальная скорость после 15x
-            pulseSpeed = 0.3;
+            document.documentElement.style.setProperty('--pulse-speed', '1.2s');
         }
         
-        document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
+        
     } else {
         rocketElement.classList.remove('pulsating');
         canvasElement.classList.remove('pulsating');
+        canvasElement.style.backgroundColor = '';
         document.documentElement.style.setProperty('--pulse-speed', '1.2s');
     }
 }
@@ -304,11 +280,13 @@ function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
     document.getElementById('playersCount').textContent = allOnlineUsers;
+    playersCount.textContent = players.length;
     
     // Получаем текущих игроков из DOM
     const currentPlayerElements = Array.from(playersList.children);
-    const currentPlayerIds = currentPlayerElements.map(item => {
-        return item.dataset.playerId || '';
+    const currentPlayerNames = currentPlayerElements.map(item => {
+        const nameSpan = item.querySelector('.player-name');
+        return nameSpan ? nameSpan.textContent : '';
     });
     
     // Фильтруем только игроков с ставками
@@ -324,13 +302,13 @@ function updatePlayersList(players) {
     
     // Удаляем игроков, которых больше нет в списке
     currentPlayerElements.forEach(playerElement => {
-        const playerId = playerElement.dataset.playerId;
-        const playerStillExists = playersWithBets.some(player => 
-            player.userId.toString() === playerId || 
-            (player.isBot && player.name === playerElement.querySelector('.player-name').textContent)
-        );
-        if (!playerStillExists) {
-            playerElement.remove();
+        const nameSpan = playerElement.querySelector('.player-name');
+        if (nameSpan) {
+            const playerName = nameSpan.textContent;
+            const playerStillExists = playersWithBets.some(player => player.name === playerName);
+            if (!playerStillExists) {
+                playerElement.remove();
+            }
         }
     });
     
@@ -338,34 +316,24 @@ function updatePlayersList(players) {
     playersWithBets.forEach((player, index) => {
         // Проверяем, есть ли уже такой игрок в DOM
         const existingPlayer = Array.from(playersList.children).find(item => {
-            if (player.isBot) {
-                const nameSpan = item.querySelector('.player-name');
-                return nameSpan && nameSpan.textContent === player.name;
-            } else {
-                return item.dataset.playerId === player.userId.toString();
-            }
+            const nameSpan = item.querySelector('.player-name');
+            return nameSpan && nameSpan.textContent === player.name;
         });
         
         if (!existingPlayer) {
             const playerItem = document.createElement('div');
             playerItem.className = 'player-item';
-            playerItem.dataset.playerId = player.isBot ? `bot_${player.name}` : player.userId;
             
             // Создаем аватарку
             const avatar = document.createElement('div');
             avatar.className = 'player-avatar';
             
-            // Генерация имени
-            let playerName;
+            // Разные эмодзи для ботов и реальных игроков
             if (player.isBot) {
-                // Для ботов используем сгенерированные русские имена
-                playerName = player.name || generateBotName();
                 const botEmojis = ['🤖', '👾', '🦾', '🔧', '⚙️', '💻', '🎮', '🧠'];
                 avatar.textContent = botEmojis[Math.floor(Math.random() * botEmojis.length)];
                 avatar.style.backgroundColor = '#ff6b35';
             } else {
-                // Для реальных игроков используем Telegram username или ID
-                playerName = player.name || `User_${player.userId}`;
                 const userEmojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯'];
                 avatar.textContent = userEmojis[Math.floor(Math.random() * userEmojis.length)];
                 avatar.style.backgroundColor = '#1e5cb8';
@@ -376,7 +344,7 @@ function updatePlayersList(players) {
             
             const nameSpan = document.createElement('span');
             nameSpan.className = 'player-name';
-            nameSpan.textContent = playerName;
+            nameSpan.textContent = player.name;
             
             const betSpan = document.createElement('span');
             betSpan.className = 'player-bet';
@@ -414,7 +382,7 @@ function updatePlayersList(players) {
                 playerItem.classList.add('show');
             }, 10);
         } else {
-            // Обновляем существующих игроков
+            // Обновляем существующих игроков без анимации
             const betSpan = existingPlayer.querySelector('.player-bet');
             const playerItem = existingPlayer;
             

@@ -571,14 +571,8 @@ body {
 }
 
 @keyframes rocketPulse {
-    0% { 
-        transform: translate(-50%, -50%) rotate(-45deg) scale(1); 
-        filter: brightness(1) drop-shadow(0 0 5px rgba(0, 191, 255, 0.5)); 
-    }
-    100% { 
-        transform: translate(-50%, -50%) rotate(-45deg) scale(1.1); 
-        filter: brightness(1.5) drop-shadow(0 0 15px rgba(0, 191, 255, 0.8)); 
-    }
+    0% { transform: translate(-50%, -50%) rotate(-45deg) scale(1); filter: brightness(1) drop-shadow(0 0 5px rgba(0, 191, 255, 0.5)); }
+    100% { transform: translate(-50%, -50%) rotate(-45deg) scale(1.1); filter: brightness(1.5) drop-shadow(0 0 15px rgba(0, 191, 255, 0.8)); }
 }
 
 .rocket.blast-off {
