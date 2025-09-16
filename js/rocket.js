@@ -110,7 +110,7 @@ function updateGameState(gameState) {
         case 'crashed':
             clearCountdown();
             showExplosion();
-            updateTimerDisplay(gameState.multiplier.toFixed(2) + 'x');
+            updateTimerDisplay('КРАШ ' + gameState.multiplier.toFixed(2) + 'x');
             break;
     }
     
@@ -142,17 +142,21 @@ function updateGameState(gameState) {
 function updateTimerDisplay(text) {
     const timerDisplay = document.getElementById('timerDisplay');
     
+    // Убираем слово "УЛЕТЕЛ" из отображения
+    if (text.includes('УЛЕТЕЛ')) {
+        text = text.replace('УЛЕТЕЛ', '').trim();
+    }
+    
     timerDisplay.textContent = text;
     
     if (text === 'Ожидание') {
         timerDisplay.className = 'coeff-item active';
-    } else if (rocketGame.status === 'crashed') {
+    } else if (text.includes('КРАШ')) {
         timerDisplay.className = 'coeff-item history-loss';
     } else {
         timerDisplay.className = 'coeff-item';
     }
 }
-
 
 function startCountdown(timeLeft) {
     clearCountdown();
@@ -248,16 +252,11 @@ function updatePlayersList(players) {
     const playersCount = document.getElementById('playersCount');
     
     playersList.innerHTML = '';
+    playersCount.textContent = players.length;
     
-    // Фильтруем только игроков с ставками
-    const playersWithBets = players.filter(player => player.betAmount > 0);
-    playersCount.textContent = playersWithBets.length;
-    
-    playersWithBets.forEach((player, index) => {
+    players.forEach(player => {
         const playerItem = document.createElement('div');
         playerItem.className = 'player-item';
-        playerItem.style.opacity = '1';
-        playerItem.style.transform = 'translateY(0)';
         
         const nameSpan = document.createElement('span');
         nameSpan.className = 'player-name';
@@ -269,9 +268,10 @@ function updatePlayersList(players) {
         if (player.cashedOut) {
             betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
             betSpan.style.color = '#00b894';
+        } else if (player.isBot) {
+            betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
         } else {
             betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-            betSpan.style.color = '#fff';
         }
         
         playerItem.appendChild(nameSpan);
