@@ -49,7 +49,7 @@ async function loadUserData() {
             const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
             document.getElementById('balance').textContent = balance.toFixed(2);
             isDemoMode = userData.demo_mode;
-            document.getElementById('demo-badge').style.display = 'none';
+            document.getElementById('demo-badge').style.display = isDemoMode ? 'block' : 'none';
         }
     } catch (error) {
         console.error('Error loading user data:', error);
@@ -87,17 +87,16 @@ function connectWebSocket() {
 function updateGameState(gameState) {
     rocketGame = gameState;
     
-    // Убрали обновление статуса, так как убрали соответствующие элементы
     clearCountdown();
     
     switch(gameState.status) {
         case 'waiting':
             clearCountdown();
             resetBettingUI();
+            updateTimerDisplay('Ожидание');
             break;
             
         case 'counting':
-            // ФИКС: Передаем timeLeft, а не endBetTime
             startCountdown(gameState.timeLeft || Math.max(0, Math.ceil((gameState.endBetTime - Date.now()) / 1000)));
             updateBettingUI();
             break;
@@ -105,11 +104,13 @@ function updateGameState(gameState) {
         case 'flying':
             clearCountdown();
             updateRocketPosition(gameState.multiplier);
+            updateTimerDisplay(gameState.multiplier.toFixed(2) + 'x');
             break;
             
         case 'crashed':
             clearCountdown();
             showExplosion();
+            updateTimerDisplay('КРАШ ' + gameState.multiplier.toFixed(2) + 'x');
             break;
     }
     
@@ -120,10 +121,10 @@ function updateGameState(gameState) {
     if (userPlayer) {
         userBet = userPlayer.betAmount;
         userCashedOut = userPlayer.cashedOut;
-        document.getElementById('userBet').textContent = userBet.toFixed(2);
+        document.getElementById('userBet').textContent = userBet.toFixed(2) + ' TON';
         
         if (userCashedOut) {
-            document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2);
+            document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2) + ' TON';
         }
     }
     
@@ -132,19 +133,51 @@ function updateGameState(gameState) {
     
     if (userBet > 0 && !userCashedOut && gameState.status === 'flying') {
         const potentialWin = userBet * gameState.multiplier;
-        document.getElementById('potentialWin').textContent = potentialWin.toFixed(2);
+        document.getElementById('potentialWin').textContent = potentialWin.toFixed(2) + ' TON';
     }
     
     updateBettingUI();
 }
 
+function updateTimerDisplay(text) {
+    const timerDisplay = document.getElementById('timerDisplay');
+    timerDisplay.textContent = text;
+    
+    if (text === 'Ожидание') {
+        timerDisplay.className = 'coeff-item active';
+    } else if (text.includes('КРАШ')) {
+        timerDisplay.className = 'coeff-item history-loss';
+    } else {
+        timerDisplay.className = 'coeff-item';
+    }
+}
+
 function startCountdown(timeLeft) {
     clearCountdown();
+    
+    const timerElement = document.getElementById('timer');
+    const timerDisplay = document.getElementById('timerDisplay');
+    
+    timerDisplay.textContent = timeLeft + 's';
+    timerElement.textContent = timeLeft + 's';
     
     if (timeLeft <= 0) {
         document.getElementById('placeBetButton').textContent = 'Время вышло';
         document.getElementById('placeBetButton').disabled = true;
+        return;
     }
+    
+    countdownInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft + 's';
+        timerElement.textContent = timeLeft + 's';
+        
+        if (timeLeft <= 0) {
+            clearCountdown();
+            document.getElementById('placeBetButton').textContent = 'Время вышло';
+            document.getElementById('placeBetButton').disabled = true;
+        }
+    }, 1000);
 }
 
 function clearCountdown() {
@@ -152,6 +185,7 @@ function clearCountdown() {
         clearInterval(countdownInterval);
         countdownInterval = null;
     }
+    document.getElementById('timer').textContent = '0:00';
 }
 
 function updateRocketPosition(multiplier) {
@@ -248,23 +282,21 @@ function updatePlayersList(players) {
 }
 
 function updateHistory(history) {
-    const historyContainer = document.getElementById('historyItems');
-    historyContainer.innerHTML = '';
-    
-    history.slice(0, 10).forEach(item => {
-        const historyItem = document.createElement('div');
-        historyItem.className = `history-item ${item.multiplier >= 2 ? 'history-win' : 'history-loss'}`;
-        historyItem.textContent = `${item.multiplier.toFixed(2)}x`;
-        historyContainer.appendChild(historyItem);
-    });
+    // Обновляем историю в коэффициентах
+    for (let i = 0; i < 5; i++) {
+        const historyItem = document.getElementById('historyItem' + (i + 1));
+        if (history[i]) {
+            historyItem.textContent = history[i].multiplier.toFixed(2) + 'x';
+            historyItem.className = `coeff-item ${history[i].multiplier >= 2 ? 'history-win' : 'history-loss'}`;
+        } else {
+            historyItem.textContent = '1.00';
+            historyItem.className = 'coeff-item';
+        }
+    }
 }
 
 async function placeBet() {
-    const betAmount = parseFloat(document.getElementById('betAmount').value);
-    
-    if (betAmount < 0.5 || betAmount > 50) {
-        return;
-    }
+    const betAmount = 5; // Фиксированная ставка 5 TON
     
     if (userBet > 0) {
         return;
@@ -302,7 +334,7 @@ async function placeBet() {
         const result = await response.json();
         if (result.success) {
             userBet = betAmount;
-            document.getElementById('userBet').textContent = betAmount.toFixed(2);
+            document.getElementById('userBet').textContent = betAmount.toFixed(2) + ' TON';
             document.getElementById('balance').textContent = result.new_balance.toFixed(2);
             
             document.getElementById('placeBetButton').disabled = true;
@@ -315,7 +347,6 @@ async function placeBet() {
     }
 }
 
-// rocket.js - исправленная функция cashout
 async function cashout() {
     if (userCashedOut) {
         return;
@@ -351,7 +382,7 @@ async function cashout() {
         const result = await response.json();
         if (result.success) {
             userCashedOut = true;
-            document.getElementById('potentialWin').textContent = result.winAmount.toFixed(2);
+            document.getElementById('potentialWin').textContent = result.winAmount.toFixed(2) + ' TON';
             document.getElementById('balance').textContent = result.new_balance.toFixed(2);
             
             document.getElementById('cashoutButton').disabled = true;
@@ -366,7 +397,7 @@ async function cashout() {
 
 function resetBettingUI() {
     document.getElementById('placeBetButton').disabled = false;
-    document.getElementById('placeBetButton').textContent = 'Поставить';
+    document.getElementById('placeBetButton').textContent = 'Поставить 5 TON';
     document.getElementById('cashoutButton').disabled = true;
     document.getElementById('cashoutButton').textContent = 'Забрать выигрыш';
     
@@ -383,7 +414,7 @@ function updateBettingUI() {
     
     if (rocketGame.status === 'waiting') {
         betButton.disabled = false;
-        betButton.textContent = 'Поставить';
+        betButton.textContent = 'Поставить 5 TON';
         cashoutButton.disabled = true;
     } else if (rocketGame.status === 'counting') {
         if (userBet > 0) {
@@ -391,7 +422,7 @@ function updateBettingUI() {
             betButton.textContent = 'Ставка сделана';
         } else {
             betButton.disabled = false;
-            betButton.textContent = 'Поставить';
+            betButton.textContent = 'Поставить 5 TON';
         }
         cashoutButton.disabled = true;
     } else if (rocketGame.status === 'flying') {
