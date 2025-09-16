@@ -98,7 +98,6 @@ function updateGameState(gameState) {
             
         case 'counting':
             startCountdown(gameState.timeLeft || Math.max(0, Math.ceil((gameState.endBetTime - Date.now()) / 1000)));
-            updateBettingUI();
             break;
             
         case 'flying':
@@ -110,25 +109,30 @@ function updateGameState(gameState) {
         case 'crashed':
             clearCountdown();
             showExplosion();
-            updateTimerDisplay(gameState.multiplier.toFixed(2) + 'x'); // Убрано слово "КРАШ"
+            updateTimerDisplay(gameState.multiplier.toFixed(2) + 'x');
             break;
     }
     
-    // Обновляем список игроков при любом состоянии игры
-    updatePlayersList(gameState.players);
-    
-    userPlayer = gameState.players.find(p => p.userId == currentUser.id && !p.isBot);
-    
+    // Обновляем баланс в реальном времени
     if (userPlayer) {
-        userBet = userPlayer.betAmount;
-        userCashedOut = userPlayer.cashedOut;
-        document.getElementById('userBet').textContent = userBet.toFixed(2) + ' TON';
-        
-        if (userCashedOut) {
-            document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2) + ' TON';
+        const updatedPlayer = gameState.players.find(p => p.userId == currentUser.id && !p.isBot);
+        if (updatedPlayer) {
+            userPlayer = updatedPlayer;
+            userBet = userPlayer.betAmount;
+            userCashedOut = userPlayer.cashedOut;
+            
+            document.getElementById('userBet').textContent = userBet.toFixed(2) + ' TON';
+            
+            if (userCashedOut) {
+                document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2) + ' TON';
+                // Обновляем баланс после выигрыша
+                updateUserBalance(userPlayer.winAmount - userBet);
+            }
         }
     }
     
+    // Обновляем список игроков
+    updatePlayersList(gameState.players);
     updateHistory(gameState.history);
     
     if (userBet > 0 && !userCashedOut && gameState.status === 'flying') {
@@ -248,53 +252,85 @@ function showExplosion() {
     }, 2000);
 }
 
+async function updateUserBalance(winAmount = 0) {
+    try {
+        const response = await fetch(`/api/user/balance/${currentUser.id}`);
+        if (response.ok) {
+            const userData = await response.json();
+            const balance = userData.demo_mode ? userData.demo_balance : userData.main_balance;
+            document.getElementById('balance').textContent = balance.toFixed(2);
+            
+            // Если есть выигрыш, показываем обновление
+            if (winAmount > 0) {
+                const balanceElement = document.getElementById('balance');
+                balanceElement.classList.add('balance-updated');
+                setTimeout(() => {
+                    balanceElement.classList.remove('balance-updated');
+                }, 1000);
+            }
+        }
+    } catch (error) {
+        console.error('Error updating balance:', error);
+    }
+}
+
 function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
     
-    // Сохраняем текущих игроков для сравнения
-    const currentPlayerIds = Array.from(playersList.children).map(item => {
-        const nameSpan = item.querySelector('.player-name');
-        return nameSpan ? nameSpan.textContent : null;
-    }).filter(Boolean);
+    // Получаем текущих игроков
+    const currentPlayers = Array.from(playersList.children);
     
     // Фильтруем только игроков с ставками
     const playersWithBets = players.filter(player => player.betAmount > 0);
     playersCount.textContent = playersWithBets.length;
     
-    // Находим новых игроков (тех кого еще нет в списке)
-    const newPlayers = playersWithBets.filter(player => 
-        !currentPlayerIds.includes(player.name)
-    );
-    
-    // Добавляем только новых игроков с анимацией
-    newPlayers.forEach(player => {
-        const playerItem = document.createElement('div');
-        playerItem.className = 'player-item';
+    // Обновляем существующих игроков
+    playersWithBets.forEach(player => {
+        const existingPlayer = currentPlayers.find(item => {
+            const nameSpan = item.querySelector('.player-name');
+            return nameSpan && nameSpan.textContent === player.name;
+        });
         
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'player-name';
-        nameSpan.textContent = player.name;
-        
-        const betSpan = document.createElement('span');
-        betSpan.className = 'player-bet';
-        
-        if (player.cashedOut) {
-            betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
-            betSpan.style.color = '#00b894';
+        if (existingPlayer) {
+            // Обновляем ставку существующего игрока
+            const betSpan = existingPlayer.querySelector('.player-bet');
+            if (player.cashedOut) {
+                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+                betSpan.style.color = '#00b894';
+            } else {
+                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+                betSpan.style.color = '#fff';
+            }
         } else {
-            betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
-            betSpan.style.color = '#fff';
+            // Добавляем нового игрока с анимацией
+            const playerItem = document.createElement('div');
+            playerItem.className = 'player-item';
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'player-name';
+            nameSpan.textContent = player.name;
+            
+            const betSpan = document.createElement('span');
+            betSpan.className = 'player-bet';
+            
+            if (player.cashedOut) {
+                betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
+                betSpan.style.color = '#00b894';
+            } else {
+                betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
+                betSpan.style.color = '#fff';
+            }
+            
+            playerItem.appendChild(nameSpan);
+            playerItem.appendChild(betSpan);
+            playersList.appendChild(playerItem);
+            
+            // Анимация появления
+            setTimeout(() => {
+                playerItem.classList.add('show');
+            }, 10);
         }
-        
-        playerItem.appendChild(nameSpan);
-        playerItem.appendChild(betSpan);
-        playersList.appendChild(playerItem);
-        
-        // Запускаем анимацию только для нового игрока
-        setTimeout(() => {
-            playerItem.classList.add('show');
-        }, 10);
     });
 }
 
