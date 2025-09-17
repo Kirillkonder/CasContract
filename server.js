@@ -275,41 +275,7 @@ function generateCrashPoint(totalBetAmount = 0, demoMode = false) {
     if (random < 70) return 3.00 + Math.random() * 7.00; // 3.00x - 10.00x (30%)
     if (random < 90) return 10.00 + Math.random() * 20.00; // 10.00x - 30.00x (20%)
     return 30.00 + Math.random() * 70.00; // 30.00x+ (10%)
-    }
-    
-    if (totalBankAmount >= 10) {
-        return Math.random() * 0.6 + 1.30; // 1.30x - 1.90x
-    }
-    
-    if (totalBankAmount >= 5) {
-        const random = Math.random();
-        if (random < 0.7) {
-            return Math.random() * 1.0 + 1.50; // 1.50x - 2.50x
-        } else {
-            return Math.random() * 3 + 3; // 3x - 6x (30% шанс)
-        }
-    }
-    
-    if (totalBankAmount >= 1) {
-        const random = Math.random();
-        if (random < 0.4) {
-            return Math.random() * 1.5 + 1.40; // 1.40x - 2.90x
-        } else if (random < 0.75) {
-            return Math.random() * 3 + 2; // 2x - 5x
-        } else {
-            return Math.random() * 8 + 5; // 5x - 13x (25% шанс)
-        }
-    }
-    
-    // Маленькие ставки - даём больше шансов
-    const random = Math.random();
-    if (random < 0.5) {
-        return Math.random() * 2 + 2; // 2x - 4x
-    } else if (random < 0.8) {
-        return Math.random() * 4 + 4; // 4x - 8x
-    } else {
-        return Math.random() * 10 + 10; // 10x - 20x
-    }
+}
 
 
 function startRocketGame() {
