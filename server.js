@@ -291,7 +291,15 @@ function startRocketGame() {
     setTimeout(() => {
         const realPlayers = rocketGame.players.filter(p => !p.isBot);
         const totalBank = realPlayers.reduce((sum, p) => sum + p.betAmount, 0);
-        const isDemoMode = realPlayers.length > 0 ? realPlayers[0].demoMode : false;
+        
+        // Правильно определяем демо-режим
+        let isDemoMode = false;
+        if (realPlayers.length > 0) {
+            isDemoMode = realPlayers[0].demoMode;
+        } else {
+            // Если нет реальных игроков, используем демо-банк для ботов
+            isDemoMode = true;
+        }
         
         rocketGame.crashPoint = generateCrashPoint(totalBank, isDemoMode);
         console.log(`Общий банк: ${totalBank} TON, Демо: ${isDemoMode}, Краш-поинт: ${rocketGame.crashPoint.toFixed(2)}x`);
@@ -309,6 +317,7 @@ function startRocketGame() {
             betAmount: parseFloat(betAmount.toFixed(2)),
             autoCashout: parseFloat(autoCashout.toFixed(2)),
             isBot: true,
+            demoMode: true, // Боты всегда играют в демо-режиме
             cashedOut: false,
             winAmount: 0
         });
