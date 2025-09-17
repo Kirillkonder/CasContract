@@ -269,7 +269,7 @@ function startRocketGame() {
     
     // Генерируем crashPoint после завершения времени на ставки
     setTimeout(() => {
-        const totalBank = rocketGame.players.reduce((sum, p) => sum + p.betAmount, 0);
+        const totalBank = rocketGame.players.filter(p => !p.isBot).reduce((sum, p) => sum + p.betAmount, 0);
         rocketGame.crashPoint = generateCrashPoint(totalBank);
         console.log(`Общий банк: ${totalBank} TON, Краш-поинт: ${rocketGame.crashPoint.toFixed(2)}x`);
     }, 5000);
