@@ -221,46 +221,52 @@ function calculateMultiplier(openedCells, displayedMines) {
 
 // Rocket Game Functions
 function generateCrashPoint(totalBankAmount = 0) {
-    // Если нет реальных игроков (только боты) - множитель больше 20x
+    // Если нет реальных игроков (только боты)
     if (totalBankAmount === 0) {
-        return Math.random() * 30 + 20; // От 20x до 50x
+        const random = Math.random() * 100;
+        
+        // 50% - больше 4x, но меньше 6x
+        if (random < 50) {
+            return Math.random() * 2 + 4; // 4x - 6x
+        }
+        // 40% - от 6 до 12x  
+        else if (random < 90) {
+            return Math.random() * 6 + 6; // 6x - 12x
+        }
+        // 10% - больше 12x
+        else {
+            return Math.random() * 20 + 12; // 12x+
+        }
     }
     
-    // Если общий банк превышает 30 TON - краш от 1.00 до 1.15x
-    if (totalBankAmount > 30) {
-        return Math.random() * 0.15 + 1.00; // От 1.00 до 1.15
+    // Если реальная ставка 30 тонн или больше - сливается сразу
+    if (totalBankAmount >= 30) {
+        return Math.random() * 0.15 + 1.00; // 1.00x - 1.15x
     }
     
-    // Если банк около 5 TON или меньше
-    if (totalBankAmount <= 5) {
+    // От 3 до 8 тонн
+    if (totalBankAmount >= 3 && totalBankAmount <= 8) {
+        return Math.random() * 0.65 + 1.30; // 1.30x - 1.95x
+    }
+    
+    // Логика для маленьких ставок с возможным продлением
+    // Если большинство пользователей проиграли и остались несколько с маленькой ставкой
+    if (totalBankAmount <= 1) {
         const random = Math.random();
         
-        // 90% шанс дойти до 2x
-        if (random < 0.9) {
-            return Math.random() * 1.0 + 1.5; // От 1.5x до 2.5x
+        // 70% шанс обычного краша для максимизации прибыли
+        if (random < 0.7) {
+            return Math.random() * 2.0 + 1.40; // 1.40x - 3.40x
         }
-        // 10% шанс улететь очень высоко (очень редко)
+        // 30% шанс продления для привлечения игроков
         else {
-            return Math.random() * 10 + 10; // От 10x до 20x (иногда до 15x+)
+            return Math.random() * 8 + 5; // 5x - 13x
         }
     }
     
-    // Если банк между 5 и 30 TON
-    if (totalBankAmount > 5 && totalBankAmount <= 30) {
-        const random = Math.random();
-        
-        // 85% шанс разбиться до 2x
-        if (random < 0.85) {
-            return Math.random() * 1.0 + 0.5; // От 0.5x до 1.5x (не долетев до 2x)
-        }
-        // 15% шанс улететь от 5x до 7x
-        else {
-            return Math.random() * 2 + 5; // От 5x до 7x
-        }
-    }
-    
-    // Fallback - обычная логика
-    return Math.random() * 5 + 1;
+    // Если что-то между диапазонами (от 1 до 3 тонн или от 8 до 30 тонн)
+    // от 1.40 до 3.4
+    return Math.random() * 2.0 + 1.40;
 }
 
 function startRocketGame() {
