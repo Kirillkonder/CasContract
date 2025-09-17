@@ -227,6 +227,7 @@ body {
 /* Кнопка ставки */
 .bet-button-container {
     padding: 8px 16px;
+    margin-bottom: 10px;
 }
 
 .bet-button {
@@ -241,8 +242,7 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 3px 12px rgba(30, 92, 184, 0.3);
-}
-
+}   
 .bet-button:hover {
     background: linear-gradient(135deg, #2668b3, #1e5cb8);
     transform: translateY(-1px);
@@ -250,6 +250,26 @@ body {
 }
 
 .bet-button:active {
+    transform: translateY(0);
+}
+
+.bet-button.cashout-btn {
+    background: linear-gradient(135deg, #00c851, #32cd32);
+    box-shadow: 0 3px 12px rgba(0, 200, 81, 0.3);
+}
+
+.bet-button:disabled {
+    background: linear-gradient(135deg, #666, #888);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.bet-button:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+.bet-button:not(:disabled):active {
     transform: translateY(0);
 }
 

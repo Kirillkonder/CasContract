@@ -16,7 +16,6 @@
         <!-- Верхняя панель -->
        <div class="top-panel">
     <div class="close-btn" onclick="goBack()">
-        <!-- Убрали крестик -->
         <span>Назад</span>
     </div>
     <div class="top-right">
@@ -32,7 +31,6 @@
                 <i class="bi bi-plus"></i>
             </button>
         </div>
-        <!-- Убрали таймер -->
         <div id="demo-badge" style="display: none; background: #ff9500; color: black; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
             DEMO
         </div>
@@ -52,7 +50,7 @@
         </div>
 
         
-        <!-- Таймер/История -->
+        <!-- Таймер/История - ПОДНЯТЫ ВЫШЕ -->
         <div class="coefficients">
             <div class="coeff-item active" id="timerDisplay"></div>
             <div class="coeff-item" id="historyItem1">1.00</div>
@@ -62,24 +60,11 @@
             <div class="coeff-item" id="historyItem5">1.00</div>
         </div>
 
-        <!-- Ставка и информация о ставке -->
-        <div class="bet-info">
-            <div class="bet-info-item">
-                <span>Ваша ставка:</span>
-                <span id="userBet">0 TON</span>
-            </div>
-            <div class="bet-info-item">
-                <span>Потенциальный выигрыш:</span>
-                <span id="potentialWin">0 TON</span>
-            </div>
-        </div>
+        <!-- УБРАН блок с информацией о ставке -->
 
-        <!-- Кнопки ставки и вывода -->
+        <!-- ОДНА КНОПКА вместо двух -->
         <div class="bet-button-container">
-            <button class="bet-button" id="placeBetButton" onclick="placeBet()">Поставить 5 TON</button>
-        </div>
-        <div class="bet-button-container">
-            <button class="bet-button cashout-btn" id="cashoutButton" onclick="cashout()">Забрать выигрыш</button>
+            <button class="bet-button" id="mainActionButton" onclick="handleMainAction()">Поставить 5 TON</button>
         </div>
 
         <!-- Список игроков -->

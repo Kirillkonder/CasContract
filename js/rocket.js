@@ -727,48 +727,58 @@ async function cashout() {
 }
 
 function resetBettingUI() {
-    document.getElementById('placeBetButton').disabled = false;
-    document.getElementById('placeBetButton').textContent = 'Поставить 5 TON';
-    document.getElementById('cashoutButton').disabled = true;
-    document.getElementById('cashoutButton').textContent = 'Забрать выигрыш';
+    const mainButton = document.getElementById('mainActionButton');
+    mainButton.disabled = false;
+    mainButton.textContent = 'Поставить 5 TON';
+    mainButton.className = 'bet-button';
     
     userBet = 0;
     userCashedOut = false;
-    
-    document.getElementById('userBet').textContent = '0 TON';
-    document.getElementById('potentialWin').textContent = '0 TON';
+}
+
+function handleMainAction() {
+    if (rocketGame.status === 'waiting' || rocketGame.status === 'counting') {
+        if (userBet === 0) {
+            placeBet();
+        }
+    } else if (rocketGame.status === 'flying') {
+        if (userBet > 0 && !userCashedOut) {
+            cashout();
+        }
+    }
 }
 
 function updateBettingUI() {
-    const betButton = document.getElementById('placeBetButton');
-    const cashoutButton = document.getElementById('cashoutButton');
+    const mainButton = document.getElementById('mainActionButton');
     
     if (rocketGame.status === 'waiting') {
-        betButton.disabled = false;
-        betButton.textContent = 'Поставить 5 TON';
-        cashoutButton.disabled = true;
+        mainButton.disabled = false;
+        mainButton.textContent = 'Поставить 5 TON';
+        mainButton.className = 'bet-button';
     } else if (rocketGame.status === 'counting') {
         if (userBet > 0) {
-            betButton.disabled = true;
-            betButton.textContent = 'Ставка сделана';
+            mainButton.disabled = true;
+            mainButton.textContent = 'Ставка сделана';
+            mainButton.className = 'bet-button';
         } else {
-            betButton.disabled = false;
-            betButton.textContent = 'Поставить 5 TON';
+            mainButton.disabled = false;
+            mainButton.textContent = 'Поставить 5 TON';
+            mainButton.className = 'bet-button';
         }
-        cashoutButton.disabled = true;
     } else if (rocketGame.status === 'flying') {
-        betButton.disabled = true;
-        betButton.textContent = 'Игра идет';
+        mainButton.disabled = false;
+        mainButton.textContent = 'Забрать выигрыш';
+        mainButton.className = 'bet-button cashout-btn';
         
-        if (userBet > 0 && !userCashedOut) {
-            cashoutButton.disabled = false;
-        } else {
-            cashoutButton.disabled = true;
+        if (userBet === 0 || userCashedOut) {
+            mainButton.disabled = true;
+            mainButton.textContent = 'Игра идет';
+            mainButton.className = 'bet-button';
         }
     } else if (rocketGame.status === 'crashed') {
-        betButton.disabled = true;
-        betButton.textContent = 'Раунд завершен';
-        cashoutButton.disabled = true;
+        mainButton.disabled = true;
+        mainButton.textContent = 'Раунд завершен';
+        mainButton.className = 'bet-button';
     }
 }
 
