@@ -87,8 +87,18 @@ function initDatabase() {
 
                 if (!casinoBank) {
                     casinoBank = db.addCollection('casino_bank');
+                    // Добавляем основной банк казино
                     casinoBank.insert({
+                        type: 'main',
                         total_balance: 0,
+                        owner_telegram_id: process.env.OWNER_TELEGRAM_ID || 842428912,
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    });
+                    // Добавляем демо банк казино
+                    casinoBank.insert({
+                        type: 'demo',
+                        total_balance: 10000,
                         owner_telegram_id: process.env.OWNER_TELEGRAM_ID || 842428912,
                         created_at: new Date(),
                         updated_at: new Date()
@@ -165,29 +175,21 @@ function logAdminAction(action, telegramId, details = {}) {
 }
 
 // Получить банк казино
-function getCasinoBank() {
-  const bank = casinoBank.findOne({});
-  return bank || { total_balance: 0, demo_bank: 10000 };
+function getCasinoBank(type = 'main') {
+  return casinoBank.findOne({ type: type });
 }
 
 // Обновить банк казино
-function updateCasinoBank(amount, isDemoMode = false) {
-  const bank = getCasinoBank();
-  const updatedBank = {
-    ...bank,
-    updated_at: new Date()
-  };
-  
-  if (isDemoMode) {
-    updatedBank.demo_bank = (bank.demo_bank || 10000) + amount;
-    // Не даём демо банку стать отрицательным
-    if (updatedBank.demo_bank < 0) updatedBank.demo_bank = 0;
-  } else {
-    updatedBank.total_balance = bank.total_balance + amount;
+function updateCasinoBank(amount, demoMode = false) {
+  const bankType = demoMode ? 'demo' : 'main';
+  const bank = getCasinoBank(bankType);
+  if (bank) {
+    casinoBank.update({
+      ...bank,
+      total_balance: bank.total_balance + amount,
+      updated_at: new Date()
+    });
   }
-  
-  casinoBank.update(updatedBank);
-  db.saveDatabase();
 }
 
 // Mines Game Functions
@@ -230,72 +232,49 @@ function calculateMultiplier(openedCells, displayedMines) {
   return mineMultipliers ? mineMultipliers[mineMultipliers.length - 1] * 2 : 1.00;
 }
 
-// Rocket Game Functions
-function generateCrashPoint(totalBankAmount = 0, demoBankAmount = 0) {
-    const bank = getCasinoBank();
-    const totalDemoBank = bank.demo_bank || 10000;
+// 🚀 АЛГОРИТМ КАК В 1WIN LUCKY JET (РТП 30%)
+function generateCrashPoint(totalBetAmount = 0, demoMode = false) {
+    const random = Math.random() * 100;
     
-    // Если нет реальных игроков (только боты или только демо)
-    if (totalBankAmount === 0) {
-        const random = Math.random() * 100;
-        
-        // 30% - хорошие множители для привлечения
-        if (random < 30) {
-            return Math.random() * 4 + 6; // 6x - 10x
-        }
-        // 45% - средние множители
-        else if (random < 75) {
-            return Math.random() * 3 + 3; // 3x - 6x
-        }
-        // 25% - низкие множители
-        else {
-            return Math.random() * 1.5 + 1.5; // 1.5x - 3x
-        }
+    // Если демо режим - более лояльные множители
+    if (demoMode) {
+        if (random < 20) return 1.00 + Math.random() * 0.50; // 1.00x - 1.50x (20%)
+        if (random < 50) return 1.50 + Math.random() * 1.50; // 1.50x - 3.00x (30%)
+        if (random < 80) return 3.00 + Math.random() * 7.00; // 3.00x - 10.00x (30%)
+        return 10.00 + Math.random() * 40.00; // 10.00x+ (20%)
     }
     
-    // Учитываем состояние демо банка
-    const demoBankRatio = totalDemoBank / 10000; // Процент от изначального демо банка
+    // ОСНОВНОЙ АЛГОРИТМ - РТП 30% (казино забирает 70%)
     
-    // Если демо банк сильно уменьшился (меньше 50%), увеличиваем шансы на крашы
-    if (demoBankRatio < 0.5) {
-        // Агрессивнее играем против реальных денег
-        if (totalBankAmount >= 20) {
-            return Math.random() * 0.2 + 1.00; // 1.00x - 1.20x
-        }
-        if (totalBankAmount >= 10) {
-            return Math.random() * 0.5 + 1.20; // 1.20x - 1.70x
-        }
-        if (totalBankAmount >= 5) {
-            return Math.random() * 0.8 + 1.30; // 1.30x - 2.10x
-        }
+    // Большие ставки (>= 20 TON) - сливается почти всегда
+    if (totalBetAmount >= 20) {
+        if (random < 85) return 1.00 + Math.random() * 0.20; // 1.00x - 1.20x (85%)
+        if (random < 95) return 1.20 + Math.random() * 0.30; // 1.20x - 1.50x (10%)
+        return 1.50 + Math.random() * 1.50; // 1.50x - 3.00x (5%)
     }
     
-    // Если демо банк в хорошем состоянии (больше 80%), даём больше шансов
-    if (demoBankRatio > 0.8) {
-        if (totalBankAmount <= 5) {
-            const random = Math.random();
-            // 60% хороших множителей для привлечения
-            if (random < 0.6) {
-                return Math.random() * 3 + 2; // 2x - 5x
-            }
-            // 25% очень хороших
-            else if (random < 0.85) {
-                return Math.random() * 5 + 5; // 5x - 10x
-            }
-            // 15% джекпот
-            else {
-                return Math.random() * 20 + 10; // 10x - 30x
-            }
-        }
+    // Средние ставки (5-20 TON) - часто сливается  
+    if (totalBetAmount >= 5) {
+        if (random < 70) return 1.00 + Math.random() * 0.30; // 1.00x - 1.30x (70%)
+        if (random < 85) return 1.30 + Math.random() * 0.70; // 1.30x - 2.00x (15%)
+        if (random < 95) return 2.00 + Math.random() * 3.00; // 2.00x - 5.00x (10%)
+        return 5.00 + Math.random() * 10.00; // 5.00x+ (5%)
     }
     
-    // Стандартная логика с улучшенным балансом
-    if (totalBankAmount >= 50) {
-        return Math.random() * 0.15 + 1.00; // 1.00x - 1.15x (большие ставки)
+    // Малые ставки (0.1-5 TON) - стандартная агрессивность
+    if (totalBetAmount >= 0.1) {
+        if (random < 60) return 1.00 + Math.random() * 0.50; // 1.00x - 1.50x (60%)
+        if (random < 80) return 1.50 + Math.random() * 1.50; // 1.50x - 3.00x (20%)
+        if (random < 92) return 3.00 + Math.random() * 7.00; // 3.00x - 10.00x (12%)
+        if (random < 98) return 10.00 + Math.random() * 20.00; // 10.00x - 30.00x (6%)
+        return 30.00 + Math.random() * 70.00; // 30.00x+ (2%)
     }
     
-    if (totalBankAmount >= 20) {
-        return Math.random() * 0.3 + 1.10; // 1.10x - 1.40x
+    // Только боты - случайные множители для зрелищности
+    if (random < 40) return 1.00 + Math.random() * 2.00; // 1.00x - 3.00x (40%)
+    if (random < 70) return 3.00 + Math.random() * 7.00; // 3.00x - 10.00x (30%)
+    if (random < 90) return 10.00 + Math.random() * 20.00; // 10.00x - 30.00x (20%)
+    return 30.00 + Math.random() * 70.00; // 30.00x+ (10%)
     }
     
     if (totalBankAmount >= 10) {
@@ -331,7 +310,7 @@ function generateCrashPoint(totalBankAmount = 0, demoBankAmount = 0) {
     } else {
         return Math.random() * 10 + 10; // 10x - 20x
     }
-}
+
 
 function startRocketGame() {
     if (rocketGame.status !== 'waiting') return;
@@ -344,10 +323,12 @@ function startRocketGame() {
     
     // Генерируем crashPoint после завершения времени на ставки
     setTimeout(() => {
-        const totalBank = rocketGame.players.filter(p => !p.isBot && !p.demoMode).reduce((sum, p) => sum + p.betAmount, 0);
-        const demoBankTotal = rocketGame.players.filter(p => !p.isBot && p.demoMode).reduce((sum, p) => sum + p.betAmount, 0);
-        rocketGame.crashPoint = generateCrashPoint(totalBank, demoBankTotal);
-        console.log(`Реальный банк: ${totalBank} TON, Демо банк: ${demoBankTotal} TON, Краш-поинт: ${rocketGame.crashPoint.toFixed(2)}x`);
+        const realPlayers = rocketGame.players.filter(p => !p.isBot);
+        const totalBank = realPlayers.reduce((sum, p) => sum + p.betAmount, 0);
+        const isDemoMode = realPlayers.length > 0 ? realPlayers[0].demoMode : false;
+        
+        rocketGame.crashPoint = generateCrashPoint(totalBank, isDemoMode);
+        console.log(`Общий банк: ${totalBank} TON, Демо: ${isDemoMode}, Краш-поинт: ${rocketGame.crashPoint.toFixed(2)}x`);
     }, 5000);
 
     // Добавляем ставки ботов
@@ -461,7 +442,7 @@ function processRocketGameEnd() {
             ...user,
             main_balance: user.main_balance + winAmount
           });
-          updateCasinoBank(-winAmount);
+          updateCasinoBank(-winAmount, false); // Обновляем основной банк
         }
 
         // Записываем транзакцию
