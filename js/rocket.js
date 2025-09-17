@@ -8,38 +8,6 @@ let rocketPosition = 80;
 let countdownInterval = null;
 let allOnlineUsers = 0;
 
-// Русские имена для игроков и ботов
-const russianNames = [
-    'Александр', 'Максим', 'Дмитрий', 'Андрей', 'Алексей', 'Сергей', 'Владимир', 'Иван', 
-    'Михаил', 'Николай', 'Артем', 'Денис', 'Роман', 'Евгений', 'Виталий', 'Юрий',
-    'Анна', 'Елена', 'Мария', 'Ольга', 'Татьяна', 'Наталья', 'Екатерина', 'Светлана',
-    'Любовь', 'Ирина', 'Галина', 'Валентина', 'Надежда', 'Людмила', 'Вера', 'Виктория',
-    'Павел', 'Константин', 'Станислав', 'Игорь', 'Кирилл', 'Антон', 'Егор', 'Олег',
-    'Федор', 'Тимур', 'Даниил', 'Матвей', 'Никита', 'Арсений', 'Руслан', 'Георгий',
-    'Маргарита', 'Алина', 'Кристина', 'Дарья', 'Анастасия', 'Полина', 'Милана', 'Карина'
-];
-
-// Кэш имен для игроков (чтобы имя не менялось во время раунда)
-let playerNameCache = new Map();
-
-// Функция для получения случайного русского имени
-function getRandomRussianName() {
-    return russianNames[Math.floor(Math.random() * russianNames.length)];
-}
-
-// Функция для получения стабильного имени игрока (не меняется во время раунда)
-function getPlayerName(playerId, isBot = false) {
-    if (!playerNameCache.has(playerId)) {
-        playerNameCache.set(playerId, getRandomRussianName());
-    }
-    return playerNameCache.get(playerId);
-}
-
-// Функция для очистки кэша имен (вызывается в начале нового раунда)
-function clearPlayerNameCache() {
-    playerNameCache.clear();
-}
-
 function showButtonLoading(buttonId) {
     const button = document.getElementById(buttonId);
     button.classList.add('loading');
@@ -120,15 +88,9 @@ function connectWebSocket() {
 function updateGameState(gameState) {
     // Добавляем флаг для определения, что игра только что завершилась
     const wasCrashed = rocketGame.status === 'crashed';
-    const wasWaiting = rocketGame.status === 'waiting';
     rocketGame = gameState;
     rocketGame.justCrashed = (gameState.status === 'crashed' && !wasCrashed);
     allOnlineUsers = gameState.totalOnlineUsers || gameState.players.length;
-    
-    // Очищаем кэш имен в начале нового раунда (когда переходим в состояние ожидания)
-    if (gameState.status === 'waiting' && !wasWaiting) {
-        clearPlayerNameCache();
-    }
     
     clearCountdown();
     
@@ -244,41 +206,56 @@ function updateRocketPosition(multiplier) {
     if (multiplier <= 1.00) {
         rocketElement.classList.remove('pulsating');
         canvasElement.classList.remove('pulsating');
-        canvasElement.style.backgroundColor = '';
+        document.documentElement.style.setProperty('--pulse-speed', '1.2s');
         return;
     }
     
-    // Добавляем пульсацию только если её еще нет
-    if (!rocketElement.classList.contains('pulsating')) {
-        rocketElement.classList.add('pulsating');
-    }
+    // Добавляем пульсацию при множителе выше 1.00
+    rocketElement.classList.add('pulsating');
+    canvasElement.classList.add('pulsating');
     
-    // Настройка скорости пульсации в зависимости от множителя (более плавно)
+    // Настройка скорости пульсации в зависимости от множителя
     let pulseSpeed;
     
-    if (multiplier < 2.0) {
-        pulseSpeed = 2.5;
-    } else if (multiplier < 5.0) {
+    if (multiplier < 1.5) {
+        // Очень медленно до 1.5x
         pulseSpeed = 2.0;
-    } else if (multiplier < 10.0) {
-        pulseSpeed = 1.5;
-    } else if (multiplier < 20.0) {
+    } else if (multiplier < 2.0) {
+        // Медленно от 1.5x до 2.0x
+        pulseSpeed = 1.8;
+    } else if (multiplier < 2.5) {
+        // Средне-медленно от 2.0x до 2.5x
+        pulseSpeed = 1.6;
+    } else if (multiplier < 3.0) {
+        // Средне от 2.5x до 3.0x
+        pulseSpeed = 1.4;
+    } else if (multiplier < 5.0) {
+        // Немного быстрее от 3.0x до 5.0x
         pulseSpeed = 1.2;
-    } else {
+    } else if (multiplier < 10.0) {
+        // Быстрее от 5.0x до 10.0x
         pulseSpeed = 1.0;
+    } else if (multiplier < 15.0) {
+        // Еще быстрее от 10.0x до 15.0x
+        pulseSpeed = 0.8;
+    } else if (multiplier < 20.0) {
+        // Очень быстро от 15.0x до 20.0x
+        pulseSpeed = 0.6;
+    } else if (multiplier < 25.0) {
+        // Максимально быстро от 20.0x до 25.0x
+        pulseSpeed = 0.4;
+    } else {
+        // Сверхскорость после 25.0x
+        pulseSpeed = 0.3;
     }
     
-    // Устанавливаем скорость пульсации только если она изменилась
-    const currentSpeed = document.documentElement.style.getPropertyValue('--pulse-speed');
-    const newSpeed = `${pulseSpeed}s`;
-    if (currentSpeed !== newSpeed) {
-        document.documentElement.style.setProperty('--pulse-speed', newSpeed);
-    }
+    // Устанавливаем скорость пульсации
+    document.documentElement.style.setProperty('--pulse-speed', `${pulseSpeed}s`);
     
     // Дополнительные визуальные эффекты для высоких множителей
-    if (multiplier >= 10.0) {
-        const intensity = Math.min(0.3, (multiplier - 10) / 100);
-        canvasElement.style.backgroundColor = `rgba(30, 92, 184, ${intensity})`;
+    if (multiplier >= 5.0) {
+        const intensity = Math.min(0.8, (multiplier - 5) / 50);
+        canvasElement.style.backgroundColor = `rgba(255, 100, 0, ${intensity})`;
     } else {
         canvasElement.style.backgroundColor = '';
     }
@@ -385,18 +362,23 @@ function updatePlayersList(players) {
             const avatar = document.createElement('div');
             avatar.className = 'player-avatar';
             
-            // Одинаковые эмодзи для всех игроков (ботов и людей)
-            const allEmojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯', '👨‍💻', '👩‍💻', '🧙', '🧙‍♀️'];
-            avatar.textContent = allEmojis[Math.floor(Math.random() * allEmojis.length)];
-            avatar.style.backgroundColor = '#1e5cb8';
+            // Разные эмодзи для ботов и реальных игроков
+            if (player.isBot) {
+                const botEmojis = ['🤖', '👾', '🦾', '🔧', '⚙️', '💻', '🎮', '🧠'];
+                avatar.textContent = botEmojis[Math.floor(Math.random() * botEmojis.length)];
+                avatar.style.backgroundColor = '#ff6b35';
+            } else {
+                const userEmojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯'];
+                avatar.textContent = userEmojis[Math.floor(Math.random() * userEmojis.length)];
+                avatar.style.backgroundColor = '#1e5cb8';
+            }
             
             const infoContainer = document.createElement('div');
             infoContainer.className = 'player-info-container';
             
             const nameSpan = document.createElement('span');
             nameSpan.className = 'player-name';
-            // Используем русское имя вместо оригинального
-            nameSpan.textContent = getPlayerName(player.id || player.name, player.isBot);
+            nameSpan.textContent = player.name;
             
             const betSpan = document.createElement('span');
             betSpan.className = 'player-bet';
