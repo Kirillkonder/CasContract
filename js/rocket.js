@@ -45,12 +45,13 @@ function validateBetAmount() {
 
 function handleAction() {
     if (rocketGame.status === 'waiting' || rocketGame.status === 'counting') {
+        // Во время таймера - делать ставку
         placeBet();
-    } else if (rocketGame.status === 'flying' && userBet > 0 && !userCashedOut) {
+    } else if (rocketGame.status === 'flying') {
+        // Когда ракета летит - забирать выигрыш
         cashout();
     }
 }
-
 
 
 function showButtonLoading(buttonId) {
@@ -782,10 +783,8 @@ function resetBettingUI() {
 function updateBettingUI() {
     const actionButton = document.getElementById('actionButton');
     
-    if (rocketGame.status === 'waiting') {
-        actionButton.disabled = false;
-        actionButton.textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
-    } else if (rocketGame.status === 'counting') {
+    if (rocketGame.status === 'waiting' || rocketGame.status === 'counting') {
+        // Во время ожидания и таймера - функционал ставки
         if (userBet > 0) {
             actionButton.disabled = true;
             actionButton.textContent = 'Ставка сделана';
@@ -794,9 +793,9 @@ function updateBettingUI() {
             actionButton.textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
         }
     } else if (rocketGame.status === 'flying') {
+        // Когда ракета летит - функционал забрать выигрыш
         if (userBet > 0 && !userCashedOut) {
             actionButton.disabled = false;
-            // Меняем на "Забрать выигрыш" когда ракета летит
             actionButton.textContent = 'Забрать ' + (userBet * rocketGame.multiplier).toFixed(2) + ' TON';
         } else {
             actionButton.disabled = true;
