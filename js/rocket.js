@@ -7,6 +7,51 @@ let userPlayer = null;
 let rocketPosition = 80;
 let countdownInterval = null;
 let allOnlineUsers = 0;
+let currentBetAmount = 5;
+
+
+function decreaseBet() {
+    const betInput = document.getElementById('betAmount');
+    let value = parseFloat(betInput.value);
+    if (value > 0.1) {
+        value = Math.max(0.1, value - 0.1);
+        betInput.value = value.toFixed(1);
+        currentBetAmount = value;
+    }
+}
+
+function increaseBet() {
+    const betInput = document.getElementById('betAmount');
+    let value = parseFloat(betInput.value);
+    if (value < 100) {
+        value = Math.min(100, value + 0.1);
+        betInput.value = value.toFixed(1);
+        currentBetAmount = value;
+    }
+}
+
+function validateBetAmount() {
+    const betInput = document.getElementById('betAmount');
+    let value = parseFloat(betInput.value);
+    
+    if (isNaN(value)) {
+        value = 5;
+    }
+    
+    value = Math.max(0.1, Math.min(100, value));
+    betInput.value = value.toFixed(1);
+}
+
+
+function handleAction() {
+    if (rocketGame.status === 'waiting' || rocketGame.status === 'counting') {
+        placeBet();
+    } else if (rocketGame.status === 'flying' && userBet > 0 && !userCashedOut) {
+        cashout();
+    }
+}
+
+
 
 function showButtonLoading(buttonId) {
     const button = document.getElementById(buttonId);
@@ -496,7 +541,7 @@ function updateHistory(history) {
 }
 
 async function placeBet() {
-    const betAmount = 5; // Фиксированная ставка 5 TON
+    const betAmount = currentBetAmount;
     
     if (userBet > 0) {
         return;
@@ -518,7 +563,7 @@ async function placeBet() {
         return;
     }
     
-    showButtonLoading('placeBetButton');
+    showButtonLoading('actionButton');
     
     try {
         const response = await fetch('/api/rocket/bet', {
@@ -534,7 +579,7 @@ async function placeBet() {
         });
         
         if (!response.ok) {
-            hideButtonLoading('placeBetButton');
+            hideButtonLoading('actionButton');
             showError('Ошибка при размещении ставки');
             return;
         }
@@ -542,11 +587,10 @@ async function placeBet() {
         const result = await response.json();
         if (result.success) {
             userBet = betAmount;
-            document.getElementById('userBet').textContent = betAmount.toFixed(2) + ' TON';
             document.getElementById('balance').textContent = result.new_balance.toFixed(2);
             
-            document.getElementById('placeBetButton').disabled = true;
-            document.getElementById('placeBetButton').textContent = 'Ставка сделана';
+            document.getElementById('actionButton').disabled = true;
+            document.getElementById('actionButton').textContent = 'Ставка сделана';
             
             // Показываем уведомление о успешной ставке
             showBetPlaced(betAmount);
@@ -555,7 +599,7 @@ async function placeBet() {
         console.error('Error placing bet:', error);
         showError('Ошибка соединения');
     } finally {
-        hideButtonLoading('placeBetButton');
+        hideButtonLoading('actionButton');
     }
 }
 
@@ -683,7 +727,7 @@ async function cashout() {
         return;
     }
     
-    showButtonLoading('cashoutButton');
+    showButtonLoading('actionButton');
     
     try {
         const response = await fetch('/api/rocket/cashout', {
@@ -698,7 +742,7 @@ async function cashout() {
         });
         
         if (!response.ok) {
-            hideButtonLoading('cashoutButton');
+            hideButtonLoading('actionButton');
             showError('Ошибка при выводе средств');
             return;
         }
@@ -706,11 +750,10 @@ async function cashout() {
         const result = await response.json();
         if (result.success) {
             userCashedOut = true;
-            document.getElementById('potentialWin').textContent = result.winAmount.toFixed(2) + ' TON';
             document.getElementById('balance').textContent = result.new_balance.toFixed(2);
             
-            document.getElementById('cashoutButton').disabled = true;
-            document.getElementById('cashoutButton').textContent = 'Выплачено';
+            document.getElementById('actionButton').disabled = true;
+            document.getElementById('actionButton').textContent = 'Выплачено';
             
             // Показываем уведомление о выигрыше
             showWinNotification(result.winAmount - userBet, result.winAmount / userBet);
@@ -722,53 +765,46 @@ async function cashout() {
         console.error('Error cashing out:', error);
         showError('Ошибка соединения');
     } finally {
-        hideButtonLoading('cashoutButton');
+        hideButtonLoading('actionButton');
     }
 }
 
+
 function resetBettingUI() {
-    document.getElementById('placeBetButton').disabled = false;
-    document.getElementById('placeBetButton').textContent = 'Поставить 5 TON';
-    document.getElementById('cashoutButton').disabled = true;
-    document.getElementById('cashoutButton').textContent = 'Забрать выигрыш';
+    document.getElementById('actionButton').disabled = false;
+    document.getElementById('actionButton').textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
     
     userBet = 0;
     userCashedOut = false;
-    
-    document.getElementById('userBet').textContent = '0 TON';
-    document.getElementById('potentialWin').textContent = '0 TON';
 }
 
 function updateBettingUI() {
-    const betButton = document.getElementById('placeBetButton');
-    const cashoutButton = document.getElementById('cashoutButton');
+    const actionButton = document.getElementById('actionButton');
     
     if (rocketGame.status === 'waiting') {
-        betButton.disabled = false;
-        betButton.textContent = 'Поставить 5 TON';
-        cashoutButton.disabled = true;
+        actionButton.disabled = false;
+        actionButton.textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
     } else if (rocketGame.status === 'counting') {
         if (userBet > 0) {
-            betButton.disabled = true;
-            betButton.textContent = 'Ставка сделана';
+            actionButton.disabled = true;
+            actionButton.textContent = 'Ставка сделана';
         } else {
-            betButton.disabled = false;
-            betButton.textContent = 'Поставить 5 TON';
+            actionButton.disabled = false;
+            actionButton.textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
         }
-        cashoutButton.disabled = true;
     } else if (rocketGame.status === 'flying') {
-        betButton.disabled = true;
-        betButton.textContent = 'Игра идет';
+        actionButton.disabled = true;
         
         if (userBet > 0 && !userCashedOut) {
-            cashoutButton.disabled = false;
+            actionButton.disabled = false;
+            actionButton.textContent = 'Забрать ' + (userBet * rocketGame.multiplier).toFixed(2) + ' TON';
         } else {
-            cashoutButton.disabled = true;
+            actionButton.disabled = true;
+            actionButton.textContent = 'Игра идет';
         }
     } else if (rocketGame.status === 'crashed') {
-        betButton.disabled = true;
-        betButton.textContent = 'Раунд завершен';
-        cashoutButton.disabled = true;
+        actionButton.disabled = true;
+        actionButton.textContent = 'Раунд завершен';
     }
 }
 

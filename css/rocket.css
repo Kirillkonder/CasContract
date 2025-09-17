@@ -991,3 +991,94 @@ body {
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     z-index: 3;
 }
+
+
+/* Стили для управления ставкой */
+.bet-controls {
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.bet-amount-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 8px;
+}
+
+.bet-amount-btn {
+    background: linear-gradient(135deg, #1e5cb8, #2668b3);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.bet-amount-btn:hover {
+    background: linear-gradient(135deg, #2668b3, #1e5cb8);
+    transform: scale(1.05);
+}
+
+.bet-amount-btn:active {
+    transform: scale(0.95);
+}
+
+#betAmount {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    width: 80px;
+    padding: 6px;
+    -moz-appearance: textfield;
+}
+
+#betAmount::-webkit-outer-spin-button,
+#betAmount::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.ton-label {
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 390px) {
+    .bet-controls {
+        padding: 10px 12px;
+    }
+    
+    .bet-amount-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    
+    #betAmount {
+        width: 70px;
+        font-size: 14px;
+    }
+    
+    .ton-label {
+        font-size: 13px;
+    }
+}
