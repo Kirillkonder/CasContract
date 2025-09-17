@@ -778,6 +778,7 @@ function resetBettingUI() {
     userCashedOut = false;
 }
 
+// Обновляем функцию updateBettingUI
 function updateBettingUI() {
     const actionButton = document.getElementById('actionButton');
     
@@ -793,10 +794,9 @@ function updateBettingUI() {
             actionButton.textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
         }
     } else if (rocketGame.status === 'flying') {
-        actionButton.disabled = true;
-        
         if (userBet > 0 && !userCashedOut) {
             actionButton.disabled = false;
+            // Меняем на "Забрать выигрыш" когда ракета летит
             actionButton.textContent = 'Забрать ' + (userBet * rocketGame.multiplier).toFixed(2) + ' TON';
         } else {
             actionButton.disabled = true;
