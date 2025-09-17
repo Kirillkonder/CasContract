@@ -165,25 +165,23 @@ function updateTimerDisplay(text) {
 function startCountdown(timeLeft) {
     clearCountdown();
     
-    const timerElement = document.getElementById('timer');
     const timerDisplay = document.getElementById('timerDisplay');
     const centerTimer = document.getElementById('centerTimer');
     const centerTimerText = document.getElementById('centerTimerText');
-    const rocketElement = document.getElementById('rocket'); // Получаем элемент ракетки
+    const rocketElement = document.getElementById('rocket');
     
     // Показываем центральный таймер и скрываем ракетку
     centerTimer.style.display = 'block';
     centerTimerText.textContent = timeLeft;
-    rocketElement.style.display = 'none'; // Скрываем ракетку
+    rocketElement.style.display = 'none';
     
     timerDisplay.textContent = timeLeft + 's';
-    timerElement.textContent = timeLeft + 's';
     
     if (timeLeft <= 0) {
         document.getElementById('placeBetButton').textContent = 'Время вышло';
         document.getElementById('placeBetButton').disabled = true;
         centerTimer.style.display = 'none';
-        rocketElement.style.display = 'block'; // Возвращаем ракетку
+        rocketElement.style.display = 'block';
         return;
     }
     
@@ -191,14 +189,13 @@ function startCountdown(timeLeft) {
         timeLeft--;
         centerTimerText.textContent = timeLeft;
         timerDisplay.textContent = timeLeft + 's';
-        timerElement.textContent = timeLeft + 's';
         
         if (timeLeft <= 0) {
             clearCountdown();
             document.getElementById('placeBetButton').textContent = 'Время вышло';
             document.getElementById('placeBetButton').disabled = true;
             centerTimer.style.display = 'none';
-            rocketElement.style.display = 'block'; // Возвращаем ракетку
+            rocketElement.style.display = 'block';
         }
     }, 1000);
 }
@@ -208,13 +205,12 @@ function clearCountdown() {
         clearInterval(countdownInterval);
         countdownInterval = null;
     }
-    document.getElementById('timer').textContent = '0:00';
     document.getElementById('centerTimer').style.display = 'none';
     
     // Возвращаем ракетку при очистке таймера
     const rocketElement = document.getElementById('rocket');
     rocketElement.style.display = 'block';
-}
+}   
 
 function updateRocketPosition(multiplier) {
     const rocketElement = document.getElementById('rocket');
