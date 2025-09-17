@@ -169,10 +169,12 @@ function startCountdown(timeLeft) {
     const timerDisplay = document.getElementById('timerDisplay');
     const centerTimer = document.getElementById('centerTimer');
     const centerTimerText = document.getElementById('centerTimerText');
+    const rocketElement = document.getElementById('rocket'); // Получаем элемент ракетки
     
-    // Показываем центральный таймер
+    // Показываем центральный таймер и скрываем ракетку
     centerTimer.style.display = 'block';
     centerTimerText.textContent = timeLeft;
+    rocketElement.style.display = 'none'; // Скрываем ракетку
     
     timerDisplay.textContent = timeLeft + 's';
     timerElement.textContent = timeLeft + 's';
@@ -181,6 +183,7 @@ function startCountdown(timeLeft) {
         document.getElementById('placeBetButton').textContent = 'Время вышло';
         document.getElementById('placeBetButton').disabled = true;
         centerTimer.style.display = 'none';
+        rocketElement.style.display = 'block'; // Возвращаем ракетку
         return;
     }
     
@@ -195,9 +198,11 @@ function startCountdown(timeLeft) {
             document.getElementById('placeBetButton').textContent = 'Время вышло';
             document.getElementById('placeBetButton').disabled = true;
             centerTimer.style.display = 'none';
+            rocketElement.style.display = 'block'; // Возвращаем ракетку
         }
     }, 1000);
 }
+
 
 function clearCountdown() {
     if (countdownInterval) {
@@ -206,6 +211,10 @@ function clearCountdown() {
     }
     document.getElementById('timer').textContent = '0:00';
     document.getElementById('centerTimer').style.display = 'none';
+    
+    // Возвращаем ракетку при очистке таймера
+    const rocketElement = document.getElementById('rocket');
+    rocketElement.style.display = 'block';
 }
 
 function updateRocketPosition(multiplier) {
