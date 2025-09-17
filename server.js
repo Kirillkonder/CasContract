@@ -87,18 +87,8 @@ function initDatabase() {
 
                 if (!casinoBank) {
                     casinoBank = db.addCollection('casino_bank');
-                    // Добавляем основной банк казино
                     casinoBank.insert({
-                        type: 'main',
                         total_balance: 0,
-                        owner_telegram_id: process.env.OWNER_TELEGRAM_ID || 842428912,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    });
-                    // Добавляем демо банк казино
-                    casinoBank.insert({
-                        type: 'demo',
-                        total_balance: 10000,
                         owner_telegram_id: process.env.OWNER_TELEGRAM_ID || 842428912,
                         created_at: new Date(),
                         updated_at: new Date()
@@ -175,21 +165,18 @@ function logAdminAction(action, telegramId, details = {}) {
 }
 
 // Получить банк казино
-function getCasinoBank(type = 'main') {
-  return casinoBank.findOne({ type: type });
+function getCasinoBank() {
+  return casinoBank.findOne({});
 }
 
 // Обновить банк казино
-function updateCasinoBank(amount, demoMode = false) {
-  const bankType = demoMode ? 'demo' : 'main';
-  const bank = getCasinoBank(bankType);
-  if (bank) {
-    casinoBank.update({
-      ...bank,
-      total_balance: bank.total_balance + amount,
-      updated_at: new Date()
-    });
-  }
+function updateCasinoBank(amount) {
+  const bank = getCasinoBank();
+  casinoBank.update({
+    ...bank,
+    total_balance: bank.total_balance + amount,
+    updated_at: new Date()
+  });
 }
 
 // Mines Game Functions
@@ -232,78 +219,31 @@ function calculateMultiplier(openedCells, displayedMines) {
   return mineMultipliers ? mineMultipliers[mineMultipliers.length - 1] * 2 : 1.00;
 }
 
-// 🚀 АЛГОРИТМ КАК В 1WIN LUCKY JET (РТП 30%)
-function generateCrashPoint(totalBetAmount = 0, demoMode = false) {
-    const random = Math.random() * 100;
-    
-    // Если демо режим - более лояльные множители
-    if (demoMode) {
-        if (random < 20) return 1.00 + Math.random() * 0.50; // 1.00x - 1.50x (20%)
-        if (random < 50) return 1.50 + Math.random() * 1.50; // 1.50x - 3.00x (30%)
-        if (random < 80) return 3.00 + Math.random() * 7.00; // 3.00x - 10.00x (30%)
-        return 10.00 + Math.random() * 40.00; // 10.00x+ (20%)
-    }
-    
-    // ОСНОВНОЙ АЛГОРИТМ - РТП 30% (казино забирает 70%)
-    
-    // Большие ставки (>= 20 TON) - сливается почти всегда
-    if (totalBetAmount >= 20) {
-        if (random < 85) return 1.00 + Math.random() * 0.20; // 1.00x - 1.20x (85%)
-        if (random < 95) return 1.20 + Math.random() * 0.30; // 1.20x - 1.50x (10%)
-        return 1.50 + Math.random() * 1.50; // 1.50x - 3.00x (5%)
-    }
-    
-    // Средние ставки (5-20 TON) - часто сливается  
-    if (totalBetAmount >= 5) {
-        if (random < 70) return 1.00 + Math.random() * 0.30; // 1.00x - 1.30x (70%)
-        if (random < 85) return 1.30 + Math.random() * 0.70; // 1.30x - 2.00x (15%)
-        if (random < 95) return 2.00 + Math.random() * 3.00; // 2.00x - 5.00x (10%)
-        return 5.00 + Math.random() * 10.00; // 5.00x+ (5%)
-    }
-    
-    // Малые ставки (0.1-5 TON) - стандартная агрессивность
-    if (totalBetAmount >= 0.1) {
-        if (random < 60) return 1.00 + Math.random() * 0.50; // 1.00x - 1.50x (60%)
-        if (random < 80) return 1.50 + Math.random() * 1.50; // 1.50x - 3.00x (20%)
-        if (random < 92) return 3.00 + Math.random() * 7.00; // 3.00x - 10.00x (12%)
-        if (random < 98) return 10.00 + Math.random() * 20.00; // 10.00x - 30.00x (6%)
-        return 30.00 + Math.random() * 70.00; // 30.00x+ (2%)
-    }
-    
-    // Только боты - случайные множители для зрелищности
-    if (random < 40) return 1.00 + Math.random() * 2.00; // 1.00x - 3.00x (40%)
-    if (random < 70) return 3.00 + Math.random() * 7.00; // 3.00x - 10.00x (30%)
-    if (random < 90) return 10.00 + Math.random() * 20.00; // 10.00x - 30.00x (20%)
-    return 30.00 + Math.random() * 70.00; // 30.00x+ (10%)
+// Rocket Game Functions
+function generateCrashPoint() {
+  const random = Math.random();
+  
+  if (random < 0.7) {
+    // 70% chance: 1x - 4x
+    return 1 + Math.random() * 3;
+  } else if (random < 0.9) {
+    // 20% chance: 5x - 20x
+    return 5 + Math.random() * 15;
+  } else {
+    // 10% chance: 21x - 100x
+    return 21 + Math.random() * 79;
+  }
 }
-
 
 function startRocketGame() {
     if (rocketGame.status !== 'waiting') return;
 
     rocketGame.status = 'counting';
     rocketGame.multiplier = 1.00;
+    rocketGame.crashPoint = generateCrashPoint();
     rocketGame.startTime = Date.now();
     rocketGame.endBetTime = Date.now() + 5000; // 5 секунд на ставки
     rocketGame.players = [];
-    
-    // Генерируем crashPoint после завершения времени на ставки
-    setTimeout(() => {
-        const realPlayers = rocketGame.players.filter(p => !p.isBot);
-        const totalBank = realPlayers.reduce((sum, p) => sum + p.betAmount, 0);
-        
-        // Правильно определяем демо-режим
-        let isDemoMode = false;
-        if (realPlayers.length > 0) {
-            isDemoMode = realPlayers[0].demoMode;
-        } else {
-            // Если нет реальных игроков, используем демо-банк для ботов
-            isDemoMode = true;
-        }
-        
-        rocketGame.crashPoint = generateCrashPoint(totalBank, isDemoMode);
-        console.log(`Общий банк: ${totalBank} TON, Демо: ${isDemoMode}, Краш-поинт: ${rocketGame.crashPoint.toFixed(2)}x`);
-    }, 5000);
 
     // Добавляем ставки ботов
     rocketBots.forEach(bot => {
@@ -317,7 +257,6 @@ function startRocketGame() {
             betAmount: parseFloat(betAmount.toFixed(2)),
             autoCashout: parseFloat(autoCashout.toFixed(2)),
             isBot: true,
-            demoMode: true, // Боты всегда играют в демо-режиме
             cashedOut: false,
             winAmount: 0
         });
@@ -411,13 +350,12 @@ function processRocketGameEnd() {
             ...user,
             demo_balance: user.demo_balance + winAmount
           });
-          updateCasinoBank(-winAmount, true); // Обновляем демо банк
         } else {
           users.update({
             ...user,
             main_balance: user.main_balance + winAmount
           });
-          updateCasinoBank(-winAmount, false); // Обновляем основной банк
+          updateCasinoBank(-winAmount);
         }
 
         // Записываем транзакцию
@@ -525,7 +463,6 @@ app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
 
         res.json({
             bank_balance: bank.total_balance,
-            demo_bank: bank.demo_bank || 10000,
             total_users: totalUsers,
             total_transactions: totalTransactions,
             total_mines_games: totalMinesGames,
@@ -1276,7 +1213,6 @@ app.post('/api/rocket/cashout', async (req, res) => {
                 ...user,
                 demo_balance: user.demo_balance + winAmount
             });
-            updateCasinoBank(-winAmount, true); // Обновляем демо банк
         } else {
             users.update({
                 ...user,
