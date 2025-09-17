@@ -167,6 +167,12 @@ function startCountdown(timeLeft) {
     
     const timerElement = document.getElementById('timer');
     const timerDisplay = document.getElementById('timerDisplay');
+    const centerTimer = document.getElementById('centerTimer');
+    const centerTimerText = document.getElementById('centerTimerText');
+    
+    // Показываем центральный таймер
+    centerTimer.style.display = 'block';
+    centerTimerText.textContent = timeLeft;
     
     timerDisplay.textContent = timeLeft + 's';
     timerElement.textContent = timeLeft + 's';
@@ -174,11 +180,13 @@ function startCountdown(timeLeft) {
     if (timeLeft <= 0) {
         document.getElementById('placeBetButton').textContent = 'Время вышло';
         document.getElementById('placeBetButton').disabled = true;
+        centerTimer.style.display = 'none';
         return;
     }
     
     countdownInterval = setInterval(() => {
         timeLeft--;
+        centerTimerText.textContent = timeLeft;
         timerDisplay.textContent = timeLeft + 's';
         timerElement.textContent = timeLeft + 's';
         
@@ -186,6 +194,7 @@ function startCountdown(timeLeft) {
             clearCountdown();
             document.getElementById('placeBetButton').textContent = 'Время вышло';
             document.getElementById('placeBetButton').disabled = true;
+            centerTimer.style.display = 'none';
         }
     }, 1000);
 }
@@ -196,6 +205,7 @@ function clearCountdown() {
         countdownInterval = null;
     }
     document.getElementById('timer').textContent = '0:00';
+    document.getElementById('centerTimer').style.display = 'none';
 }
 
 function updateRocketPosition(multiplier) {
