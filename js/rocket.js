@@ -436,23 +436,30 @@ function updatePlayersList(players) {
             const avatar = document.createElement('div');
             avatar.className = 'player-avatar';
             
-            // Разные эмодзи для ботов и реальных игроков
-            if (player.isBot) {
-                const botEmojis = ['🤖', '👾', '🦾', '🔧', '⚙️', '💻', '🎮', '🧠'];
-                avatar.textContent = botEmojis[Math.floor(Math.random() * botEmojis.length)];
-                avatar.style.backgroundColor = '#ff6b35';
-            } else {
-                const userEmojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯'];
-                avatar.textContent = userEmojis[Math.floor(Math.random() * userEmojis.length)];
-                avatar.style.backgroundColor = '#1e5cb8';
-            }
+            // Одинаковые аватарки для всех игроков
+            const avatarEmojis = ['👤', '🎯', '🎮', '⭐', '🔥', '💎', '🚀', '🎲'];
+            avatar.textContent = avatarEmojis[Math.floor(Math.random() * avatarEmojis.length)];
+            avatar.style.backgroundColor = '#1e5cb8';
             
             const infoContainer = document.createElement('div');
             infoContainer.className = 'player-info-container';
             
             const nameSpan = document.createElement('span');
             nameSpan.className = 'player-name';
-            nameSpan.textContent = player.name;
+            
+            // Русские имена для ботов
+            if (player.isBot) {
+                const russianNames = [
+                    'Илья', 'Даня', 'Кирилл', 'Ваня', 'Артём', 'Максим', 
+                    'Дима', 'Саша', 'Андрей', 'Никита', 'Егор', 'Влад',
+                    'Антон', 'Серёжа', 'Миша', 'Денис', 'Олег', 'Павел',
+                    'Рома', 'Толя', 'Игорь', 'Глеб', 'Тимур', 'Стас'
+                ];
+                const randomName = russianNames[Math.floor(Math.random() * russianNames.length)];
+                nameSpan.textContent = randomName;
+            } else {
+                nameSpan.textContent = player.name;
+            }
             
             const betSpan = document.createElement('span');
             betSpan.className = 'player-bet';
