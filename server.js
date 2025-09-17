@@ -72,7 +72,7 @@ function initDatabase() {
                     users.insert({
                         telegram_id: parseInt(process.env.OWNER_TELEGRAM_ID) || 842428912,
                         main_balance: 0,
-                        demo_balance: 10000,
+                        demo_balance: 1000,
                         created_at: new Date(),
                         demo_mode: false,
                         is_admin: true
@@ -219,182 +219,54 @@ function calculateMultiplier(openedCells, displayedMines) {
   return mineMultipliers ? mineMultipliers[mineMultipliers.length - 1] * 2 : 1.00;
 }
 
-// 🎰 ПРОДВИНУТЫЙ АЛГОРИТМ В СТИЛЕ 1WIN LUCKY JET 🎰
-// Глобальные переменные для контроля прибыльности
-let houseProfit = 0;
-let recentGamesProfit = [];
-let lastBigWin = 0;
-let psychologyBoost = false;
-
-// Функция расчета краш-поинта с 1win логикой
-function generateCrashPoint(totalBankAmount = 0, playersBets = []) {
-    // Получаем последние 20 игр для анализа
-    const recentGames = rocketGame.history.slice(0, 20);
-    const currentTime = Date.now();
-    
-    // === АНАЛИЗ ПРИБЫЛЬНОСТИ ДОМА ===
-    const targetHouseEdge = 0.04; // 4% в пользу дома
-    const currentRTP = calculateCurrentRTP(recentGames, totalBankAmount);
-    
-    // === СИСТЕМА АДАПТИВНОГО RTP ===
-    let baseMultiplier = 2.0; // Базовый множитель
-    let riskLevel = 'medium';
-    
-    // Если дом слишком много проигрывает - повышаем агрессивность
-    if (currentRTP > 1.0) {
-        riskLevel = 'aggressive';
-        baseMultiplier = 1.5;
-    } 
-    // Если дом слишком много выигрывает - даем игрокам поиграть
-    else if (currentRTP < 0.85) {
-        riskLevel = 'generous';
-        baseMultiplier = 3.5;
-        psychologyBoost = true;
-    }
-
-    // === ОБРАБОТКА РАЗНЫХ СЦЕНАРИЕВ ===
-    
-    // 🔴 КРИТИЧЕСКИЙ БАНК (30+ TON) - мгновенный краш
-    if (totalBankAmount >= 30) {
-        // 1win стиль: редкие исключения для создания иллюзии
-        const exception = Math.random() < 0.02; // 2% шанс "случайного" большого выигрыша
-        if (exception && houseProfit > 500) {
-            houseProfit -= totalBankAmount * 2;
-            return Math.random() * 3 + 5; // 5x-8x "случайный" выигрыш
-        }
-        
-        // Обычный слив больших ставок
-        return generatePseudoRandom(1.00, 1.15, totalBankAmount);
-    }
-    
-    // 🟡 СРЕДНИЙ БАНК (3-8 TON)
-    if (totalBankAmount >= 3 && totalBankAmount <= 8) {
-        // Анализируем поведение игроков
-        const aggressivePlayers = playersBets.filter(bet => bet > totalBankAmount * 0.3).length;
-        
-        if (aggressivePlayers > 0 && riskLevel === 'aggressive') {
-            return generatePseudoRandom(1.20, 1.80, totalBankAmount);
-        }
-        
-        return generatePseudoRandom(1.30, 1.95, totalBankAmount);
-    }
-    
-    // 🟢 МАЛЫЙ БАНК (≤1 TON) - психологические игры
-    if (totalBankAmount <= 1 && totalBankAmount > 0) {
-        const shouldGiveBigWin = shouldAllowBigWin(recentGames);
-        
-        if (shouldGiveBigWin) {
-            psychologyBoost = true;
-            lastBigWin = currentTime;
-            return generatePseudoRandom(8, 25, totalBankAmount); // Большой выигрыш для мотивации
-        }
-        
-        // 75% обычный краш, 25% средний выигрыш
-        const random = Math.random();
-        if (random < 0.75) {
-            return generatePseudoRandom(1.40, 3.40, totalBankAmount);
-        } else {
-            return generatePseudoRandom(4, 8, totalBankAmount);
-        }
-    }
-    
-    // 🤖 НЕТ РЕАЛЬНЫХ ИГРОКОВ (только боты)
+// Rocket Game Functions
+function generateCrashPoint(totalBankAmount = 0) {
+    // Если нет реальных игроков (только боты)
     if (totalBankAmount === 0) {
-        return generateEmptyGameMultiplier();
+        const random = Math.random() * 100;
+        
+        // 50% - больше 4x, но меньше 6x
+        if (random < 50) {
+            return Math.random() * 2 + 4; // 4x - 6x
+        }
+        // 40% - от 6 до 12x  
+        else if (random < 90) {
+            return Math.random() * 6 + 6; // 6x - 12x
+        }
+        // 10% - больше 12x
+        else {
+            return Math.random() * 20 + 12; // 12x+
+        }
     }
     
-    // 🔵 ОСТАЛЬНЫЕ ДИАПАЗОНЫ (1-3 TON, 8-30 TON)
-    if (riskLevel === 'generous' && Math.random() < 0.15) {
-        // 15% шанс на хороший множитель при щедром режиме
-        return generatePseudoRandom(3.5, 8.5, totalBankAmount);
+    // Если реальная ставка 30 тонн или больше - сливается сразу
+    if (totalBankAmount >= 30) {
+        return Math.random() * 0.15 + 1.00; // 1.00x - 1.15x
     }
     
-    return generatePseudoRandom(1.40, 3.40, totalBankAmount);
-}
-
-// Генерация псевдослучайного числа с учетом банка
-function generatePseudoRandom(min, max, bankAmount) {
-    // Используем банк как seed для создания предсказуемости
-    const seed = (bankAmount * 1000) % 1;
-    const noise = Math.sin(seed * 12.9898) * 43758.5453;
-    const pseudoRandom = noise - Math.floor(noise);
-    
-    // Добавляем реальную случайность для маскировки
-    const realRandom = Math.random();
-    const combined = (pseudoRandom * 0.7) + (realRandom * 0.3);
-    
-    return min + (combined * (max - min));
-}
-
-// Расчет текущего RTP
-function calculateCurrentRTP(recentGames, currentBank) {
-    if (recentGames.length === 0) return 0.95;
-    
-    let totalBets = 0;
-    let totalPayouts = 0;
-    
-    recentGames.forEach(game => {
-        totalBets += currentBank; // Приблизительная оценка
-        totalPayouts += game.crashPoint < 2 ? 0 : currentBank * 0.8; // Упрощенный расчет
-    });
-    
-    return totalBets > 0 ? totalPayouts / totalBets : 0.95;
-}
-
-// Определение необходимости большого выигрыша
-function shouldAllowBigWin(recentGames) {
-    const currentTime = Date.now();
-    
-    // Если последний большой выигрыш был меньше 10 минут назад - не даем
-    if (currentTime - lastBigWin < 600000) {
-        return false;
+    // От 3 до 8 тонн
+    if (totalBankAmount >= 3 && totalBankAmount <= 8) {
+        return Math.random() * 0.65 + 1.30; // 1.30x - 1.95x
     }
     
-    // Анализируем последние игры на количество проигрышей
-    const recentLosses = recentGames.filter(game => game.crashPoint < 2).length;
-    
-    // Если много проигрышей подряд - даем большой выигрыш для мотивации
-    if (recentLosses >= 7 && Math.random() < 0.3) {
-        return true;
+    // Логика для маленьких ставок с возможным продлением
+    // Если большинство пользователей проиграли и остались несколько с маленькой ставкой
+    if (totalBankAmount <= 1) {
+        const random = Math.random();
+        
+        // 70% шанс обычного краша для максимизации прибыли
+        if (random < 0.7) {
+            return Math.random() * 2.0 + 1.40; // 1.40x - 3.40x
+        }
+        // 30% шанс продления для привлечения игроков
+        else {
+            return Math.random() * 8 + 5; // 5x - 13x
+        }
     }
     
-    // Если прибыль дома очень высокая - даем выигрыш
-    if (houseProfit > 1000 && Math.random() < 0.25) {
-        return true;
-    }
-    
-    return false;
-}
-
-// Множители для пустых игр (только боты)
-function generateEmptyGameMultiplier() {
-    const random = Math.random() * 100;
-    
-    if (random < 45) {
-        // 45% - 4x-6x (немного снижено для большей прибыли)
-        return generatePseudoRandom(4, 6, 0);
-    } else if (random < 80) {
-        // 35% - 6x-12x  
-        return generatePseudoRandom(6, 12, 0);
-    } else if (random < 95) {
-        // 15% - 12x-25x
-        return generatePseudoRandom(12, 25, 0);
-    } else {
-        // 5% - 25x+ мега множители для создания хайпа
-        return generatePseudoRandom(25, 100, 0);
-    }
-}
-
-// Обновляем прибыль дома после каждой игры
-function updateHouseProfit(totalBets, totalPayouts) {
-    const gameProfit = totalBets - totalPayouts;
-    houseProfit += gameProfit;
-    
-    // Записываем в историю прибыли
-    recentGamesProfit.push(gameProfit);
-    if (recentGamesProfit.length > 50) {
-        recentGamesProfit.shift();
-    }
+    // Если что-то между диапазонами (от 1 до 3 тонн или от 8 до 30 тонн)
+    // от 1.40 до 3.4
+    return Math.random() * 2.0 + 1.40;
 }
 
 function startRocketGame() {
@@ -408,13 +280,9 @@ function startRocketGame() {
     
     // Генерируем crashPoint после завершения времени на ставки
     setTimeout(() => {
-        const realPlayers = rocketGame.players.filter(p => !p.isBot);
-        const totalBank = realPlayers.reduce((sum, p) => sum + p.betAmount, 0);
-        const playersBets = realPlayers.map(p => p.betAmount);
-        
-        rocketGame.crashPoint = generateCrashPoint(totalBank, playersBets);
-        
-        console.log(`🎰 1WIN АЛГОРИТМ: Банк: ${totalBank} TON, Краш: ${rocketGame.crashPoint.toFixed(2)}x, Прибыль дома: ${houseProfit.toFixed(2)}`);
+        const totalBank = rocketGame.players.filter(p => !p.isBot).reduce((sum, p) => sum + p.betAmount, 0);
+        rocketGame.crashPoint = generateCrashPoint(totalBank);
+        console.log(`Общий банк: ${totalBank} TON, Краш-поинт: ${rocketGame.crashPoint.toFixed(2)}x`);
     }, 5000);
 
     // Добавляем ставки ботов
@@ -499,15 +367,6 @@ function startRocketFlight() {
 
 // server.js - исправленная функция processRocketGameEnd
 function processRocketGameEnd() {
-  // Рассчитываем итоги игры для обновления прибыли дома
-  const totalBets = rocketGame.players.reduce((sum, p) => sum + p.betAmount, 0);
-  const totalPayouts = rocketGame.players.reduce((sum, p) => sum + (p.cashedOut ? p.winAmount : 0), 0);
-  
-  // Обновляем прибыль дома (только для реальных игроков)
-  const realPlayersBets = rocketGame.players.filter(p => !p.isBot).reduce((sum, p) => sum + p.betAmount, 0);
-  const realPlayersPayouts = rocketGame.players.filter(p => !p.isBot && p.cashedOut).reduce((sum, p) => sum + p.winAmount, 0);
-  updateHouseProfit(realPlayersBets, realPlayersPayouts);
-
   // Сохраняем игру в историю
   const gameRecord = rocketGames.insert({
     crashPoint: rocketGame.crashPoint,
@@ -515,9 +374,8 @@ function processRocketGameEnd() {
     startTime: new Date(rocketGame.startTime),
     endTime: new Date(),
     playerCount: rocketGame.players.length,
-    totalBets: totalBets,
-    totalPayouts: totalPayouts,
-    houseProfit: houseProfit
+    totalBets: rocketGame.players.reduce((sum, p) => sum + p.betAmount, 0),
+    totalPayouts: rocketGame.players.reduce((sum, p) => sum + (p.cashedOut ? p.winAmount : 0), 0)
   });
 
   // Обрабатываем выплаты для реальных игроков
@@ -1058,7 +916,7 @@ app.get('/api/user/balance/:telegramId', async (req, res) => {
             const newUser = users.insert({
                 telegram_id: telegramId,
                 main_balance: 0,
-                demo_balance: 10000,
+                demo_balance: 1000,
                 created_at: new Date(),
                 demo_mode: false,
                 is_admin: telegramId === parseInt(process.env.OWNER_TELEGRAM_ID)
