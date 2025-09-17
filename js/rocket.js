@@ -339,7 +339,11 @@ function updatePlayersList(players) {
         const nameSpan = playerElement.querySelector('.player-name');
         if (nameSpan) {
             const playerName = nameSpan.textContent;
-            const playerStillExists = playersWithBets.some(player => player.name === playerName);
+            const playerStillExists = playersWithBets.some(player => {
+                // Генерируем имя для сравнения
+                const generatedName = generateRussianName(player.isBot, player.userId || player.id);
+                return generatedName === playerName;
+            });
             if (!playerStillExists) {
                 playerElement.remove();
             }
@@ -347,31 +351,36 @@ function updatePlayersList(players) {
     });
     
     // Генератор русских имен для игроков
-    const generateRussianName = (isBot = false, userId = null) => {
+    function generateRussianName(isBot = false, userId = null) {
         if (isBot) {
             const botNames = [
-                'Робот-игрок', 'Автомат', 'Бот-стратег', 'ИИ-игрок', 
-                'Машина', 'Автоигрок', 'Программа', 'Виртуальный'
+                'Робот', 'Автомат', 'Бот', 'ИИ', 
+                'Машина', 'Программа', 'Виртуальный', 'Система'
             ];
+            // Для ботов используем случайное имя
             return botNames[Math.floor(Math.random() * botNames.length)];
         } else {
             // Для реальных пользователей используем хэш от ID для постоянства имени
             const userNames = [
                 'Игрок', 'Участник', 'Стратег', 'Мастер', 
-                'Профи', 'Новичок', 'Эксперт', 'Чемпион'
+                'Профи', 'Новичок', 'Эксперт', 'Чемпион',
+                'Геймер', 'Победитель', 'Лидер', 'Гуру'
             ];
             if (userId) {
-                const hash = userId.toString().split('').reduce((a, b) => a + parseInt(b), 0);
+                // Создаем стабильный хэш из ID
+                const hash = userId.toString().split('').reduce((a, b) => {
+                    return a + parseInt(b);
+                }, 0);
                 return userNames[hash % userNames.length];
             }
             return userNames[Math.floor(Math.random() * userNames.length)];
         }
-    };
+    }
     
     // Добавляем только новых игроков с анимацией
     playersWithBets.forEach((player, index) => {
         // Генерируем русское имя
-        const playerName = player.name || generateRussianName(player.isBot, player.userId);
+        const playerName = generateRussianName(player.isBot, player.userId || player.id);
         
         // Проверяем, есть ли уже такой игрок в DOM
         const existingPlayer = Array.from(playersList.children).find(item => {
