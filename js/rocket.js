@@ -45,12 +45,24 @@ function validateBetAmount() {
 
 // Обновляем функцию handleAction
 function handleAction() {
+    console.log('handleAction called', {
+        status: rocketGame.status,
+        userBet: userBet,
+        userCashedOut: userCashedOut
+    });
+    
+    // Во время таймера - делать ставку (только если нет активной ставки)
     if ((rocketGame.status === 'waiting' || rocketGame.status === 'counting') && userBet === 0) {
-        // Во время таймера - делать ставку
+        console.log('Making bet');
         placeBet();
-    } else if (rocketGame.status === 'flying' && userBet > 0 && !userCashedOut) {
-        // Когда ракета летит - забирать выигрыш
+    } 
+    // Когда ракета летит - забирать выигрыш (только если есть активная ставка и не вывели)
+    else if (rocketGame.status === 'flying' && userBet > 0 && !userCashedOut) {
+        console.log('Cashing out');
         cashout();
+    }
+    else {
+        console.log('No action available');
     }
 }
 
@@ -545,23 +557,10 @@ function updateHistory(history) {
 async function placeBet() {
     const betAmount = currentBetAmount;
     
+    console.log('placeBet called', { betAmount, userBet });
+    
     if (userBet > 0) {
-        return;
-    }
-    
-    if (rocketGame.status !== 'counting') {
-        return;
-    }
-    
-    const timeLeft = Math.ceil((rocketGame.endBetTime - Date.now()) / 1000);
-    if (timeLeft <= 0) {
-        return;
-    }
-    
-    // Проверяем баланс
-    const currentBalance = parseFloat(document.getElementById('balance').textContent);
-    if (currentBalance < betAmount) {
-        showInsufficientFunds();
+        console.log('Already have active bet');
         return;
     }
     
@@ -783,6 +782,12 @@ function resetBettingUI() {
 // Обновляем функцию updateBettingUI
 function updateBettingUI() {
     const actionButton = document.getElementById('actionButton');
+    
+    console.log('updateBettingUI', {
+        status: rocketGame.status,
+        userBet: userBet,
+        userCashedOut: userCashedOut
+    });
     
     if (rocketGame.status === 'waiting' || rocketGame.status === 'counting') {
         // Во время ожидания и таймера - функционал ставки
