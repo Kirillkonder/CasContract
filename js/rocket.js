@@ -837,43 +837,67 @@ function updateBettingUI() {
 }
 
 
-// Новый алгоритм краша ракеты
-function generateCrashMultiplier(totalBankAmount) {
-    // Если общий банк превышает 30 TON - краш от 1.00 до 1.15x
-    if (totalBankAmount > 30) {
-        return Math.random() * 0.15 + 1.00; // От 1.00 до 1.15
+// Улучшенный алгоритм краша ракеты (обновлённая версия)
+function generateCrashMultiplier(totalBankAmount, demoBankAmount = 0) {
+    // Демо банк дает больше возможностей для игроков
+    const demoBonus = demoBankAmount > 0 ? 1.2 : 1.0;
+    
+    // Если общий банк превышает 50 TON - агрессивный краш
+    if (totalBankAmount > 50) {
+        return Math.random() * 0.15 + 1.00; // От 1.00 до 1.15x
     }
     
-    // Если банк около 5 TON или меньше
+    // Если банк больше 20 TON - осторожный краш
+    if (totalBankAmount > 20) {
+        return Math.random() * 0.4 + 1.10; // От 1.10 до 1.50x
+    }
+    
+    // Если банк больше 10 TON
+    if (totalBankAmount > 10) {
+        const random = Math.random();
+        if (random < 0.7) {
+            return Math.random() * 0.8 + 1.20; // От 1.20 до 2.00x
+        } else {
+            return Math.random() * 2 + 3; // От 3x до 5x (30% шанс)
+        }
+    }
+    
+    // Если банк от 5 до 10 TON - сбалансированная игра
+    if (totalBankAmount > 5) {
+        const random = Math.random();
+        if (random < 0.5) {
+            return Math.random() * 1.5 + 1.50; // От 1.50 до 3.00x
+        } else if (random < 0.8) {
+            return Math.random() * 3 + 3; // От 3x до 6x
+        } else {
+            return Math.random() * 5 + 8; // От 8x до 13x (20% шанс)
+        }
+    }
+    
+    // Если банк меньше 5 TON - игрок-дружественная логика
     if (totalBankAmount <= 5) {
         const random = Math.random();
         
-        // 90% шанс дойти до 2x
-        if (random < 0.9) {
-            return Math.random() * 1.0 + 1.5; // От 1.5x до 2.5x
+        // 40% - хорошие множители для привлечения
+        if (random < 0.4 * demoBonus) {
+            return Math.random() * 3 + 2; // От 2x до 5x
         }
-        // 10% шанс улететь очень высоко (очень редко)
+        // 35% - очень хорошие множители
+        else if (random < 0.75 * demoBonus) {
+            return Math.random() * 5 + 5; // От 5x до 10x
+        }
+        // 15% - джекпот множители
+        else if (random < 0.9) {
+            return Math.random() * 10 + 10; // От 10x до 20x
+        }
+        // 10% - мега джекпот (очень редко)
         else {
-            return Math.random() * 10 + 10; // От 10x до 20x (иногда до 15x+)
+            return Math.random() * 20 + 20; // От 20x до 40x
         }
     }
     
-    // Если банк между 5 и 30 TON
-    if (totalBankAmount > 5 && totalBankAmount <= 30) {
-        const random = Math.random();
-        
-        // 85% шанс разбиться до 2x
-        if (random < 0.85) {
-            return Math.random() * 1.0 + 0.5; // От 0.5x до 1.5x (не долетев до 2x)
-        }
-        // 15% шанс улететь от 5x до 7x
-        else {
-            return Math.random() * 2 + 5; // От 5x до 7x
-        }
-    }
-    
-    // Fallback - обычная логика
-    return Math.random() * 5 + 1;
+    // Fallback - средние множители
+    return Math.random() * 3 + 2;
 }
 
 // Функция для получения общего банка ставок
