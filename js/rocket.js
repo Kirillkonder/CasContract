@@ -149,22 +149,6 @@ function updateGameState(gameState) {
     rocketGame.justCrashed = (gameState.status === 'crashed' && !wasCrashed);
     allOnlineUsers = gameState.totalOnlineUsers || gameState.players.length;
     
-    // Новый алгоритм краша - проверяем общую сумму ставок
-    if (gameState.status === 'flying') {
-        const totalBetAmount = gameState.players.reduce((sum, player) => sum + player.betAmount, 0);
-        
-        // Если общая ставка превышает 30 TON - немедленный краш
-        if (totalBetAmount > 30 && gameState.multiplier < 1.0) {
-            // Принудительно завершаем полет
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: 'force_crash',
-                    multiplier: 0.5 + Math.random() * 0.5 // Случайный множитель от 0.5x до 1.0x
-                }));
-            }
-        }
-    }
-    
     clearCountdown();
     
     switch(gameState.status) {
@@ -183,7 +167,7 @@ function updateGameState(gameState) {
             clearCountdown();
             updateRocketPosition(gameState.multiplier);
             updateTimerDisplay(gameState.multiplier.toFixed(2) + 'x');
-            updateBettingUI();
+            updateBettingUI(); // ВАЖНО: обновляем кнопку при полете ракеты
             break;
             
         case 'crashed':
@@ -194,7 +178,7 @@ function updateGameState(gameState) {
             break;
     }
     
-    // Остальной код функции без изменений...
+    // Обновляем баланс в реальном времени
     if (userPlayer) {
         const updatedPlayer = gameState.players.find(p => p.userId == currentUser.id && !p.isBot);
         if (updatedPlayer) {
@@ -206,11 +190,13 @@ function updateGameState(gameState) {
             
             if (userCashedOut) {
                 document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2) + ' TON';
+                // Обновляем баланс после выигрыша
                 updateUserBalance(userPlayer.winAmount - userBet);
             }
         }
     }
     
+    // Обновляем список игроков
     updatePlayersList(gameState.players);
     updateHistory(gameState.history);
     document.getElementById('playersCount').textContent = allOnlineUsers;
@@ -221,33 +207,6 @@ function updateGameState(gameState) {
     }
     
     updateBettingUI();
-}
-
-function shouldCrashNow(totalBetAmount, currentMultiplier) {
-    if (totalBetAmount > 30) {
-        // Более 30 TON - немедленный краш
-        return true;
-    } else if (totalBetAmount >= 5 && totalBetAmount <= 30) {
-        // От 5 до 30 TON - 85% шанс краша до 2x, 15% шанс полета до 5-7x
-        if (currentMultiplier < 2.0) {
-            return Math.random() < 0.85; // 85% шанс краша до 2x
-        } else if (currentMultiplier >= 5.0) {
-            return Math.random() < 0.5; // После 5x увеличиваем шанс краша
-        } else if (currentMultiplier >= 7.0) {
-            return true; // Обязательный краш после 7x
-        }
-    } else {
-        // Менее 5 TON - может долететь до 2x, редко до 15x
-        if (currentMultiplier < 2.0) {
-            return Math.random() < 0.3; // 30% шанс краша до 2x
-        } else if (currentMultiplier >= 15.0) {
-            return true; // Обязательный краш после 15x
-        } else {
-            return Math.random() < 0.1; // 10% шанс краша после 2x
-        }
-    }
-    
-    return false;
 }
 
 function updateTimerDisplay(text) {
