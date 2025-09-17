@@ -49,6 +49,21 @@ const rocketBots = [
   { name: "Bot_3", minBet: 0.5, maxBet: 5, risk: "low" }
 ];
 
+
+function generateRussianName() {
+    const randomIndex = Math.floor(Math.random() * russianFirstNames.length);
+    return russianFirstNames[randomIndex];
+}
+
+const russianFirstNames = [
+    'Иван', 'Александр', 'Сергей', 'Дмитрий', 'Андрей', 
+    'Алексей', 'Максим', 'Евгений', 'Михаил', 'Владимир',
+    'Артем', 'Денис', 'Никита', 'Павел', 'Константин',
+    'Роман', 'Олег', 'Виталий', 'Илья', 'Георгий',
+    'Станислав', 'Вадим', 'Юрий', 'Тимофей', 'Валерий',
+    'Григорий', 'Даниил', 'Вячеслав', 'Борис', 'Леонид'
+];
+
 function initDatabase() {
     return new Promise((resolve) => {
         db = new Loki(dbPath, {
@@ -242,10 +257,10 @@ function startRocketGame() {
     rocketGame.multiplier = 1.00;
     rocketGame.crashPoint = generateCrashPoint();
     rocketGame.startTime = Date.now();
-    rocketGame.endBetTime = Date.now() + 5000; // 5 секунд на ставки
+    rocketGame.endBetTime = Date.now() + 5000;
     rocketGame.players = [];
 
-    // Добавляем ставки ботов
+    // Добавляем ставки ботов с русскими именами
     rocketBots.forEach(bot => {
         const betAmount = bot.minBet + Math.random() * (bot.maxBet - bot.minBet);
         const autoCashout = bot.risk === 'low' ? 2 + Math.random() * 3 : 
@@ -253,7 +268,7 @@ function startRocketGame() {
                            10 + Math.random() * 30;
         
         rocketGame.players.push({
-            name: bot.name,
+            name: generateRussianName(), // Русское имя для бота
             betAmount: parseFloat(betAmount.toFixed(2)),
             autoCashout: parseFloat(autoCashout.toFixed(2)),
             isBot: true,
@@ -262,11 +277,9 @@ function startRocketGame() {
         });
     });
 
-    // ФИКС: Отправляем начальное значение 5 секунд
     rocketGame.timeLeft = 5;
     broadcastRocketUpdate();
 
-    // Запускаем синхронизацию времени каждую секунду
     const syncInterval = setInterval(() => {
         if (rocketGame.status !== 'counting') {
             clearInterval(syncInterval);
