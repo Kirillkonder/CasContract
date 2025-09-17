@@ -14,39 +14,39 @@
     
     <div class="game-container">
         <!-- Верхняя панель -->
-        <div class="top-panel">
-            <div class="close-btn" onclick="goBack()">
-                <i class="bi bi-x"></i>
-                <span>Назад</span>
-            </div>
-            <div class="top-right">
-                <!-- Счетчик игроков -->
-                <div class="players-counter">
-                    <i class="bi bi-people-fill" style="color: #00c851;"></i>
-                    <span id="playersCount">0</span>
-                </div>
-                <div class="balance">
-                    <i class="bi bi-currency-exchange"></i>
-                    <span id="balance">0.00</span>
-                    <button class="balance-plus-btn" onclick="openDepositModal()">
-                        <i class="bi bi-plus"></i>
-                    </button>
-                </div>
-                <div class="timer-section">
-                    <i class="bi bi-diamond-fill"></i>
-                    <span class="timer" id="timer">0:00</span>
-                </div>
-                <div id="demo-badge" style="display: none; background: #ff9500; color: black; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
-                    DEMO
-                </div>
-            </div>
+       <div class="top-panel">
+    <div class="close-btn" onclick="goBack()">
+        <!-- Убрали крестик -->
+        <span>Назад</span>
+    </div>
+    <div class="top-right">
+        <!-- Счетчик игроков -->
+        <div class="players-counter">
+            <i class="bi bi-people-fill" style="color: #00c851;"></i>
+            <span id="playersCount">0</span>
         </div>
+        <div class="balance">
+            <i class="bi bi-currency-exchange"></i>
+            <span id="balance">0.00</span>
+            <button class="balance-plus-btn" onclick="openDepositModal()">
+                <i class="bi bi-plus"></i>
+            </button>
+        </div>
+        <!-- Убрали таймер -->
+        <div id="demo-badge" style="display: none; background: #ff9500; color: black; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
+            DEMO
+        </div>
+    </div>
+</div>
 
         <!-- Игровое поле с ракеткой -->
         <div class="game-field">
             <div class="rocket-container">
                 <div id="rocketCanvas" class="rocket-canvas">
                     <img src="Rocket.png" alt="Rocket" id="rocket" class="rocket">
+                    <div class="center-timer" id="centerTimer" style="display: none;">
+    <span id="centerTimerText">0</span>
+</div>
                 </div>
             </div>
         </div>
@@ -54,7 +54,7 @@
         
         <!-- Таймер/История -->
         <div class="coefficients">
-            <div class="coeff-item active" id="timerDisplay">Ожидание</div>
+            <div class="coeff-item active" id="timerDisplay"></div>
             <div class="coeff-item" id="historyItem1">1.00</div>
             <div class="coeff-item" id="historyItem2">1.00</div>
             <div class="coeff-item" id="historyItem3">1.00</div>

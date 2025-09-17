@@ -64,16 +64,32 @@ body {
     font-size: 14px;
     color: #fff;
     font-weight: 500;
+    padding: 8px 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
 }
+
 
 .close-btn i {
     font-size: 16px;
+}
+
+.close-btn:active {
+    transform: scale(0.95);
+}
+
+.close-btn:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.6);
 }
 
 .top-right {
     display: flex;
     align-items: center;
     gap: 12px;
+    margin-left: auto;
 }
 
 .balance {
@@ -962,4 +978,16 @@ body {
     background: linear-gradient(135deg, #2d1a1a, #4d2d2d);
     border-color: #ffd700;
     animation: pulseWin 2s ease-in-out infinite;
+}
+
+.center-timer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 90px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    z-index: 3;
 }
