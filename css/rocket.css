@@ -24,31 +24,16 @@ body {
     bottom: 0;
     z-index: -1;
     background: 
-        linear-gradient(rgba(30, 92, 184, 0.3) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(30, 92, 184, 0.3) 1px, transparent 1px),
         linear-gradient(rgba(30, 92, 184, 0.2) 1px, transparent 1px),
         linear-gradient(90deg, rgba(30, 92, 184, 0.2) 1px, transparent 1px),
         linear-gradient(rgba(30, 92, 184, 0.1) 1px, transparent 1px),
         linear-gradient(90deg, rgba(30, 92, 184, 0.1) 1px, transparent 1px);
     
     background-size: 
-        120px 120px,
-        120px 120px,
-        60px 60px,
-        60px 60px,
-        30px 30px,
-        30px 30px;
-    
-    animation: gridMove 20s linear infinite;
-}
-
-@keyframes gridMove {
-    0% {
-        background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
-    }
-    100% {
-        background-position: 120px 120px, 120px 120px, 60px 60px, 60px 60px, 30px 30px, 30px 30px;
-    }
+        80px 80px,
+        80px 80px,
+        40px 40px,
+        40px 40px;
 }
 
 .game-container {
@@ -475,12 +460,18 @@ body {
 }
 
 .rocket.pulsating {
-    animation: rocketPulse var(--pulse-speed, 1.2s) infinite alternate;
+    animation: rocketPulse var(--pulse-speed, 1.5s) ease-in-out infinite;
 }
 
 @keyframes rocketPulse {
-    0% { transform: translate(-50%, -50%) rotate(-45deg) scale(1); filter: brightness(1) drop-shadow(0 0 5px rgba(0, 191, 255, 0.5)); }
-    100% { transform: translate(-50%, -50%) rotate(-45deg) scale(1.1); filter: brightness(1.5) drop-shadow(0 0 15px rgba(0, 191, 255, 0.8)); }
+    0%, 100% { 
+        transform: translate(-50%, -50%) rotate(-45deg) scale(1); 
+        filter: brightness(1) drop-shadow(0 0 8px rgba(30, 92, 184, 0.6)); 
+    }
+    50% { 
+        transform: translate(-50%, -50%) rotate(-45deg) scale(1.05); 
+        filter: brightness(1.2) drop-shadow(0 0 12px rgba(30, 92, 184, 0.8)); 
+    }
 }
 
 .rocket.blast-off {
