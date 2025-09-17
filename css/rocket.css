@@ -64,6 +64,18 @@ body {
     font-size: 14px;
     color: #fff;
     font-weight: 500;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: absolute;
+    left: 8px;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #00c851;
 }
 
 .close-btn i {
