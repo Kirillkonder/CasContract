@@ -43,11 +43,12 @@ function validateBetAmount() {
 }
 
 
+// Обновляем функцию handleAction
 function handleAction() {
-    if (rocketGame.status === 'waiting' || rocketGame.status === 'counting') {
+    if ((rocketGame.status === 'waiting' || rocketGame.status === 'counting') && userBet === 0) {
         // Во время таймера - делать ставку
         placeBet();
-    } else if (rocketGame.status === 'flying') {
+    } else if (rocketGame.status === 'flying' && userBet > 0 && !userCashedOut) {
         // Когда ракета летит - забирать выигрыш
         cashout();
     }
