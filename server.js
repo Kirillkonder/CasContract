@@ -221,11 +221,6 @@ function calculateMultiplier(openedCells, displayedMines) {
 
 // Rocket Game Functions
 function generateCrashPoint(totalBankAmount = 0) {
-    // Если нет реальных игроков (только боты) - множитель больше 20x
-    if (totalBankAmount === 0) {
-        return Math.random() * 30 + 20; // От 20x до 50x
-    }
-    
     // Если общий банк превышает 30 TON - краш от 1.00 до 1.15x
     if (totalBankAmount > 30) {
         return Math.random() * 0.15 + 1.00; // От 1.00 до 1.15
