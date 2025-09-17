@@ -149,22 +149,6 @@ function updateGameState(gameState) {
     rocketGame.justCrashed = (gameState.status === 'crashed' && !wasCrashed);
     allOnlineUsers = gameState.totalOnlineUsers || gameState.players.length;
     
-    // Новый алгоритм краша - проверяем общую сумму ставок
-    if (gameState.status === 'flying') {
-        const totalBetAmount = gameState.players.reduce((sum, player) => sum + player.betAmount, 0);
-        
-        // Если общая ставка превышает 30 TON - немедленный краш
-        if (totalBetAmount > 30 && gameState.multiplier < 1.0) {
-            // Принудительно завершаем полет
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: 'force_crash',
-                    multiplier: 0.5 + Math.random() * 0.5 // Случайный множитель от 0.5x до 1.0x
-                }));
-            }
-        }
-    }
-    
     clearCountdown();
     
     switch(gameState.status) {
@@ -183,7 +167,7 @@ function updateGameState(gameState) {
             clearCountdown();
             updateRocketPosition(gameState.multiplier);
             updateTimerDisplay(gameState.multiplier.toFixed(2) + 'x');
-            updateBettingUI();
+            updateBettingUI(); // ВАЖНО: обновляем кнопку при полете ракеты
             break;
             
         case 'crashed':
@@ -223,33 +207,6 @@ function updateGameState(gameState) {
     }
     
     updateBettingUI();
-}
-
-function shouldCrashNow(totalBetAmount, currentMultiplier) {
-    if (totalBetAmount > 30) {
-        // Более 30 TON - немедленный краш
-        return true;
-    } else if (totalBetAmount >= 5 && totalBetAmount <= 30) {
-        // От 5 до 30 TON - 85% шанс краша до 2x, 15% шанс полета до 5-7x
-        if (currentMultiplier < 2.0) {
-            return Math.random() < 0.85; // 85% шанс краша до 2x
-        } else if (currentMultiplier >= 5.0) {
-            return Math.random() < 0.5; // После 5x увеличиваем шанс краша
-        } else if (currentMultiplier >= 7.0) {
-            return true; // Обязательный краш после 7x
-        }
-    } else {
-        // Менее 5 TON - может долететь до 2x, редко до 15x
-        if (currentMultiplier < 2.0) {
-            return Math.random() < 0.3; // 30% шанс краша до 2x
-        } else if (currentMultiplier >= 15.0) {
-            return true; // Обязательный краш после 15x
-        } else {
-            return Math.random() < 0.1; // 10% шанс краша после 2x
-        }
-    }
-    
-    return false;
 }
 
 function updateTimerDisplay(text) {
@@ -879,6 +836,65 @@ function updateBettingUI() {
     }
 }
 
+
+// Новый алгоритм краша ракеты
+function generateCrashMultiplier(totalBankAmount) {
+    // Если общий банк превышает 30 TON - краш от 1.00 до 1.15x
+    if (totalBankAmount > 30) {
+        return Math.random() * 0.15 + 1.00; // От 1.00 до 1.15
+    }
+    
+    // Если банк около 5 TON или меньше
+    if (totalBankAmount <= 5) {
+        const random = Math.random();
+        
+        // 90% шанс дойти до 2x
+        if (random < 0.9) {
+            return Math.random() * 1.0 + 1.5; // От 1.5x до 2.5x
+        }
+        // 10% шанс улететь очень высоко (очень редко)
+        else {
+            return Math.random() * 10 + 10; // От 10x до 20x (иногда до 15x+)
+        }
+    }
+    
+    // Если банк между 5 и 30 TON
+    if (totalBankAmount > 5 && totalBankAmount <= 30) {
+        const random = Math.random();
+        
+        // 85% шанс разбиться до 2x
+        if (random < 0.85) {
+            return Math.random() * 1.0 + 0.5; // От 0.5x до 1.5x (не долетев до 2x)
+        }
+        // 15% шанс улететь от 5x до 7x
+        else {
+            return Math.random() * 2 + 5; // От 5x до 7x
+        }
+    }
+    
+    // Fallback - обычная логика
+    return Math.random() * 5 + 1;
+}
+
+// Функция для получения общего банка ставок
+function getTotalBankAmount(players) {
+    return players.reduce((total, player) => {
+        return total + (player.betAmount || 0);
+    }, 0);
+}
+
+// Функция для запуска игры с новым алгоритмом (серверная логика)
+function startRocketRound(players) {
+    const totalBank = getTotalBankAmount(players);
+    const crashMultiplier = generateCrashMultiplier(totalBank);
+    
+    console.log(`Общий банк: ${totalBank} TON, Множитель краша: ${crashMultiplier.toFixed(2)}x`);
+    
+    return {
+        crashMultiplier: crashMultiplier,
+        totalBank: totalBank
+    };
+}
 
 // Инициализация глобальной переменной для состояния игры
 let rocketGame = {
