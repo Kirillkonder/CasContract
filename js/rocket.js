@@ -760,25 +760,38 @@ async function cashout() {
 
 
 function resetBettingUI() {
-    document.getElementById('actionButton').disabled = false;
-    document.getElementById('actionButton').textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
-    
     userBet = 0;
     userCashedOut = false;
+    
+    // После краха сбрасываем кнопку обратно на "Поставить"
+    if (rocketGame.status === 'waiting') {
+        const actionButton = document.getElementById('actionButton');
+        actionButton.disabled = false;
+        actionButton.textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
+    }
 }
-
 
 function updateBettingUI() {
     const actionButton = document.getElementById('actionButton');
     
     if (rocketGame.status === 'waiting' || rocketGame.status === 'counting') {
         // Во время ожидания и таймера - функционал ставки
-        actionButton.disabled = false;
-        actionButton.textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
+        if (userBet > 0) {
+            actionButton.disabled = true;
+            actionButton.textContent = 'Ставка сделана';
+        } else {
+            actionButton.disabled = false;
+            actionButton.textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
+        }
     } else if (rocketGame.status === 'flying') {
         // Когда ракета летит - функционал забрать выигрыш
-        actionButton.disabled = false;
-        actionButton.textContent = 'Забрать ' + (userBet * rocketGame.multiplier).toFixed(2) + ' TON';
+        if (userBet > 0 && !userCashedOut) {
+            actionButton.disabled = false;
+            actionButton.textContent = 'Забрать ' + (userBet * rocketGame.multiplier).toFixed(2) + ' TON';
+        } else {
+            actionButton.disabled = true;
+            actionButton.textContent = 'Игра идет';
+        }
     } else if (rocketGame.status === 'crashed') {
         actionButton.disabled = true;
         actionButton.textContent = 'Раунд завершен';
