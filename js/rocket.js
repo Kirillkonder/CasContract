@@ -313,7 +313,6 @@ async function updateUserBalance(winAmount = 0) {
 function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
-    document.getElementById('playersCount').textContent = allOnlineUsers;
     
     // Фильтруем только игроков с ставками
     const playersWithBets = players.filter(player => player.betAmount > 0);
@@ -351,7 +350,7 @@ function updatePlayersList(players) {
     ];
     
     // Обновляем существующих и добавляем новых игроков
-    playersWithBets.forEach((player, index) => {
+    playersWithBets.forEach((player) => {
         const playerId = player.userId.toString();
         let playerElement = playersList.querySelector(`[data-player-id="${playerId}"]`);
         
@@ -365,11 +364,11 @@ function updatePlayersList(players) {
             const avatar = document.createElement('div');
             avatar.className = 'player-avatar';
             
-            // Генерируем уникальное имя для игрока (один раз при создании)
+            // Генерируем уникальное имя для игрока
             const randomIndex = Math.floor(Math.random() * russianNames.length);
             const playerName = russianNames[randomIndex];
             
-            // Одинаковые аватарки для всех
+            // Аватарки
             const emojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯'];
             const emojiIndex = Math.floor(Math.random() * emojis.length);
             avatar.textContent = emojis[emojiIndex];
@@ -391,15 +390,17 @@ function updatePlayersList(players) {
             playerElement.appendChild(avatar);
             playerElement.appendChild(infoContainer);
             playersList.appendChild(playerElement);
-            
-            // Анимация появления
-            setTimeout(() => {
-                playerElement.classList.add('show');
-            }, 10);
         }
         
-        // Обновляем только ставку и статус (имя остается прежним)
+        // Обновляем только ставку и статус
         const betSpan = playerElement.querySelector('.player-bet');
+        const nameSpan = playerElement.querySelector('.player-name');
+        
+        // Сохраняем оригинальное имя (не меняем его)
+        if (!nameSpan.textContent) {
+            const randomIndex = Math.floor(Math.random() * russianNames.length);
+            nameSpan.textContent = russianNames[randomIndex];
+        }
         
         if (player.cashedOut) {
             betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
