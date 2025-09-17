@@ -220,19 +220,42 @@ function calculateMultiplier(openedCells, displayedMines) {
 }
 
 // Rocket Game Functions
-function generateCrashPoint() {
-  const random = Math.random();
-  
-  if (random < 0.7) {
-    // 70% chance: 1x - 4x
-    return 1 + Math.random() * 3;
-  } else if (random < 0.9) {
-    // 20% chance: 5x - 20x
-    return 5 + Math.random() * 15;
-  } else {
-    // 10% chance: 21x - 100x
-    return 21 + Math.random() * 79;
-  }
+function generateCrashPoint(totalBankAmount = 0) {
+    // Если общий банк превышает 30 TON - краш от 1.00 до 1.15x
+    if (totalBankAmount > 30) {
+        return Math.random() * 0.15 + 1.00; // От 1.00 до 1.15
+    }
+    
+    // Если банк около 5 TON или меньше
+    if (totalBankAmount <= 5) {
+        const random = Math.random();
+        
+        // 90% шанс дойти до 2x
+        if (random < 0.9) {
+            return Math.random() * 1.0 + 1.5; // От 1.5x до 2.5x
+        }
+        // 10% шанс улететь очень высоко (очень редко)
+        else {
+            return Math.random() * 10 + 10; // От 10x до 20x (иногда до 15x+)
+        }
+    }
+    
+    // Если банк между 5 и 30 TON
+    if (totalBankAmount > 5 && totalBankAmount <= 30) {
+        const random = Math.random();
+        
+        // 85% шанс разбиться до 2x
+        if (random < 0.85) {
+            return Math.random() * 1.0 + 0.5; // От 0.5x до 1.5x (не долетев до 2x)
+        }
+        // 15% шанс улететь от 5x до 7x
+        else {
+            return Math.random() * 2 + 5; // От 5x до 7x
+        }
+    }
+    
+    // Fallback - обычная логика
+    return Math.random() * 5 + 1;
 }
 
 function startRocketGame() {
@@ -240,10 +263,16 @@ function startRocketGame() {
 
     rocketGame.status = 'counting';
     rocketGame.multiplier = 1.00;
-    rocketGame.crashPoint = generateCrashPoint();
     rocketGame.startTime = Date.now();
     rocketGame.endBetTime = Date.now() + 5000; // 5 секунд на ставки
     rocketGame.players = [];
+    
+    // Генерируем crashPoint после завершения времени на ставки
+    setTimeout(() => {
+        const totalBank = rocketGame.players.reduce((sum, p) => sum + p.betAmount, 0);
+        rocketGame.crashPoint = generateCrashPoint(totalBank);
+        console.log(`Общий банк: ${totalBank} TON, Краш-поинт: ${rocketGame.crashPoint.toFixed(2)}x`);
+    }, 5000);
 
     // Добавляем ставки ботов
     rocketBots.forEach(bot => {

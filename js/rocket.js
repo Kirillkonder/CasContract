@@ -1,4 +1,3 @@
-let ws = null;
 let currentUser = null;
 let isDemoMode = false;
 let userBet = 0;
