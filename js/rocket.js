@@ -346,6 +346,16 @@ function updatePlayersList(players) {
         }
     });
     
+    // Список русских имен для игроков и ботов
+    const russianNames = [
+        'Алексей', 'Дмитрий', 'Сергей', 'Андрей', 'Максим', 
+        'Иван', 'Артем', 'Никита', 'Михаил', 'Егор',
+        'Анна', 'Мария', 'Екатерина', 'Ольга', 'Наталья',
+        'Виктория', 'Юлия', 'Анастасия', 'Татьяна', 'Елена',
+        'Владимир', 'Павел', 'Константин', 'Роман', 'Александр',
+        'Игорь', 'Станислав', 'Григорий', 'Борис', 'Василий'
+    ];
+    
     // Добавляем только новых игроков с анимацией
     playersWithBets.forEach((player, index) => {
         // Проверяем, есть ли уже такой игрок в DOM
@@ -362,16 +372,16 @@ function updatePlayersList(players) {
             const avatar = document.createElement('div');
             avatar.className = 'player-avatar';
             
-            // Разные эмодзи для ботов и реальных игроков
-            if (player.isBot) {
-                const botEmojis = ['🤖', '👾', '🦾', '🔧', '⚙️', '💻', '🎮', '🧠'];
-                avatar.textContent = botEmojis[Math.floor(Math.random() * botEmojis.length)];
-                avatar.style.backgroundColor = '#ff6b35';
-            } else {
-                const userEmojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯'];
-                avatar.textContent = userEmojis[Math.floor(Math.random() * userEmojis.length)];
-                avatar.style.backgroundColor = '#1e5cb8';
-            }
+            // Генерируем случайное русское имя для всех игроков
+            const randomName = russianNames[Math.floor(Math.random() * russianNames.length)];
+            
+            // Устанавливаем имя игрока
+            player.name = randomName;
+            
+            // Одинаковые аватарки для всех (ботов и людей)
+            const userEmojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯'];
+            avatar.textContent = userEmojis[Math.floor(Math.random() * userEmojis.length)];
+            avatar.style.backgroundColor = '#1e5cb8';
             
             const infoContainer = document.createElement('div');
             infoContainer.className = 'player-info-container';
@@ -465,7 +475,6 @@ function updatePlayersList(players) {
         }
     });
 }
-
 
 function updateHistory(history) {
     // Обновляем историю в коэффициентах
