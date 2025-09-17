@@ -45,24 +45,12 @@ function validateBetAmount() {
 
 // Обновляем функцию handleAction
 function handleAction() {
-    console.log('handleAction called', {
-        status: rocketGame.status,
-        userBet: userBet,
-        userCashedOut: userCashedOut
-    });
-    
-    // Во время таймера - делать ставку (только если нет активной ставки)
-    if ((rocketGame.status === 'waiting' || rocketGame.status === 'counting') && userBet === 0) {
-        console.log('Making bet');
+    if (rocketGame.status === 'waiting' || rocketGame.status === 'counting') {
+        // Во время таймера - делать ставку
         placeBet();
-    } 
-    // Когда ракета летит - забирать выигрыш (только если есть активная ставка и не вывели)
-    else if (rocketGame.status === 'flying' && userBet > 0 && !userCashedOut) {
-        console.log('Cashing out');
+    } else if (rocketGame.status === 'flying') {
+        // Когда ракета летит - забирать выигрыш
         cashout();
-    }
-    else {
-        console.log('No action available');
     }
 }
 
@@ -779,34 +767,18 @@ function resetBettingUI() {
     userCashedOut = false;
 }
 
-// Обновляем функцию updateBettingUI
+
 function updateBettingUI() {
     const actionButton = document.getElementById('actionButton');
     
-    console.log('updateBettingUI', {
-        status: rocketGame.status,
-        userBet: userBet,
-        userCashedOut: userCashedOut
-    });
-    
     if (rocketGame.status === 'waiting' || rocketGame.status === 'counting') {
         // Во время ожидания и таймера - функционал ставки
-        if (userBet > 0) {
-            actionButton.disabled = true;
-            actionButton.textContent = 'Ставка сделана';
-        } else {
-            actionButton.disabled = false;
-            actionButton.textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
-        }
+        actionButton.disabled = false;
+        actionButton.textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
     } else if (rocketGame.status === 'flying') {
         // Когда ракета летит - функционал забрать выигрыш
-        if (userBet > 0 && !userCashedOut) {
-            actionButton.disabled = false;
-            actionButton.textContent = 'Забрать ' + (userBet * rocketGame.multiplier).toFixed(2) + ' TON';
-        } else {
-            actionButton.disabled = true;
-            actionButton.textContent = 'Игра идет';
-        }
+        actionButton.disabled = false;
+        actionButton.textContent = 'Забрать ' + (userBet * rocketGame.multiplier).toFixed(2) + ' TON';
     } else if (rocketGame.status === 'crashed') {
         actionButton.disabled = true;
         actionButton.textContent = 'Раунд завершен';
