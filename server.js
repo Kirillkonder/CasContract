@@ -72,7 +72,7 @@ function initDatabase() {
                     users.insert({
                         telegram_id: parseInt(process.env.OWNER_TELEGRAM_ID) || 842428912,
                         main_balance: 0,
-                        demo_balance: 1000,
+                        demo_balance: 10000,
                         created_at: new Date(),
                         demo_mode: false,
                         is_admin: true
@@ -1058,7 +1058,7 @@ app.get('/api/user/balance/:telegramId', async (req, res) => {
             const newUser = users.insert({
                 telegram_id: telegramId,
                 main_balance: 0,
-                demo_balance: 1000,
+                demo_balance: 10000,
                 created_at: new Date(),
                 demo_mode: false,
                 is_admin: telegramId === parseInt(process.env.OWNER_TELEGRAM_ID)
