@@ -225,8 +225,8 @@ function startCountdown(timeLeft) {
     timerDisplay.textContent = timeLeft + 's';
     
     if (timeLeft <= 0) {
-        document.getElementById('placeBetButton').textContent = 'Время вышло';
-        document.getElementById('placeBetButton').disabled = true;
+        document.getElementById('actionButton').textContent = 'Время вышло';
+        document.getElementById('actionButton').disabled = true;
         centerTimer.style.display = 'none';
         rocketElement.style.display = 'block';
         return;
@@ -239,8 +239,8 @@ function startCountdown(timeLeft) {
         
         if (timeLeft <= 0) {
             clearCountdown();
-            document.getElementById('placeBetButton').textContent = 'Время вышло';
-            document.getElementById('placeBetButton').disabled = true;
+            document.getElementById('actionButton').textContent = 'Время вышло';
+            document.getElementById('actionButton').disabled = true;
             centerTimer.style.display = 'none';
             rocketElement.style.display = 'block';
         }
