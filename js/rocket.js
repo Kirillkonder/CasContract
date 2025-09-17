@@ -17,6 +17,7 @@ function decreaseBet() {
         value = Math.max(0.1, value - 0.1);
         betInput.value = value.toFixed(1);
         currentBetAmount = value;
+        updateBettingUI(); // Обновляем кнопку при изменении ставки
     }
 }
 
@@ -27,6 +28,7 @@ function increaseBet() {
         value = Math.min(100, value + 0.1);
         betInput.value = value.toFixed(1);
         currentBetAmount = value;
+        updateBettingUI(); // Обновляем кнопку при изменении ставки
     }
 }
 
@@ -40,17 +42,25 @@ function validateBetAmount() {
     
     value = Math.max(0.1, Math.min(100, value));
     betInput.value = value.toFixed(1);
+    currentBetAmount = value;
+    updateBettingUI(); // Обновляем кнопку при изменении ставки
 }
 
 
 // Обновляем функцию handleAction
 function handleAction() {
+    const actionButton = document.getElementById('actionButton');
+    
     if (rocketGame.status === 'waiting' || rocketGame.status === 'counting') {
         // Во время таймера - делать ставку
-        placeBet();
+        if (userBet === 0) {
+            placeBet();
+        }
     } else if (rocketGame.status === 'flying') {
         // Когда ракета летит - забирать выигрыш
-        cashout();
+        if (userBet > 0 && !userCashedOut) {
+            cashout();
+        }
     }
 }
 
@@ -150,18 +160,21 @@ function updateGameState(gameState) {
             
         case 'counting':
             startCountdown(gameState.timeLeft || Math.max(0, Math.ceil((gameState.endBetTime - Date.now()) / 1000)));
+            updateBettingUI();
             break;
             
         case 'flying':
             clearCountdown();
             updateRocketPosition(gameState.multiplier);
             updateTimerDisplay(gameState.multiplier.toFixed(2) + 'x');
+            updateBettingUI(); // ВАЖНО: обновляем кнопку при полете ракеты
             break;
             
         case 'crashed':
             clearCountdown();
             showExplosion();
             updateTimerDisplay(gameState.multiplier.toFixed(2) + 'x');
+            updateBettingUI();
             break;
     }
     
@@ -761,8 +774,11 @@ async function cashout() {
 
 function resetBettingUI() {
     const actionButton = document.getElementById('actionButton');
+    if (!actionButton) return;
+    
     actionButton.disabled = false;
     actionButton.textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
+    actionButton.classList.remove('cashout-button', 'bet-placed', 'cashed-out', 'lost-bet');
     
     userBet = 0;
     userCashedOut = false;
@@ -771,27 +787,52 @@ function resetBettingUI() {
 function updateBettingUI() {
     const actionButton = document.getElementById('actionButton');
     
+    if (!actionButton) return;
+    
     if (rocketGame.status === 'waiting' || rocketGame.status === 'counting') {
         // Во время ожидания и таймера - функционал ставки
         if (userBet > 0) {
             actionButton.disabled = true;
             actionButton.textContent = 'Ставка сделана';
+            actionButton.classList.remove('cashout-button');
+            actionButton.classList.add('bet-placed');
         } else {
             actionButton.disabled = false;
             actionButton.textContent = 'Поставить ' + currentBetAmount.toFixed(1) + ' TON';
+            actionButton.classList.remove('cashout-button', 'bet-placed');
         }
     } else if (rocketGame.status === 'flying') {
         // Когда ракета летит - МЕНЯЕМ НАДПИСЬ НА "Забрать выигрыш"
         if (userBet > 0 && !userCashedOut) {
             actionButton.disabled = false;
-            actionButton.textContent = 'Забрать ' + (userBet * rocketGame.multiplier).toFixed(2) + ' TON';
+            const potentialWin = userBet * rocketGame.multiplier;
+            actionButton.textContent = 'Забрать ' + potentialWin.toFixed(2) + ' TON';
+            actionButton.classList.add('cashout-button');
+            actionButton.classList.remove('bet-placed');
+        } else if (userCashedOut) {
+            actionButton.disabled = true;
+            actionButton.textContent = 'Выплачено';
+            actionButton.classList.remove('cashout-button');
+            actionButton.classList.add('cashed-out');
         } else {
             actionButton.disabled = true;
             actionButton.textContent = 'Игра идет';
+            actionButton.classList.remove('cashout-button', 'bet-placed');
         }
     } else if (rocketGame.status === 'crashed') {
-        actionButton.disabled = true;
-        actionButton.textContent = 'Раунд завершен';
+        if (userBet > 0 && userCashedOut) {
+            actionButton.disabled = true;
+            actionButton.textContent = 'Выплачено';
+            actionButton.classList.add('cashed-out');
+        } else if (userBet > 0 && !userCashedOut) {
+            actionButton.disabled = true;
+            actionButton.textContent = 'Проиграл';
+            actionButton.classList.add('lost-bet');
+        } else {
+            actionButton.disabled = true;
+            actionButton.textContent = 'Раунд завершен';
+        }
+        actionButton.classList.remove('cashout-button', 'bet-placed');
     }
 }
 
