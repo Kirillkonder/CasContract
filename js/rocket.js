@@ -194,7 +194,7 @@ function updateGameState(gameState) {
             break;
     }
     
-    // Обновляем баланс в реальном времени
+    // Остальной код функции без изменений...
     if (userPlayer) {
         const updatedPlayer = gameState.players.find(p => p.userId == currentUser.id && !p.isBot);
         if (updatedPlayer) {
@@ -206,13 +206,11 @@ function updateGameState(gameState) {
             
             if (userCashedOut) {
                 document.getElementById('potentialWin').textContent = userPlayer.winAmount.toFixed(2) + ' TON';
-                // Обновляем баланс после выигрыша
                 updateUserBalance(userPlayer.winAmount - userBet);
             }
         }
     }
     
-    // Обновляем список игроков
     updatePlayersList(gameState.players);
     updateHistory(gameState.history);
     document.getElementById('playersCount').textContent = allOnlineUsers;
