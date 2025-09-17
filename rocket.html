@@ -14,31 +14,31 @@
     
     <div class="game-container">
         <!-- Верхняя панель -->
-        <div class="top-panel">
-            <div class="close-btn" onclick="goBack()">
-                <span>Назад</span>
-            </div>
-            <div class="top-right">
-                <!-- Счетчик игроков -->
-                <div class="players-counter">
-                    <i class="bi bi-people-fill" style="color: #00c851;"></i>
-                    <span id="playersCount">0</span>
-                </div>
-                <div class="balance">
-                    <i class="bi bi-currency-exchange"></i>
-                    <span id="balance">0.00</span>
-                    <button class="balance-plus-btn" onclick="openDepositModal()">
-                        <i class="bi bi-plus"></i>
-                    </button>
-                </div>
-                <div class="timer-section">
-                    <i class="bi bi-diamond-fill"></i>
-                </div>
-                <div id="demo-badge" style="display: none; background: #ff9500; color: black; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
-                    DEMO
-                </div>
-            </div>
+      <!-- Верхняя панель -->
+<div class="top-panel">
+    <div class="close-btn" onclick="goBack()">
+        <i class="bi bi-x"></i>
+        <span>Назад</span>
+    </div>
+    <div class="top-right">
+        <!-- Счетчик игроков -->
+        <div class="players-counter">
+            <i class="bi bi-people-fill" style="color: #00c851;"></i>
+            <span id="playersCount">0</span>
         </div>
+        <div class="balance">
+            <i class="bi bi-currency-exchange"></i>
+            <span id="balance">0.00</span>
+            <button class="balance-plus-btn" onclick="openDepositModal()">
+                <i class="bi bi-plus"></i>
+            </button>
+        </div>
+        <!-- Таймер полностью удален из этой секции -->
+        <div id="demo-badge" style="display: none; background: #ff9500; color: black; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
+            DEMO
+        </div>
+    </div>
+</div>
 
         <!-- Игровое поле с ракеткой -->
         <div class="game-field">

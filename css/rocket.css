@@ -51,7 +51,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    background: rgba(0, 0, 0, 0.7); /* Полупрозрачный черный */
+    background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
     position: relative;
     z-index: 10;
@@ -64,22 +64,20 @@ body {
     font-size: 14px;
     color: #fff;
     font-weight: 500;
-    border: 2px solid #fff;
+    padding: 8px 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 8px;
-    padding: 6px 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: absolute;
-    left: 8px;
+    transition: all 0.2s ease;
 }
 
 .close-btn:hover {
+    border-color: rgba(255, 255, 255, 0.5);
     background: rgba(255, 255, 255, 0.1);
-    border-color: #00c851;
 }
 
+
 .close-btn i {
-    font-size: 16px;
+    display: none; /* Скрываем крестик */
 }
 
 .top-right {
@@ -130,12 +128,9 @@ body {
     font-size: 12px;
 }
 
+
 .timer-section {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 13px;
-    color: #fff;
+    display: none; /* Скрываем таймер полностью */
 }
 
 .timer-section i {
@@ -337,6 +332,18 @@ body {
     .game-container {
         max-width: 100%;
     }
+
+
+@media (max-width: 390px) {
+    .top-panel {
+        padding: 10px 12px;
+    }
+    
+    .close-btn {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}
     
     .top-panel {
         padding: 10px 12px;
