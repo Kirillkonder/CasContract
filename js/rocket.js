@@ -8,22 +8,6 @@ let rocketPosition = 80;
 let countdownInterval = null;
 let allOnlineUsers = 0;
 
-
-const russianFirstNames = [
-    'Иван', 'Александр', 'Сергей', 'Дмитрий', 'Андрей', 
-    'Алексей', 'Максим', 'Евгений', 'Михаил', 'Владимир',
-    'Артем', 'Денис', 'Никита', 'Павел', 'Константин',
-    'Роман', 'Олег', 'Виталий', 'Илья', 'Георгий',
-    'Станислав', 'Вадим', 'Юрий', 'Тимофей', 'Валерий',
-    'Григорий', 'Даниил', 'Вячеслав', 'Борис', 'Леонид'
-];
-
-function generateRussianName(isBot = false) {
-    const randomIndex = Math.floor(Math.random() * russianFirstNames.length);
-    const name = russianFirstNames[randomIndex];
-    return isBot ? name : name;
-}
-
 function showButtonLoading(buttonId) {
     const button = document.getElementById(buttonId);
     button.classList.add('loading');
@@ -326,13 +310,6 @@ async function updateUserBalance(winAmount = 0) {
     }
 }
 
-function generateRussianName(isBot = false) {
-    const randomIndex = Math.floor(Math.random() * russianFirstNames.length);
-    const name = russianFirstNames[randomIndex];
-    return isBot ? name : name;
-}
-
-// Обновленная функция updatePlayersList с русскими именами
 function updatePlayersList(players) {
     const playersList = document.getElementById('playersList');
     const playersCount = document.getElementById('playersCount');
@@ -381,41 +358,40 @@ function updatePlayersList(players) {
             const playerItem = document.createElement('div');
             playerItem.className = 'player-item';
             
-            // Создаем аватарку (одинаковую для всех)
+            // Создаем аватарку
             const avatar = document.createElement('div');
             avatar.className = 'player-avatar';
             
-            // Одинаковые аватарки для всех - смайлик человека
-            avatar.textContent = '👤';
-            avatar.style.backgroundColor = '#1e5cb8';
+            // Разные эмодзи для ботов и реальных игроков
+            if (player.isBot) {
+                const botEmojis = ['🤖', '👾', '🦾', '🔧', '⚙️', '💻', '🎮', '🧠'];
+                avatar.textContent = botEmojis[Math.floor(Math.random() * botEmojis.length)];
+                avatar.style.backgroundColor = '#ff6b35';
+            } else {
+                const userEmojis = ['👨', '👩', '🧑', '👨‍🚀', '👩‍🚀', '🦸', '🦹', '🎯'];
+                avatar.textContent = userEmojis[Math.floor(Math.random() * userEmojis.length)];
+                avatar.style.backgroundColor = '#1e5cb8';
+            }
             
             const infoContainer = document.createElement('div');
             infoContainer.className = 'player-info-container';
             
             const nameSpan = document.createElement('span');
             nameSpan.className = 'player-name';
-            
-            // Генерируем русское имя для нового игрока
-            if (player.isBot) {
-                nameSpan.textContent = generateRussianName(true);
-            } else {
-                // Для реальных игроков сохраняем сгенерированное имя
-                if (!player.russianName) {
-                    player.russianName = generateRussianName(false);
-                }
-                nameSpan.textContent = player.russianName;
-            }
+            nameSpan.textContent = player.name;
             
             const betSpan = document.createElement('span');
             betSpan.className = 'player-bet';
             
             // Отображаем выигрыш или проигрыш
             if (player.cashedOut) {
+                // Игрок выиграл
                 betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
                 betSpan.style.color = '#00b894';
                 betSpan.classList.add('win-animation');
                 playerItem.classList.remove('player-loss');
             } else if (rocketGame.status === 'crashed' && !player.cashedOut) {
+                // Игрок проиграл (не успел вывести)
                 betSpan.textContent = `-${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#ff4757';
                 
@@ -428,10 +404,12 @@ function updatePlayersList(players) {
                 
                 playerItem.classList.add('player-loss');
             } else if (rocketGame.status === 'crashed' && player.cashedOut) {
+                // Игрок выиграл и игра уже завершилась
                 betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
                 betSpan.style.color = '#00b894';
                 playerItem.classList.remove('player-loss');
             } else {
+                // Игра идет, ставка активна
                 betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#fff';
                 playerItem.classList.remove('player-loss');
@@ -455,11 +433,13 @@ function updatePlayersList(players) {
             
             // Отображаем выигрыш или проигрыш
             if (player.cashedOut) {
+                // Игрок выиграл
                 betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
                 betSpan.style.color = '#00b894';
                 betSpan.classList.add('win-animation');
                 playerItem.classList.remove('player-loss');
             } else if (rocketGame.status === 'crashed' && !player.cashedOut) {
+                // Игрок проиграл (не успел вывести)
                 betSpan.textContent = `-${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#ff4757';
                 
@@ -472,10 +452,12 @@ function updatePlayersList(players) {
                 
                 playerItem.classList.add('player-loss');
             } else if (rocketGame.status === 'crashed' && player.cashedOut) {
+                // Игрок выиграл и игра уже завершилась
                 betSpan.textContent = `+${player.winAmount.toFixed(2)} TON (${player.cashoutMultiplier.toFixed(2)}x)`;
                 betSpan.style.color = '#00b894';
                 playerItem.classList.remove('player-loss');
             } else {
+                // Игра идет, ставка активна
                 betSpan.textContent = `${player.betAmount.toFixed(2)} TON`;
                 betSpan.style.color = '#fff';
                 playerItem.classList.remove('player-loss');
