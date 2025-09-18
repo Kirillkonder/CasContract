@@ -18,7 +18,7 @@ class TonCasinoApp {
         this.updateModeUI();
     }
 
-   async checkAdminStatus() {
+ async  checkAdminStatus() {
     try {
         const response = await fetch('/api/admin/login', {
             method: 'POST',
@@ -47,7 +47,7 @@ class TonCasinoApp {
         }
     }
 
-  async loadUserData() {
+ async loadUserData() {
     try {
         const response = await fetch(`/api/user/balance/${this.tg.initDataUnsafe.user.id}`);
         this.userData = await response.json();
@@ -103,7 +103,7 @@ class TonCasinoApp {
         }
     }
 
-  updateUI() {
+ updateUI() {
     if (this.userData) {
         const balanceElement = document.getElementById('balance');
         const modeSwitcher = document.querySelector('.mode-switcher');
