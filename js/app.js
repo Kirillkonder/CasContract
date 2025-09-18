@@ -207,10 +207,24 @@ class TonCasinoApp {
         const response = await fetch(`/api/admin/dashboard/${this.tg.initDataUnsafe.user.id}`);
         const data = await response.json();
         
+        // Обновляем все элементы банка
         document.getElementById('admin-bank-balance').textContent = data.bank_balance;
-        document.getElementById('admin-demo-bank-balance').textContent = data.demo_bank_balance; // Добавляем демо-банк
+        document.getElementById('admin-demo-bank-balance').textContent = data.demo_bank_balance;
         document.getElementById('admin-total-users').textContent = data.total_users;
         document.getElementById('admin-total-transactions').textContent = data.total_transactions;
+        
+        // Также обновляем элементы в других вкладках админки, если они есть
+        const bankElements = document.querySelectorAll('.bank-balance');
+        const demoBankElements = document.querySelectorAll('.demo-bank-balance');
+        
+        bankElements.forEach(el => {
+            el.textContent = data.bank_balance;
+        });
+        
+        demoBankElements.forEach(el => {
+            el.textContent = data.demo_bank_balance;
+        });
+        
     } catch (error) {
         console.error('Admin data error:', error);
         alert('Ошибка загрузки админ-панели');
