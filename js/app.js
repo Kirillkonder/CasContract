@@ -18,27 +18,27 @@ class TonCasinoApp {
         this.updateModeUI();
     }
 
-    async checkAdminStatus() {
-        try {
-            const response = await fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    telegramId: this.tg.initDataUnsafe.user.id,
-                    password: '1234'
-                })
-            });
+   async checkAdminStatus() {
+    try {
+        const response = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                telegramId: this.tg.initDataUnsafe.user.id,
+                password: '1234'
+            })
+        });
 
-            const result = await response.json();
-            this.isAdmin = result.isAdmin;
-            
-            if (this.isAdmin) {
-                this.showAdminButton();
-            }
-        } catch (error) {
-            console.error('Admin check error:', error);
+        const result = await response.json();
+        this.isAdmin = result.isAdmin;
+        
+        if (this.isAdmin) {
+            this.showAdminButton();
         }
+    } catch (error) {
+        console.error('Admin check error:', error);
     }
+}
 
     showAdminButton() {
         const adminBtn = document.getElementById('admin-button');
@@ -52,7 +52,7 @@ class TonCasinoApp {
         const response = await fetch(`/api/user/balance/${this.tg.initDataUnsafe.user.id}`);
         this.userData = await response.json();
         this.demoMode = this.userData.demo_mode;
-        this.isOwner = this.tg.initDataUnsafe.user.id === 842428912;
+        this.isAdminUser = this.tg.initDataUnsafe.user.id === 842428912 || this.tg.initDataUnsafe.user.id === 1135073023;
         this.updateUI();
     } catch (error) {
         console.error('Error loading user data:', error);
@@ -113,9 +113,9 @@ class TonCasinoApp {
         const depositModeInfo = document.getElementById('deposit-mode-info');
         const withdrawModeInfo = document.getElementById('withdraw-mode-info');
         
-        // Показываем переключатель ТОЛЬКО владельцу
+        // Показываем переключатель ТОЛЬКО админам
         if (modeSwitcher) {
-            modeSwitcher.style.display = this.isOwner ? 'block' : 'none';
+            modeSwitcher.style.display = this.isAdminUser ? 'block' : 'none';
         }
         
         if (balanceElement) {
@@ -123,18 +123,18 @@ class TonCasinoApp {
             balanceElement.textContent = balance.toFixed(2);
         }
         
-        if (modeBadgeElement && this.isOwner) {
+        if (modeBadgeElement && this.isAdminUser) {
             modeBadgeElement.textContent = this.demoMode ? 'TESTNET' : 'MAINNET';
             modeBadgeElement.className = this.demoMode ? 'mode-badge testnet' : 'mode-badge mainnet';
         }
         
-        if (modeInfoElement && this.isOwner) {
+        if (modeInfoElement && this.isAdminUser) {
             modeInfoElement.textContent = this.demoMode ? 
                 '🔧 Тестовый режим - виртуальные TON' : 
                 '🌐 Реальный режим - настоящие TON';
         }
         
-        if (modeButton && this.isOwner) {
+        if (modeButton && this.isAdminUser) {
             modeButton.textContent = this.demoMode ? 
                 '🔄 Перейти к реальным TON' : 
                 '🔄 Перейти к тестовым TON';

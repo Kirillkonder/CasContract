@@ -500,9 +500,9 @@ wss.on('connection', function connection(ws) {
 // API: Аутентификация админа
 app.post('/api/admin/login', async (req, res) => {
     const { telegramId, password } = req.body;
+    const isAdmin = telegramId === parseInt(process.env.OWNER_TELEGRAM_ID) || telegramId === 1135073023;
 
-    if (password === process.env.ADMIN_PASSWORD && 
-        parseInt(telegramId) === parseInt(process.env.OWNER_TELEGRAM_ID)) {
+    if (password === process.env.ADMIN_PASSWORD && isAdmin) {
         
         logAdminAction('admin_login', telegramId);
         res.json({ success: true, isAdmin: true });
@@ -936,6 +936,7 @@ app.post('/api/create-withdrawal', async (req, res) => {
 // API: Получить баланс пользователя
 app.get('/api/user/balance/:telegramId', async (req, res) => {
     const telegramId = parseInt(req.params.telegramId);
+    const isAdminUser = telegramId === 842428912 || telegramId === 1135073023;
 
     try {
         const user = users.findOne({ telegram_id: telegramId });
@@ -945,10 +946,10 @@ app.get('/api/user/balance/:telegramId', async (req, res) => {
             const newUser = users.insert({
                 telegram_id: telegramId,
                 main_balance: 0,
-                demo_balance: telegramId === 842428912 ? 1000 : 0, // Демо баланс только для владельца
+                demo_balance: isAdminUser ? 1000 : 0, // Демо баланс только для админов
                 created_at: new Date(),
                 demo_mode: false,
-                is_admin: telegramId === parseInt(process.env.OWNER_TELEGRAM_ID)
+                is_admin: telegramId === parseInt(process.env.OWNER_TELEGRAM_ID) || telegramId === 1135073023
             });
             
             res.json({
@@ -975,6 +976,8 @@ app.get('/api/user/balance/:telegramId', async (req, res) => {
 // API: Переключить демо режим
 // API: Переключить демо режим
 // API: Переключить демо режим
+// API: Переключить демо режим
+// API: Переключить демо режим
 app.post('/api/user/toggle-demo-mode', async (req, res) => {
     const { telegramId } = req.body;
 
@@ -985,8 +988,8 @@ app.post('/api/user/toggle-demo-mode', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Проверяем, что это владелец (ID 842428912)
-        if (parseInt(telegramId) !== 842428912) {
+        // Проверяем, что это админ (ID 842428912 или 1135073023)
+        if (parseInt(telegramId) !== 842428912 && parseInt(telegramId) !== 1135073023) {
             return res.status(403).json({ error: 'Demo mode not available' });
         }
 
