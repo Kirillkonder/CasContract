@@ -47,16 +47,17 @@ class TonCasinoApp {
         }
     }
 
-    async loadUserData() {
-        try {
-            const response = await fetch(`/api/user/balance/${this.tg.initDataUnsafe.user.id}`);
-            this.userData = await response.json();
-            this.demoMode = this.userData.demo_mode;
-            this.updateUI();
-        } catch (error) {
-            console.error('Error loading user data:', error);
-        }
+   async loadUserData() {
+    try {
+        const response = await fetch(`/api/user/balance/${this.tg.initDataUnsafe.user.id}`);
+        this.userData = await response.json();
+        this.demoMode = this.userData.demo_mode;
+        this.hasDemoAccess = this.userData.has_demo_access;
+        this.updateUI();
+    } catch (error) {
+        console.error('Error loading user data:', error);
     }
+}
 
     async loadTransactionHistory() {
         try {
@@ -103,50 +104,56 @@ class TonCasinoApp {
     }
 
     updateUI() {
-        if (this.userData) {
-            const balanceElement = document.getElementById('balance');
-            const modeBadgeElement = document.getElementById('mode-badge');
-            const modeInfoElement = document.getElementById('mode-info');
-            const modeButton = document.getElementById('mode-button');
-            const depositModeInfo = document.getElementById('deposit-mode-info');
-            const withdrawModeInfo = document.getElementById('withdraw-mode-info');
-            
-            if (balanceElement) {
-                const balance = this.demoMode ? this.userData.demo_balance : this.userData.main_balance;
-                balanceElement.textContent = balance.toFixed(2);
-            }
-            
-            if (modeBadgeElement) {
-                modeBadgeElement.textContent = this.demoMode ? 'TESTNET' : 'MAINNET';
-                modeBadgeElement.className = this.demoMode ? 'mode-badge testnet' : 'mode-badge mainnet';
-            }
-            
-            if (modeInfoElement) {
-                modeInfoElement.textContent = this.demoMode ? 
-                    '🔧 Тестовый режим - виртуальные TON' : 
-                    '🌐 Реальный режим - настоящие TON';
-            }
-            
-            if (modeButton) {
-                modeButton.textContent = this.demoMode ? 
-                    '🔄 Перейти к реальным TON' : 
-                    '🔄 Перейти к тестовым TON';
-                modeButton.className = this.demoMode ? 'btn btn-testnet' : 'btn btn-mainnet';
-            }
-            
-            if (depositModeInfo) {
-                depositModeInfo.textContent = this.demoMode ? 
-                    'Демо-пополнение (виртуальные TON)' : 
-                    'Реальное пополнение через Crypto Pay';
-            }
-            
-            if (withdrawModeInfo) {
-                withdrawModeInfo.textContent = this.demoMode ? 
-                    'Демо-вывод (виртуальные TON)' : 
-                    'Реальный вывод через Crypto Pay';
-            }
+    if (this.userData) {
+        const balanceElement = document.getElementById('balance');
+        const modeBadgeElement = document.getElementById('mode-badge');
+        const modeInfoElement = document.getElementById('mode-info');
+        const modeButton = document.getElementById('mode-button');
+        const depositModeInfo = document.getElementById('deposit-mode-info');
+        const withdrawModeInfo = document.getElementById('withdraw-mode-info');
+        const modeSwitcher = document.querySelector('.mode-switcher');
+        
+        if (balanceElement) {
+            const balance = this.demoMode ? this.userData.demo_balance : this.userData.main_balance;
+            balanceElement.textContent = balance.toFixed(2);
+        }
+        
+        // Скрываем переключатель режимов если нет доступа к демо-режиму
+        if (modeSwitcher) {
+            modeSwitcher.style.display = this.hasDemoAccess ? 'block' : 'none';
+        }
+        
+        if (modeBadgeElement) {
+            modeBadgeElement.textContent = this.demoMode ? 'TESTNET' : 'MAINNET';
+            modeBadgeElement.className = this.demoMode ? 'mode-badge testnet' : 'mode-badge mainnet';
+        }
+        
+        if (modeInfoElement) {
+            modeInfoElement.textContent = this.demoMode ? 
+                '🔧 Тестовый режим - виртуальные TON' : 
+                '🌐 Реальный режим - настоящие TON';
+        }
+        
+        if (modeButton) {
+            modeButton.textContent = this.demoMode ? 
+                '🔄 Перейти к реальным TON' : 
+                '🔄 Перейти к тестовым TON';
+            modeButton.className = this.demoMode ? 'btn btn-testnet' : 'btn btn-mainnet';
+        }
+        
+        if (depositModeInfo) {
+            depositModeInfo.textContent = this.demoMode ? 
+                'Демо-пополнение (виртуальные TON)' : 
+                'Реальное пополнение через Crypto Pay';
+        }
+        
+        if (withdrawModeInfo) {
+            withdrawModeInfo.textContent = this.demoMode ? 
+                'Демо-вывод (виртуальные TON)' : 
+                'Реальный вывод через Crypto Pay';
         }
     }
+}
 
     updateModeUI() {
         const modeSwitch = document.getElementById('mode-switch');
