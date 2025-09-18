@@ -42,7 +42,12 @@ body {
 }
 
 .mode-switcher {
-    display: block; /* По умолчанию показываем, скроется через JS если нет доступа */
+    display: none; /* Скрываем по умолчанию, покажется через JS если есть доступ */
+    margin: 15px 0;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 10px;
+    text-align: center;
 }
 
 .mode-badge {

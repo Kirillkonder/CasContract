@@ -47,7 +47,7 @@ class TonCasinoApp {
         }
     }
 
-   async loadUserData() {
+  async loadUserData() {
     try {
         const response = await fetch(`/api/user/balance/${this.tg.initDataUnsafe.user.id}`);
         this.userData = await response.json();
@@ -103,7 +103,7 @@ class TonCasinoApp {
         }
     }
 
-    updateUI() {
+   updateUI() {
     if (this.userData) {
         const balanceElement = document.getElementById('balance');
         const modeBadgeElement = document.getElementById('mode-badge');
@@ -114,27 +114,29 @@ class TonCasinoApp {
         const modeSwitcher = document.querySelector('.mode-switcher');
         
         if (balanceElement) {
-            const balance = this.demoMode ? this.userData.demo_balance : this.userData.main_balance;
+            // У обычных пользователей всегда показываем основной баланс
+            const balance = this.hasDemoAccess && this.demoMode ? 
+                this.userData.demo_balance : this.userData.main_balance;
             balanceElement.textContent = balance.toFixed(2);
         }
         
-        // Скрываем переключатель режимов если нет доступа к демо-режиму
+        // Полностью скрываем блок переключателя режимов у обычных пользователей
         if (modeSwitcher) {
             modeSwitcher.style.display = this.hasDemoAccess ? 'block' : 'none';
         }
         
-        if (modeBadgeElement) {
+        if (modeBadgeElement && this.hasDemoAccess) {
             modeBadgeElement.textContent = this.demoMode ? 'TESTNET' : 'MAINNET';
             modeBadgeElement.className = this.demoMode ? 'mode-badge testnet' : 'mode-badge mainnet';
         }
         
-        if (modeInfoElement) {
+        if (modeInfoElement && this.hasDemoAccess) {
             modeInfoElement.textContent = this.demoMode ? 
                 '🔧 Тестовый режим - виртуальные TON' : 
                 '🌐 Реальный режим - настоящие TON';
         }
         
-        if (modeButton) {
+        if (modeButton && this.hasDemoAccess) {
             modeButton.textContent = this.demoMode ? 
                 '🔄 Перейти к реальным TON' : 
                 '🔄 Перейти к тестовым TON';
@@ -142,13 +144,13 @@ class TonCasinoApp {
         }
         
         if (depositModeInfo) {
-            depositModeInfo.textContent = this.demoMode ? 
+            depositModeInfo.textContent = this.hasDemoAccess && this.demoMode ? 
                 'Демо-пополнение (виртуальные TON)' : 
                 'Реальное пополнение через Crypto Pay';
         }
         
         if (withdrawModeInfo) {
-            withdrawModeInfo.textContent = this.demoMode ? 
+            withdrawModeInfo.textContent = this.hasDemoAccess && this.demoMode ? 
                 'Демо-вывод (виртуальные TON)' : 
                 'Реальный вывод через Crypto Pay';
         }
