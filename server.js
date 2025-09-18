@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
+//app.use(bodyParser.json());
 app.use(express.static('.'));
 
 // Для Render сохраняем базу данных в памяти
