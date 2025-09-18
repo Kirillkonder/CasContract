@@ -59,7 +59,7 @@ body {
 
 .close-btn {
     display: flex;
-    align-items: center;
+    align-items: left;
     gap: 6px;
     font-size: 14px;
     color: #fff;
