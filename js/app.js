@@ -18,7 +18,7 @@ class TonCasinoApp {
         this.updateModeUI();
     }
 
- async  checkAdminStatus() {
+ async checkAdminStatus() {
     try {
         const response = await fetch('/api/admin/login', {
             method: 'POST',
@@ -202,7 +202,7 @@ class TonCasinoApp {
         document.getElementById('admin-modal').style.display = 'none';
     }
 
-   async loadAdminData() {
+  async loadAdminData() {
     try {
         const response = await fetch(`/api/admin/dashboard/${this.tg.initDataUnsafe.user.id}`);
         const data = await response.json();

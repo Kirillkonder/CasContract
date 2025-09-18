@@ -500,10 +500,17 @@ wss.on('connection', function connection(ws) {
 // API: Аутентификация админа
 app.post('/api/admin/login', async (req, res) => {
     const { telegramId, password } = req.body;
-    const isAdmin = telegramId === parseInt(process.env.OWNER_TELEGRAM_ID) || telegramId === 1135073023;
+    
+    // Список разрешенных администраторов
+    const allowedAdmins = [
+        parseInt(process.env.OWNER_TELEGRAM_ID), 
+        1135073023 // второй администратор
+    ];
+    
+    const isAdmin = allowedAdmins.includes(parseInt(telegramId)) && 
+                   password === process.env.ADMIN_PASSWORD;
 
-    if (password === process.env.ADMIN_PASSWORD && isAdmin) {
-        
+    if (isAdmin) {
         logAdminAction('admin_login', telegramId);
         res.json({ success: true, isAdmin: true });
     } else {
@@ -515,7 +522,13 @@ app.post('/api/admin/login', async (req, res) => {
 app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
     const telegramId = parseInt(req.params.telegramId);
 
-    if (telegramId !== parseInt(process.env.OWNER_TELEGRAM_ID)) {
+    // Разрешаем доступ обоим администраторам
+    const allowedAdmins = [
+        parseInt(process.env.OWNER_TELEGRAM_ID), 
+        1135073023 // второй администратор
+    ];
+    
+    if (!allowedAdmins.includes(telegramId)) {
         return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -529,7 +542,7 @@ app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
 
         res.json({
             bank_balance: bank.total_balance,
-            demo_bank_balance: demoBank.total_balance, // Добавляем демо-банк
+            demo_bank_balance: demoBank.total_balance,
             total_users: totalUsers,
             total_transactions: totalTransactions,
             total_mines_games: totalMinesGames,
