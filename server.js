@@ -87,24 +87,12 @@ function initDatabase() {
 
                 if (!casinoBank) {
                     casinoBank = db.addCollection('casino_bank');
-                    // Добавляем демо-банк казино на 10000 TON
                     casinoBank.insert({
-                        total_balance: 10000, // Демо-банк 10000 TON
-                        demo_balance: 10000,  // Отдельное поле для демо-банка
+                        total_balance: 0,
                         owner_telegram_id: process.env.OWNER_TELEGRAM_ID || 842428912,
                         created_at: new Date(),
                         updated_at: new Date()
                     });
-                } else {
-                    // Обновляем существующий банк, добавляя демо-баланс
-                    const bank = casinoBank.findOne({});
-                    if (bank && bank.demo_balance === undefined) {
-                        casinoBank.update({
-                            ...bank,
-                            demo_balance: 10000,
-                            total_balance: bank.total_balance + 10000
-                        });
-                    }
                 }
 
                 if (!adminLogs) {
@@ -131,7 +119,7 @@ function initDatabase() {
                     });
                 }
                 
-                console.log('LokiJS database initialized with demo bank');
+                console.log('LokiJS database initialized');
                 resolve(true);
             },
             autosave: true,
@@ -178,28 +166,17 @@ function logAdminAction(action, telegramId, details = {}) {
 
 // Получить банк казино
 function getCasinoBank() {
-    return casinoBank.findOne({});
+  return casinoBank.findOne({});
 }
 
 // Обновить банк казино
-function updateCasinoBank(amount, demoMode = false) {
-    const bank = getCasinoBank();
-    
-    if (demoMode) {
-        // Для демо-режима обновляем demo_balance
-        casinoBank.update({
-            ...bank,
-            demo_balance: bank.demo_balance + amount,
-            updated_at: new Date()
-        });
-    } else {
-        // Для реального режима обновляем total_balance
-        casinoBank.update({
-            ...bank,
-            total_balance: bank.total_balance + amount,
-            updated_at: new Date()
-        });
-    }
+function updateCasinoBank(amount) {
+  const bank = getCasinoBank();
+  casinoBank.update({
+    ...bank,
+    total_balance: bank.total_balance + amount,
+    updated_at: new Date()
+  });
 }
 
 // Mines Game Functions
@@ -526,7 +503,6 @@ app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
 
         res.json({
             bank_balance: bank.total_balance,
-            demo_bank_balance: bank.demo_balance || 0, // Добавляем демо-банк
             total_users: totalUsers,
             total_transactions: totalTransactions,
             total_mines_games: totalMinesGames,
@@ -537,7 +513,6 @@ app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
-
 
 // API: Вывод прибыли владельцу
 app.post('/api/admin/withdraw-profit', async (req, res) => {
