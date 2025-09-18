@@ -52,7 +52,7 @@ class TonCasinoApp {
         const response = await fetch(`/api/user/balance/${this.tg.initDataUnsafe.user.id}`);
         this.userData = await response.json();
         this.demoMode = this.userData.demo_mode;
-        this.hasDemoAccess = this.userData.has_demo_access;
+        this.isOwner = this.tg.initDataUnsafe.user.id === 842428912;
         this.updateUI();
     } catch (error) {
         console.error('Error loading user data:', error);
@@ -103,40 +103,38 @@ class TonCasinoApp {
         }
     }
 
-   updateUI() {
+  updateUI() {
     if (this.userData) {
         const balanceElement = document.getElementById('balance');
+        const modeSwitcher = document.querySelector('.mode-switcher');
         const modeBadgeElement = document.getElementById('mode-badge');
         const modeInfoElement = document.getElementById('mode-info');
         const modeButton = document.getElementById('mode-button');
         const depositModeInfo = document.getElementById('deposit-mode-info');
         const withdrawModeInfo = document.getElementById('withdraw-mode-info');
-        const modeSwitcher = document.querySelector('.mode-switcher');
+        
+        // Показываем переключатель ТОЛЬКО владельцу
+        if (modeSwitcher) {
+            modeSwitcher.style.display = this.isOwner ? 'block' : 'none';
+        }
         
         if (balanceElement) {
-            // У обычных пользователей всегда показываем основной баланс
-            const balance = this.hasDemoAccess && this.demoMode ? 
-                this.userData.demo_balance : this.userData.main_balance;
+            const balance = this.demoMode ? this.userData.demo_balance : this.userData.main_balance;
             balanceElement.textContent = balance.toFixed(2);
         }
         
-        // Полностью скрываем блок переключателя режимов у обычных пользователей
-        if (modeSwitcher) {
-            modeSwitcher.style.display = this.hasDemoAccess ? 'block' : 'none';
-        }
-        
-        if (modeBadgeElement && this.hasDemoAccess) {
+        if (modeBadgeElement && this.isOwner) {
             modeBadgeElement.textContent = this.demoMode ? 'TESTNET' : 'MAINNET';
             modeBadgeElement.className = this.demoMode ? 'mode-badge testnet' : 'mode-badge mainnet';
         }
         
-        if (modeInfoElement && this.hasDemoAccess) {
+        if (modeInfoElement && this.isOwner) {
             modeInfoElement.textContent = this.demoMode ? 
                 '🔧 Тестовый режим - виртуальные TON' : 
                 '🌐 Реальный режим - настоящие TON';
         }
         
-        if (modeButton && this.hasDemoAccess) {
+        if (modeButton && this.isOwner) {
             modeButton.textContent = this.demoMode ? 
                 '🔄 Перейти к реальным TON' : 
                 '🔄 Перейти к тестовым TON';
@@ -144,13 +142,13 @@ class TonCasinoApp {
         }
         
         if (depositModeInfo) {
-            depositModeInfo.textContent = this.hasDemoAccess && this.demoMode ? 
+            depositModeInfo.textContent = this.demoMode ? 
                 'Демо-пополнение (виртуальные TON)' : 
                 'Реальное пополнение через Crypto Pay';
         }
         
         if (withdrawModeInfo) {
-            withdrawModeInfo.textContent = this.hasDemoAccess && this.demoMode ? 
+            withdrawModeInfo.textContent = this.demoMode ? 
                 'Демо-вывод (виртуальные TON)' : 
                 'Реальный вывод через Crypto Pay';
         }

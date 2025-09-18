@@ -933,9 +933,9 @@ app.post('/api/create-withdrawal', async (req, res) => {
 
 // API: Получить баланс пользователя
 // API: Получить баланс пользователя
+// API: Получить баланс пользователя
 app.get('/api/user/balance/:telegramId', async (req, res) => {
     const telegramId = parseInt(req.params.telegramId);
-    const isOwner = telegramId === 842428912;
 
     try {
         const user = users.findOne({ telegram_id: telegramId });
@@ -945,35 +945,24 @@ app.get('/api/user/balance/:telegramId', async (req, res) => {
             const newUser = users.insert({
                 telegram_id: telegramId,
                 main_balance: 0,
-                demo_balance: isOwner ? 1000 : 0, // Демо баланс только для владельца
+                demo_balance: telegramId === 842428912 ? 1000 : 0, // Демо баланс только для владельца
                 created_at: new Date(),
                 demo_mode: false,
-                is_admin: telegramId === parseInt(process.env.OWNER_TELEGRAM_ID),
-                has_demo_access: isOwner // Флаг доступа к демо-режиму
+                is_admin: telegramId === parseInt(process.env.OWNER_TELEGRAM_ID)
             });
             
             res.json({
                 main_balance: newUser.main_balance,
                 demo_balance: newUser.demo_balance,
                 demo_mode: newUser.demo_mode,
-                is_admin: newUser.is_admin,
-                has_demo_access: newUser.has_demo_access
+                is_admin: newUser.is_admin
             });
         } else {
-            // Обновляем флаг доступа если его нет
-            if (user.has_demo_access === undefined) {
-                users.update({
-                    ...user,
-                    has_demo_access: isOwner
-                });
-            }
-            
             res.json({
                 main_balance: user.main_balance,
                 demo_balance: user.demo_balance,
                 demo_mode: user.demo_mode,
-                is_admin: user.is_admin,
-                has_demo_access: user.has_demo_access !== undefined ? user.has_demo_access : isOwner
+                is_admin: user.is_admin
             });
         }
     } catch (error) {
@@ -985,9 +974,9 @@ app.get('/api/user/balance/:telegramId', async (req, res) => {
 // API: Переключить демо режим
 // API: Переключить демо режим
 // API: Переключить демо режим
+// API: Переключить демо режим
 app.post('/api/user/toggle-demo-mode', async (req, res) => {
     const { telegramId } = req.body;
-    const isOwner = parseInt(telegramId) === 842428912;
 
     try {
         const user = users.findOne({ telegram_id: parseInt(telegramId) });
@@ -996,11 +985,8 @@ app.post('/api/user/toggle-demo-mode', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Проверяем доступ к демо-режиму
-        const hasDemoAccess = user.has_demo_access !== undefined ? 
-            user.has_demo_access : isOwner;
-        
-        if (!hasDemoAccess) {
+        // Проверяем, что это владелец (ID 842428912)
+        if (parseInt(telegramId) !== 842428912) {
             return res.status(403).json({ error: 'Demo mode not available' });
         }
 
