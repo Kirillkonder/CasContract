@@ -195,19 +195,20 @@ class TonCasinoApp {
         document.getElementById('admin-modal').style.display = 'none';
     }
 
-    async loadAdminData() {
-        try {
-            const response = await fetch(`/api/admin/dashboard/${this.tg.initDataUnsafe.user.id}`);
-            const data = await response.json();
-            
-            document.getElementById('admin-bank-balance').textContent = data.bank_balance;
-            document.getElementById('admin-total-users').textContent = data.total_users;
-            document.getElementById('admin-total-transactions').textContent = data.total_transactions;
-        } catch (error) {
-            console.error('Admin data error:', error);
-            alert('Ошибка загрузки админ-панели');
-        }
+   async loadAdminData() {
+    try {
+        const response = await fetch(`/api/admin/dashboard/${this.tg.initDataUnsafe.user.id}`);
+        const data = await response.json();
+        
+        document.getElementById('admin-bank-balance').textContent = data.bank_balance;
+        document.getElementById('admin-demo-bank-balance').textContent = data.demo_bank_balance; // Добавляем демо-банк
+        document.getElementById('admin-total-users').textContent = data.total_users;
+        document.getElementById('admin-total-transactions').textContent = data.total_transactions;
+    } catch (error) {
+        console.error('Admin data error:', error);
+        alert('Ошибка загрузки админ-панели');
     }
+}
 
     async withdrawProfit() {
         const amount = parseFloat(prompt('Сколько TON вывести?'));

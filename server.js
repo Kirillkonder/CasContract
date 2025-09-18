@@ -57,6 +57,7 @@ function initDatabase() {
                 users = db.getCollection('users');
                 transactions = db.getCollection('transactions');
                 casinoBank = db.getCollection('casino_bank');
+                casinoDemoBank = db.getCollection('casino_demo_bank'); // Новая коллекция
                 adminLogs = db.getCollection('admin_logs');
                 minesGames = db.getCollection('mines_games');
                 rocketGames = db.getCollection('rocket_games');
@@ -89,6 +90,17 @@ function initDatabase() {
                     casinoBank = db.addCollection('casino_bank');
                     casinoBank.insert({
                         total_balance: 0,
+                        owner_telegram_id: process.env.OWNER_TELEGRAM_ID || 842428912,
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    });
+                }
+
+                // Добавляем демо-банк казино
+                if (!casinoDemoBank) {
+                    casinoDemoBank = db.addCollection('casino_demo_bank');
+                    casinoDemoBank.insert({
+                        total_balance: 10000, // 10000 TON демо-банк
                         owner_telegram_id: process.env.OWNER_TELEGRAM_ID || 842428912,
                         created_at: new Date(),
                         updated_at: new Date()
@@ -166,17 +178,30 @@ function logAdminAction(action, telegramId, details = {}) {
 
 // Получить банк казино
 function getCasinoBank() {
-  return casinoBank.findOne({});
+    return casinoBank.findOne({});
+}
+
+function getCasinoDemoBank() {
+    return casinoDemoBank.findOne({});
 }
 
 // Обновить банк казино
 function updateCasinoBank(amount) {
-  const bank = getCasinoBank();
-  casinoBank.update({
-    ...bank,
-    total_balance: bank.total_balance + amount,
-    updated_at: new Date()
-  });
+    const bank = getCasinoBank();
+    casinoBank.update({
+        ...bank,
+        total_balance: bank.total_balance + amount,
+        updated_at: new Date()
+    });
+}
+
+function updateCasinoDemoBank(amount) {
+    const bank = getCasinoDemoBank();
+    casinoDemoBank.update({
+        ...bank,
+        total_balance: bank.total_balance + amount,
+        updated_at: new Date()
+    });
 }
 
 // Mines Game Functions
@@ -496,6 +521,7 @@ app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
 
     try {
         const bank = getCasinoBank();
+        const demoBank = getCasinoDemoBank();
         const totalUsers = users.count();
         const totalTransactions = transactions.count();
         const totalMinesGames = minesGames.count();
@@ -503,6 +529,7 @@ app.get('/api/admin/dashboard/:telegramId', async (req, res) => {
 
         res.json({
             bank_balance: bank.total_balance,
+            demo_bank_balance: demoBank.total_balance, // Добавляем демо-банк
             total_users: totalUsers,
             total_transactions: totalTransactions,
             total_mines_games: totalMinesGames,
@@ -999,19 +1026,18 @@ app.post('/api/mines/start', async (req, res) => {
         });
 
         // Списываем ставку
-        if (demoMode) {
-            users.update({
-                ...user,
-                demo_balance: user.demo_balance - betAmount
-            });
-        } else {
-            users.update({
-                ...user,
-                main_balance: user.main_balance - betAmount
-            });
-            updateCasinoBank(betAmount);
-        }
-
+       if (demoMode) {
+    users.update({
+        ...user,
+        demo_balance: user.demo_balance - betAmount
+    });
+} else {
+    users.update({
+        ...user,
+        main_balance: user.main_balance - betAmount
+    });
+    updateCasinoBank(betAmount); // Реальный банк
+}
         res.json({
             success: true,
             game_id: game.$loki,
@@ -1123,17 +1149,18 @@ app.post('/api/mines/cashout', async (req, res) => {
 
         // Начисляем выигрыш
         if (game.demo_mode) {
-            users.update({
-                ...user,
-                demo_balance: user.demo_balance + winAmount
-            });
-        } else {
-            users.update({
-                ...user,
-                main_balance: user.main_balance + winAmount
-            });
-            updateCasinoBank(-winAmount);
-        }
+    users.update({
+        ...user,
+        demo_balance: user.demo_balance + winAmount
+    });
+    updateCasinoDemoBank(-winAmount); // Демо-банк
+} else {
+    users.update({
+        ...user,
+        main_balance: user.main_balance + winAmount
+    });
+    updateCasinoBank(-winAmount); // Реальный банк
+}
 
         res.json({
             success: true,
@@ -1184,17 +1211,18 @@ app.post('/api/rocket/bet', async (req, res) => {
 
         // Списываем ставку
         if (demoMode) {
-            users.update({
-                ...user,
-                demo_balance: user.demo_balance - betAmount
-            });
-        } else {
-            users.update({
-                ...user,
-                main_balance: user.main_balance - betAmount
-            });
-            updateCasinoBank(betAmount);
-        }
+    users.update({
+        ...user,
+        demo_balance: user.demo_balance - betAmount
+    });
+    updateCasinoDemoBank(betAmount); // Демо-банк
+} else {
+    users.update({
+        ...user,
+        main_balance: user.main_balance - betAmount
+    });
+    updateCasinoBank(betAmount); // Реальный банк
+}
 
         // Добавляем игрока в текущую игру
         const player = {
@@ -1249,17 +1277,18 @@ app.post('/api/rocket/cashout', async (req, res) => {
         const winAmount = player.betAmount * rocketGame.multiplier;
         
         if (player.demoMode) {
-            users.update({
-                ...user,
-                demo_balance: user.demo_balance + winAmount
-            });
-        } else {
-            users.update({
-                ...user,
-                main_balance: user.main_balance + winAmount
-            });
-            updateCasinoBank(-winAmount);
-        }
+    users.update({
+        ...user,
+        demo_balance: user.demo_balance + winAmount
+    });
+    updateCasinoDemoBank(-winAmount); // Демо-банк
+} else {
+    users.update({
+        ...user,
+        main_balance: user.main_balance + winAmount
+    });
+    updateCasinoBank(-winAmount); // Реальный банк
+}
 
         // Обновляем данные игрока
         player.cashedOut = true;
@@ -1329,18 +1358,19 @@ cron.schedule('* * * * *', async () => {
                 if (invoiceData.status === 'paid') {
                     const user = users.get(transaction.user_id);
                     
-                    if (transaction.demo_mode) {
-                        users.update({
-                            ...user,
-                            demo_balance: user.demo_balance + transaction.amount
-                        });
-                    } else {
-                        users.update({
-                            ...user,
-                            main_balance: user.main_balance + transaction.amount
-                        });
-                        updateCasinoBank(transaction.amount);
-                    }
+                  if (transaction.demo_mode) {
+    users.update({
+        ...user,
+        demo_balance: user.demo_balance + transaction.amount
+    });
+    updateCasinoDemoBank(transaction.amount); // Демо-банк
+} else {
+    users.update({
+        ...user,
+        main_balance: user.main_balance + transaction.amount
+    });
+    updateCasinoBank(transaction.amount); // Реальный банк
+}
 
                     transactions.update({
                         ...transaction,
